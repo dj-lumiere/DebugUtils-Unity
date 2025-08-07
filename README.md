@@ -4,15 +4,15 @@ A collection of debugging utilities for Unity developers.
 
 ## Core Features
 
-## 🔍 Object Representation ([`Repr`, `ReprTree` Documentation](DebugUtils/Repr/README.md))
+## 🔍 Object Representation ([`Repr`, `ReprTree` Documentation](src/Runtime/Repr/README.md))
 
 Stop getting useless `ToString()` output. See actual object contents in Unity.
 
-## 📍 Call Stack Tracking ([`CallStack` Documentation](DebugUtils/CallStack/README.md))
+## 📍 Call Stack Tracking ([`CallStack` Documentation](src/Runtime/CallStack/README.md))
 
 Know exactly where your code is executing and which methods are calling what in your Unity project.
 
-## 🎮 Scene Navigation ([`SceneNavigator` Documentation](DebugUtils/Unity/SceneNavigator/README.md))
+## 🎮 Scene Navigation ([`SceneNavigator` Documentation](src/Runtime/SceneNavigator/README.md))
 
 Navigate Unity scene hierarchies with simple path strings instead of manual GameObject traversal.
 
