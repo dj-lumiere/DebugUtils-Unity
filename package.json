@@ -1,0 +1,7 @@
+{
+  "name": "com.debugutils.unity",
+  "displayName": "DebugUtils.Unity",
+  "version": "1.0.0",
+  "unity": "2021.3",
+  "description": "A collection of debugging utilities for Unity developers."
+}
