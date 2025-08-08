@@ -89,8 +89,8 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
                     #if NET6_0_OR_GREATER
                     (t => t.IsPriorityQueueType(), new PriorityQueueFormatter()),
                     #endif
-                    (t => typeof(Delegate).IsAssignableFrom(t), new FunctionFormatter()),
-                    (t => typeof(IEnumerable).IsAssignableFrom(t),
+                    (t => typeof(Delegate).IsAssignableFrom(c: t), new FunctionFormatter()),
+                    (t => typeof(IEnumerable).IsAssignableFrom(c: t),
                         new EnumerableFormatter()),
                     (t => t.IsAnonymousType(), new ObjectFormatter()),
                     (t => typeof(Type).IsAssignableFrom(c: t), new TypeFormatter()),
@@ -106,8 +106,8 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
                     #if NET6_0_OR_GREATER
                     (t => t.IsPriorityQueueType(), new PriorityQueueFormatter()),
                     #endif
-                    (t => typeof(Delegate).IsAssignableFrom(t), new FunctionFormatter()),
-                    (t => typeof(IEnumerable).IsAssignableFrom(t),
+                    (t => typeof(Delegate).IsAssignableFrom(c: t), new FunctionFormatter()),
+                    (t => typeof(IEnumerable).IsAssignableFrom(c: t),
                         new EnumerableFormatter()),
                     (t => typeof(Type).IsAssignableFrom(c: t), new TypeFormatter()),
                     (t => t.IsAnonymousType(), new ObjectFormatter())
@@ -120,7 +120,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
                 return new ObjectFormatter();
             }
 
-            if (ReprFormatters.TryGetValue(key: type, out var directFormatter))
+            if (ReprFormatters.TryGetValue(key: type, value: out var directFormatter))
             {
                 return directFormatter;
             }
@@ -137,7 +137,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
         }
         public static IReprTreeFormatter GetTreeFormatter(Type type, ReprContext context)
         {
-            if (ReprTreeFormatters.TryGetValue(key: type, out var directFormatter))
+            if (ReprTreeFormatters.TryGetValue(key: type, value: out var directFormatter))
             {
                 return directFormatter;
             }

@@ -33,19 +33,20 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Function
             {
                 return new JObject
                 {
-                    ["type"] = "Function",
-                    ["kind"] = type.GetTypeKind(),
-                    ["maxDepthReached"] = true,
-                    ["depth"] = context.Depth
+                    [propertyName: "type"] = "Function",
+                    [propertyName: "kind"] = type.GetTypeKind(),
+                    [propertyName: "maxDepthReached"] = true,
+                    [propertyName: "depth"] = context.Depth
                 };
             }
 
             var functionDetails = del.Method.ToFunctionDetails();
             var result = new JObject();
-            result.Add("type", "Function");
-            result.Add("hashCode", $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
-            result.Add("properties",
-                functionDetails.FormatAsJToken(context: context));
+            result.Add(propertyName: "type", value: "Function");
+            result.Add(propertyName: "hashCode",
+                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+            result.Add(propertyName: "properties",
+                value: functionDetails.FormatAsJToken(context: context));
             return result;
         }
     }
@@ -73,22 +74,22 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Function
             {
                 return new JObject
                 {
-                    ["type"] = type.GetReprTypeName(),
-                    ["kind"] = type.GetTypeKind(),
-                    ["maxDepthReached"] = "true",
-                    ["depth"] = context.Depth
+                    [propertyName: "type"] = type.GetReprTypeName(),
+                    [propertyName: "kind"] = type.GetTypeKind(),
+                    [propertyName: "maxDepthReached"] = "true",
+                    [propertyName: "depth"] = context.Depth
                 };
             }
 
             var result = new JObject();
-            result.Add("name",
-                details.Name);
-            result.Add("parameters",
-                details.Parameters.FormatAsJToken(context: context.WithIncrementedDepth()));
-            result.Add("type",
-                details.ReturnTypeReprName);
-            result.Add("modifier",
-                details.Modifiers.FormatAsJToken(
+            result.Add(propertyName: "name",
+                value: details.Name);
+            result.Add(propertyName: "parameters",
+                value: details.Parameters.FormatAsJToken(context: context.WithIncrementedDepth()));
+            result.Add(propertyName: "type",
+                value: details.ReturnTypeReprName);
+            result.Add(propertyName: "modifier",
+                value: details.Modifiers.FormatAsJToken(
                     context: context.WithIncrementedDepth()));
             return result;
         }
@@ -117,10 +118,10 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Function
             {
                 return new JObject
                 {
-                    ["type"] = type.GetReprTypeName(),
-                    ["kind"] = type.GetTypeKind(),
-                    ["maxDepthReached"] = true,
-                    ["depth"] = context.Depth
+                    [propertyName: "type"] = type.GetReprTypeName(),
+                    [propertyName: "kind"] = type.GetTypeKind(),
+                    [propertyName: "maxDepthReached"] = true,
+                    [propertyName: "depth"] = context.Depth
                 };
             }
 
@@ -145,7 +146,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Function
             {
                 if (condition)
                 {
-                    modifiers.Add(name);
+                    modifiers.Add(item: name);
                 }
             }
 
@@ -176,22 +177,22 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Function
             {
                 return new JObject
                 {
-                    ["type"] = type.GetReprTypeName(),
-                    ["kind"] = type.GetTypeKind(),
-                    ["maxDepthReached"] = "true",
-                    ["depth"] = context.Depth
+                    [propertyName: "type"] = type.GetReprTypeName(),
+                    [propertyName: "kind"] = type.GetTypeKind(),
+                    [propertyName: "maxDepthReached"] = "true",
+                    [propertyName: "depth"] = context.Depth
                 };
             }
 
             var result = new JObject();
-            result.Add("name",
-                details.Name);
-            result.Add("type",
-                details.TypeReprName);
-            result.Add("modifier",
-                details.Modifier);
-            result.Add("defaultValue",
-                details.DefaultValue.FormatAsJToken(
+            result.Add(propertyName: "name",
+                value: details.Name);
+            result.Add(propertyName: "type",
+                value: details.TypeReprName);
+            result.Add(propertyName: "modifier",
+                value: details.Modifier);
+            result.Add(propertyName: "defaultValue",
+                value: details.DefaultValue.FormatAsJToken(
                     context: context.WithIncrementedDepth()));
             return result;
         }

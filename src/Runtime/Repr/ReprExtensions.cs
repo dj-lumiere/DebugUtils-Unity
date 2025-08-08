@@ -188,9 +188,12 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
                 : new ReprContext(config: config);
             var settings = new JsonSerializerSettings
             {
-                Formatting = (config?.EnablePrettyPrintForReprTree ?? false) ? Formatting.Indented : Formatting.None
+                Formatting = config?.EnablePrettyPrintForReprTree ?? false
+                    ? Formatting.Indented
+                    : Formatting.None
             };
-            return JsonConvert.SerializeObject(obj.ToReprTree(context: context), settings);
+            return JsonConvert.SerializeObject(value: obj.ToReprTree(context: context),
+                settings: settings);
         }
 
         #endregion
@@ -252,8 +255,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
         {
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(paramName: nameof(context));
             }
+
             return obj.ToRepr(context: context);
         }
 
@@ -325,8 +329,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
         {
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(paramName: nameof(context));
             }
+
             return obj.ToReprTree(context: context);
         }
 

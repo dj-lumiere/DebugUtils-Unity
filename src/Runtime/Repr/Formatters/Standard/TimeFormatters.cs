@@ -19,24 +19,24 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
                 DateTimeKind.Local => " Local",
                 _ => " Unspecified"
             };
-            return datetime.ToString("yyyy-MM-dd HH:mm:ss") + kindSuffix;
+            return datetime.ToString(format: "yyyy-MM-dd HH:mm:ss") + kindSuffix;
         }
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
             var datetime = (DateTime)obj;
             var result = new JObject();
-            result.Add("type", "DateTime");
-            result.Add("kind", "struct");
-            result.Add("year", datetime.Year.ToString());
-            result.Add("month", datetime.Month.ToString());
-            result.Add("day", datetime.Day.ToString());
-            result.Add("hour", datetime.Hour.ToString());
-            result.Add("minute", datetime.Minute.ToString());
-            result.Add("second", datetime.Second.ToString());
-            result.Add("millisecond", datetime.Millisecond.ToString());
-            result.Add("ticks", datetime.Ticks.ToString());
-            result.Add("timezone", datetime.Kind.ToString());
+            result.Add(propertyName: "type", value: "DateTime");
+            result.Add(propertyName: "kind", value: "struct");
+            result.Add(propertyName: "year", value: datetime.Year.ToString());
+            result.Add(propertyName: "month", value: datetime.Month.ToString());
+            result.Add(propertyName: "day", value: datetime.Day.ToString());
+            result.Add(propertyName: "hour", value: datetime.Hour.ToString());
+            result.Add(propertyName: "minute", value: datetime.Minute.ToString());
+            result.Add(propertyName: "second", value: datetime.Second.ToString());
+            result.Add(propertyName: "millisecond", value: datetime.Millisecond.ToString());
+            result.Add(propertyName: "ticks", value: datetime.Ticks.ToString());
+            result.Add(propertyName: "timezone", value: datetime.Kind.ToString());
             return result;
         }
     }
@@ -50,16 +50,16 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
             var dto = (DateTimeOffset)obj;
             if (dto.Offset == TimeSpan.Zero)
             {
-                return dto.ToString("yyyy-MM-dd HH:mm:ss") + "Z";
+                return dto.ToString(format: "yyyy-MM-dd HH:mm:ss") + "Z";
             }
 
-            var offset = dto.Offset.ToString("c");
-            if (!offset.StartsWith("+"))
+            var offset = dto.Offset.ToString(format: "c");
+            if (!offset.StartsWith(value: "+"))
             {
                 offset = "+" + offset;
             }
 
-            return dto.ToString("yyyy-MM-dd HH:mm:ss") + offset;
+            return dto.ToString(format: "yyyy-MM-dd HH:mm:ss") + offset;
         }
 
 
@@ -67,18 +67,18 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
         {
             var dto = (DateTimeOffset)obj;
             var result = new JObject();
-            result.Add("type", "DateTimeOffset");
-            result.Add("kind", "struct");
-            result.Add("year", dto.Year.ToString());
-            result.Add("month", dto.Month.ToString());
-            result.Add("day", dto.Day.ToString());
-            result.Add("hour", dto.Hour.ToString());
-            result.Add("minute", dto.Minute.ToString());
-            result.Add("second", dto.Second.ToString());
-            result.Add("millisecond", dto.Millisecond.ToString());
-            result.Add("ticks", dto.Ticks.ToString());
-            result.Add("offset",
-                dto.Offset.FormatAsJToken(context: context.WithIncrementedDepth()));
+            result.Add(propertyName: "type", value: "DateTimeOffset");
+            result.Add(propertyName: "kind", value: "struct");
+            result.Add(propertyName: "year", value: dto.Year.ToString());
+            result.Add(propertyName: "month", value: dto.Month.ToString());
+            result.Add(propertyName: "day", value: dto.Day.ToString());
+            result.Add(propertyName: "hour", value: dto.Hour.ToString());
+            result.Add(propertyName: "minute", value: dto.Minute.ToString());
+            result.Add(propertyName: "second", value: dto.Second.ToString());
+            result.Add(propertyName: "millisecond", value: dto.Millisecond.ToString());
+            result.Add(propertyName: "ticks", value: dto.Ticks.ToString());
+            result.Add(propertyName: "offset",
+                value: dto.Offset.FormatAsJToken(context: context.WithIncrementedDepth()));
             return result;
         }
     }
@@ -102,15 +102,15 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
             }
 
             var result = new JObject();
-            result.Add("type", "TimeSpan");
-            result.Add("kind", "struct");
-            result.Add("day", ts.Days.ToString());
-            result.Add("hour", ts.Hours.ToString());
-            result.Add("minute", ts.Minutes.ToString());
-            result.Add("second", ts.Seconds.ToString());
-            result.Add("millisecond", ts.Milliseconds.ToString());
-            result.Add("ticks", ts.Ticks.ToString());
-            result.Add("isNegative", isNegative.ToString()
+            result.Add(propertyName: "type", value: "TimeSpan");
+            result.Add(propertyName: "kind", value: "struct");
+            result.Add(propertyName: "day", value: ts.Days.ToString());
+            result.Add(propertyName: "hour", value: ts.Hours.ToString());
+            result.Add(propertyName: "minute", value: ts.Minutes.ToString());
+            result.Add(propertyName: "second", value: ts.Seconds.ToString());
+            result.Add(propertyName: "millisecond", value: ts.Milliseconds.ToString());
+            result.Add(propertyName: "ticks", value: ts.Ticks.ToString());
+            result.Add(propertyName: "isNegative", value: isNegative.ToString()
                .ToLowerInvariant());
             return result;
         }

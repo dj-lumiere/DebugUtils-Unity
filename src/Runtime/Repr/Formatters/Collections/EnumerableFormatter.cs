@@ -85,21 +85,22 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
             {
                 return new JObject
                 {
-                    ["type"] = type.GetReprTypeName(),
-                    ["kind"] = type.GetTypeKind(),
-                    ["maxDepthReached"] = "true",
-                    ["depth"] = context.Depth
+                    [propertyName: "type"] = type.GetReprTypeName(),
+                    [propertyName: "kind"] = type.GetTypeKind(),
+                    [propertyName: "maxDepthReached"] = "true",
+                    [propertyName: "depth"] = context.Depth
                 };
             }
 
             var result = new JObject();
             var entries = new JArray();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("hashCode", $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "hashCode",
+                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
             if (itemCount is not null)
             {
-                result.Add("count", itemCount);
+                result.Add(propertyName: "count", value: itemCount);
             }
 
             if (list.GetType()
@@ -109,7 +110,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
                 var elementType = list.GetType()
                                       .GetGenericArguments()[0]
                                       .GetReprTypeName();
-                result.Add("elementType", elementType);
+                result.Add(propertyName: "elementType", value: elementType);
             }
 
             var i = 0;
@@ -135,16 +136,16 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
                     var remainingCount = itemCount - context.Config.MaxElementsPerCollection;
                     if (remainingCount > 0)
                     {
-                        entries.Add($"... ({remainingCount} more items)");
+                        entries.Add(item: $"... ({remainingCount} more items)");
                     }
                 }
                 else
                 {
-                    entries.Add("... (more items)");
+                    entries.Add(item: "... (more items)");
                 }
             }
 
-            result.Add("value", entries);
+            result.Add(propertyName: "value", value: entries);
             return result;
         }
     }

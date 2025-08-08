@@ -26,19 +26,19 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Function
             var parameterStr = String.Join(separator: ", ",
                 values: Parameters.Select(selector: p => p.ToString()));
             var parts = new List<string>();
-            if (!String.IsNullOrEmpty(Modifiers.ToString()))
+            if (!String.IsNullOrEmpty(value: Modifiers.ToString()))
             {
                 parts.Add(item: Modifiers.ToString());
                 parts.Add(item: " ");
             }
 
-            if (!String.IsNullOrEmpty(ReturnTypeReprName))
+            if (!String.IsNullOrEmpty(value: ReturnTypeReprName))
             {
                 parts.Add(item: ReturnTypeReprName);
                 parts.Add(item: " ");
             }
 
-            if (!String.IsNullOrEmpty(Name))
+            if (!String.IsNullOrEmpty(value: Name))
             {
                 parts.Add(item: Name);
             }
@@ -59,19 +59,19 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Function
         {
             var unsanitizedName = methodInfo.Name;
             var sanitizedName = "";
-            if (unsanitizedName.Contains("g__"))
+            if (unsanitizedName.Contains(value: "g__"))
             {
                 // Since we are finding "g__" and "|", which consist of ascii character,
                 // it doesn't suffer from localization/cultural issues that matter how letters are counted.
-                var start = unsanitizedName.IndexOf("g__") + 3;
-                var end = unsanitizedName.IndexOf('|', startIndex: start);
+                var start = unsanitizedName.IndexOf(value: "g__") + 3;
+                var end = unsanitizedName.IndexOf(value: '|', startIndex: start);
                 return end > start
                     ? unsanitizedName.Substring(startIndex: start, length: end - start)
                     : "local func";
             }
 
             // lambda functions always contain "b__".
-            if (unsanitizedName.Contains("b__"))
+            if (unsanitizedName.Contains(value: "b__"))
             {
                 sanitizedName = "Lambda";
                 return sanitizedName;

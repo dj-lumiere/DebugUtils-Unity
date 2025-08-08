@@ -67,27 +67,28 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
             {
                 return new JObject
                 {
-                    ["type"] = type.GetReprTypeName(),
-                    ["kind"] = type.GetTypeKind(),
-                    ["maxDepthReached"] = "true",
-                    ["depth"] = context.Depth
+                    [propertyName: "type"] = type.GetReprTypeName(),
+                    [propertyName: "kind"] = type.GetTypeKind(),
+                    [propertyName: "maxDepthReached"] = "true",
+                    [propertyName: "depth"] = context.Depth
                 };
             }
 
             var result = new JObject();
             var entries = new JArray();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("hashCode", $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "hashCode",
+                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
             var keyType = dict.GetType()
                               .GetGenericArguments()[0]
                               .GetReprTypeName();
             var valueType = dict.GetType()
                                 .GetGenericArguments()[1]
                                 .GetReprTypeName();
-            result.Add("count", dict.Count);
-            result.Add("keyType", keyType);
-            result.Add("valueType", valueType);
+            result.Add(propertyName: "count", value: dict.Count);
+            result.Add(propertyName: "keyType", value: keyType);
+            result.Add(propertyName: "valueType", value: valueType);
             var count = 0;
             foreach (DictionaryEntry entry in dict)
             {
@@ -99,12 +100,13 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
 
                 var entryJson = new JObject
                 {
-                    ["key"] =
+                    [propertyName: "key"] =
                         entry.Key.FormatAsJToken(context: context.WithIncrementedDepth()),
-                    ["value"] =
-                        entry.Value?.FormatAsJToken(context: context.WithIncrementedDepth()) ?? null
+                    [propertyName: "value"] =
+                        entry.Value?.FormatAsJToken(context: context.WithIncrementedDepth()) ??
+                        null
                 };
-                entries.Add(entryJson);
+                entries.Add(item: entryJson);
                 count += 1;
             }
 
@@ -116,7 +118,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
                 entries.Add(item: $"... ({truncatedItemCount} more items)");
             }
 
-            result.Add("value", entries);
+            result.Add(propertyName: "value", value: entries);
             return result;
         }
     }

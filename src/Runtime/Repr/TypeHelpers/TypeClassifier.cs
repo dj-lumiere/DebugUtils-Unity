@@ -118,11 +118,11 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers
         {
             // Types that never need a prefix
             if (type.IsNullableStructType()
-                || typeof(Delegate).IsAssignableFrom(type)
+                || typeof(Delegate).IsAssignableFrom(c: type)
                 || type.IsGenericTypeOf(genericTypeDefinition: typeof(List<>))
                 || type.IsGenericTypeOf(genericTypeDefinition: typeof(Dictionary<,>))
                 || type.IsGenericTypeOf(genericTypeDefinition: typeof(HashSet<>))
-                || typeof(ITuple).IsAssignableFrom(type)
+                || typeof(ITuple).IsAssignableFrom(c: type)
                 || type.IsEnum
                )
             {
@@ -156,8 +156,8 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers
             return Attribute.IsDefined(element: type,
                        attributeType: typeof(CompilerGeneratedAttribute))
                    && type.IsGenericType
-                   && type.Name.Contains("AnonymousType")
-                   && (type.Name.StartsWith("<>") || type.Name.StartsWith("VB$"));
+                   && type.Name.Contains(value: "AnonymousType")
+                   && (type.Name.StartsWith(value: "<>") || type.Name.StartsWith(value: "VB$"));
         }
     }
 }

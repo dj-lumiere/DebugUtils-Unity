@@ -25,17 +25,17 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Function
         public override string ToString()
         {
             List<string> parts = new();
-            if (!String.IsNullOrEmpty(Modifier))
+            if (!String.IsNullOrEmpty(value: Modifier))
             {
                 parts.Add(item: Modifier);
             }
 
-            if (!String.IsNullOrEmpty(TypeReprName))
+            if (!String.IsNullOrEmpty(value: TypeReprName))
             {
                 parts.Add(item: TypeReprName);
             }
 
-            if (!String.IsNullOrEmpty(Name))
+            if (!String.IsNullOrEmpty(value: Name))
             {
                 parts.Add(item: Name);
             }

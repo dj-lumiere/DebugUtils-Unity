@@ -24,9 +24,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
         {
             var result = new JObject();
             var type = obj.GetType();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("value", ToRepr(obj: obj, context: context));
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "value", value: ToRepr(obj: obj, context: context));
             return result;
         }
     }
@@ -46,9 +46,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
         {
             var result = new JObject();
             var type = obj.GetType();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("value", ToRepr(obj: obj, context: context));
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "value", value: ToRepr(obj: obj, context: context));
             return result;
         }
     }

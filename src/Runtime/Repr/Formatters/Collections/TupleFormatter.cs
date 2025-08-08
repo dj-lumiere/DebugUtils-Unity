@@ -24,7 +24,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
             context = context.WithContainerConfig();
 
             var sb = new StringBuilder();
-            sb.Append('(');
+            sb.Append(value: '(');
             for (var i = 0; i < tuple.Length; i++)
             {
                 if (context.Config.MaxElementsPerCollection >= 0 &&
@@ -35,10 +35,10 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
 
                 if (i > 0)
                 {
-                    sb.Append(", ");
+                    sb.Append(value: ", ");
                 }
 
-                sb.Append(tuple[index: i]
+                sb.Append(value: tuple[index: i]
                    .Repr(context: context.WithIncrementedDepth()));
             }
 
@@ -47,10 +47,10 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
             {
                 var truncatedItemCount = tuple.Length -
                                          context.Config.MaxElementsPerCollection;
-                sb.Append($"... {truncatedItemCount} more items");
+                sb.Append(value: $"... {truncatedItemCount} more items");
             }
 
-            sb.Append(')');
+            sb.Append(value: ')');
             return sb.ToString();
         }
 
@@ -62,23 +62,23 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
             {
                 return new JObject
                 {
-                    ["type"] = type.GetReprTypeName(),
-                    ["kind"] = type.GetTypeKind(),
-                    ["maxDepthReached"] = "true",
-                    ["depth"] = context.Depth
+                    [propertyName: "type"] = type.GetReprTypeName(),
+                    [propertyName: "kind"] = type.GetTypeKind(),
+                    [propertyName: "maxDepthReached"] = "true",
+                    [propertyName: "depth"] = context.Depth
                 };
             }
 
             var result = new JObject();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
             if (!type.IsValueType)
             {
-                result.Add("hashCode",
-                    $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+                result.Add(propertyName: "hashCode",
+                    value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
             }
 
-            result.Add("length", tuple.Length);
+            result.Add(propertyName: "length", value: tuple.Length);
 
             var entries = new JArray();
             for (var i = 0; i < tuple.Length; i++)
@@ -89,7 +89,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
                     break;
                 }
 
-                entries.Add(tuple[index: i]
+                entries.Add(item: tuple[index: i]
                    .FormatAsJToken(context: context.WithIncrementedDepth()));
             }
 
@@ -101,7 +101,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
                 entries.Add(item: $"... ({truncatedItemCount} more items)");
             }
 
-            result.Add("value", entries);
+            result.Add(propertyName: "value", value: entries);
             return result;
         }
     }

@@ -38,10 +38,10 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
             {
                 return new JObject
                 {
-                    ["type"] = type.GetReprTypeName(),
-                    ["kind"] = type.GetTypeKind(),
-                    ["maxDepthReached"] = "true",
-                    ["depth"] = context.Depth
+                    [propertyName: "type"] = type.GetReprTypeName(),
+                    [propertyName: "kind"] = type.GetTypeKind(),
+                    [propertyName: "maxDepthReached"] = "true",
+                    [propertyName: "depth"] = context.Depth
                 };
             }
 
@@ -49,25 +49,27 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
             var elementType = array.GetType()
                                    .GetElementType()
                                   ?.GetReprTypeName() ?? "object";
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("hashCode", $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "hashCode",
+                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
             var dimensions = new JArray();
             for (var i = 0; i < array.Rank; i++)
             {
-                dimensions.Add(array.GetLength(dimension: i));
+                dimensions.Add(item: array.GetLength(dimension: i));
             }
 
-            result.Add("rank", array.Rank);
-            result.Add("dimensions", dimensions);
-            result.Add("elementType", elementType);
+            result.Add(propertyName: "rank", value: array.Rank);
+            result.Add(propertyName: "dimensions", value: dimensions);
+            result.Add(propertyName: "elementType", value: elementType);
             // Apply container defaults if configured
             context = context.WithContainerConfig();
 
             var rank = array.Rank;
-            var content = array.ArrayToHierarchicalReprRecursive(indices: new int[rank], dimension: 0,
+            var content = array.ArrayToHierarchicalReprRecursive(indices: new int[rank],
+                dimension: 0,
                 context: context);
-            result.Add("value", content);
+            result.Add(propertyName: "value", value: content);
             return result;
         }
     }

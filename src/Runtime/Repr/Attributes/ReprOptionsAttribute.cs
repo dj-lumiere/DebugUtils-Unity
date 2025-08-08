@@ -25,7 +25,8 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Attributes
     /// // Output: Content: "test"  (no "SimpleValue(...)" wrapper)
     /// </code>
     /// </example>
-    [AttributeUsage(validOn: AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum)]
+    [AttributeUsage(validOn: AttributeTargets.Class | AttributeTargets.Struct |
+                             AttributeTargets.Enum)]
     public class ReprOptionsAttribute : Attribute
     {
         /// <summary>

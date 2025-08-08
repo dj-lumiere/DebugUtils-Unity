@@ -20,9 +20,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
         {
             var result = new JObject();
             var type = obj.GetType();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("value", ToRepr(obj: obj, context: context));
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "value", value: ToRepr(obj: obj, context: context));
             return result;
         }
     }
@@ -40,9 +40,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
         {
             var result = new JObject();
             var type = obj.GetType();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("value", ToRepr(obj: obj, context: context));
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "value", value: ToRepr(obj: obj, context: context));
             return result;
         }
     }
@@ -60,12 +60,12 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
         {
             var v = (Version)obj;
             var result = new JObject();
-            result.Add("type", "Version");
-            result.Add("kind", "class");
-            result.Add("major", v.Major);
-            result.Add("minor", v.Minor);
-            result.Add("build", v.Build);
-            result.Add("revision", v.Revision);
+            result.Add(propertyName: "type", value: "Version");
+            result.Add(propertyName: "kind", value: "class");
+            result.Add(propertyName: "major", value: v.Major);
+            result.Add(propertyName: "minor", value: v.Minor);
+            result.Add(propertyName: "build", value: v.Build);
+            result.Add(propertyName: "revision", value: v.Revision);
             return result;
         }
     }

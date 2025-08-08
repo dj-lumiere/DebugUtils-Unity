@@ -44,38 +44,39 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
             {
                 return new JObject
                 {
-                    ["type"] = type.GetReprTypeName(),
-                    ["kind"] = type.GetTypeKind(),
-                    ["maxDepthReached"] = "true",
-                    ["depth"] = context.Depth
+                    [propertyName: "type"] = type.GetReprTypeName(),
+                    [propertyName: "kind"] = type.GetTypeKind(),
+                    [propertyName: "maxDepthReached"] = "true",
+                    [propertyName: "depth"] = context.Depth
                 };
             }
 
             var result = new JObject();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("hashCode", $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
-            result.Add("namespace", typeObject.Namespace);
-            result.Add("name", typeObject.Name);
-            result.Add("fullName", typeObject.FullName);
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "hashCode",
+                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+            result.Add(propertyName: "namespace", value: typeObject.Namespace);
+            result.Add(propertyName: "name", value: typeObject.Name);
+            result.Add(propertyName: "fullName", value: typeObject.FullName);
             var assemblyInfo = new JObject();
-            assemblyInfo.Add("name", typeObject.Assembly.GetName()
+            assemblyInfo.Add(propertyName: "name", value: typeObject.Assembly.GetName()
                .Name);
-            assemblyInfo.Add("version", typeObject.Assembly
+            assemblyInfo.Add(propertyName: "version", value: typeObject.Assembly
                .GetName()
                .Version
               ?.ToString());
-            assemblyInfo.Add("publicKeyToken", typeObject.Assembly
+            assemblyInfo.Add(propertyName: "publicKeyToken", value: typeObject.Assembly
                .GetName()
                .GetPublicKeyToken()
               ?.ToHexString() ?? "null");
-            assemblyInfo.Add("culture", typeObject.Assembly.GetName()
+            assemblyInfo.Add(propertyName: "culture", value: typeObject.Assembly.GetName()
                .CultureName ?? "neutral");
-            result.Add("assembly", assemblyInfo);
-            result.Add("guid", typeObject.GUID.ToString());
-            result.Add("typeHandle",
-                typeObject.TypeHandle.Value.ToRepr(context: context));
-            result.Add("baseType", typeObject.BaseType?.GetReprTypeName());
+            result.Add(propertyName: "assembly", value: assemblyInfo);
+            result.Add(propertyName: "guid", value: typeObject.GUID.ToString());
+            result.Add(propertyName: "typeHandle",
+                value: typeObject.TypeHandle.Value.ToRepr(context: context));
+            result.Add(propertyName: "baseType", value: typeObject.BaseType?.GetReprTypeName());
             var propertiesStartsWithIs = type
                                         .GetProperties(bindingAttr: BindingFlags.Public |
                                              BindingFlags.Instance)
@@ -83,7 +84,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
                                              p.CanRead &&
                                              p.PropertyType == typeof(bool) &&
                                              !p.Name.IsCompilerGeneratedName() &&
-                                             p.Name.StartsWith("Is"))
+                                             p.Name.StartsWith(value: "Is"))
                                         .OrderByDescending(keySelector: p =>
                                              (bool)p.GetValue(obj: obj)!)
                                         .ThenBy(keySelector: p => p.Name);
@@ -97,12 +98,12 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
                 {
                     if (availableProperties.Count != 0)
                     {
-                        availableProperties.Add("...");
+                        availableProperties.Add(item: "...");
                     }
 
                     if (properties.Count != 0)
                     {
-                        properties.Add("...");
+                        properties.Add(item: "...");
                     }
 
                     break;
@@ -111,18 +112,18 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
                 var propertyValue = property.GetValue(obj: obj);
                 if (propertyValue is true)
                 {
-                    properties.Add(property.Name[2..]
-                                                  .ToLowerInvariant());
+                    properties.Add(item: property.Name[2..]
+                                                 .ToLowerInvariant());
                 }
 
-                availableProperties.Add(property.Name[2..]
-                                                       .ToLowerInvariant());
+                availableProperties.Add(item: property.Name[2..]
+                                                      .ToLowerInvariant());
 
                 propertyCount += 1;
             }
 
-            result.Add("properties", properties);
-            result.Add("availableProperties", availableProperties);
+            result.Add(propertyName: "properties", value: properties);
+            result.Add(propertyName: "availableProperties", value: availableProperties);
 
             return result;
         }
@@ -134,7 +135,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
         {
             return bytes == null
                 ? "null"
-                : BitConverter.ToString(bytes)
+                : BitConverter.ToString(value: bytes)
                               .Replace(oldValue: "-", newValue: "")
                               .ToLowerInvariant();
         }

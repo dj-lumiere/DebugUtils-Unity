@@ -90,13 +90,13 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers
                 return $"{underlyingType.GetReprTypeName()}?";
             }
 
-            if (TypeNameMappings.CSharpTypeNames.TryGetValue(key: type, out var typeName))
+            if (TypeNameMappings.CSharpTypeNames.TryGetValue(key: type, value: out var typeName))
             {
                 return typeName;
             }
 
             if (TypeNameMappings.FriendlyTypeNames.TryGetValue(key: type,
-                    out var friendlyTypeName))
+                    value: out var friendlyTypeName))
             {
                 return friendlyTypeName;
             }
@@ -131,7 +131,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers
             }
 
             var result = type.Name;
-            if (result.Contains('`'))
+            if (result.Contains(value: '`'))
             {
                 result = result.Split(separator: '`')[0];
             }

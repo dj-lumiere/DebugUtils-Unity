@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET6_0_OR_GREATER
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -81,18 +82,19 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
             {
                 return new JObject
                 {
-                    ["type"] = type.GetReprTypeName(),
-                    ["kind"] = type.GetTypeKind(),
-                    ["maxDepthReached"] = "true",
-                    ["depth"] = context.Depth
+                    [propertyName: "type"] = type.GetReprTypeName(),
+                    [propertyName: "kind"] = type.GetTypeKind(),
+                    [propertyName: "maxDepthReached"] = "true",
+                    [propertyName: "depth"] = context.Depth
                 };
             }
 
             var result = new JObject();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("hashCode", $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
-            result.Add("count", count);
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "hashCode",
+                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+            result.Add(propertyName: "count", value: count);
 
             // Get generic type arguments for element and priority types
             if (type.IsGenericType)
@@ -100,9 +102,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
                 var genericArgs = type.GetGenericArguments();
                 if (genericArgs.Length >= 2)
                 {
-                    result.Add("elementType", genericArgs[0]
+                    result.Add(propertyName: "elementType", value: genericArgs[0]
                        .GetReprTypeName());
-                    result.Add("priorityType", genericArgs[1]
+                    result.Add(propertyName: "priorityType", value: genericArgs[1]
                        .GetReprTypeName());
                 }
             }
@@ -130,9 +132,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
                     var element = tuple[index: 0]
                        .FormatAsJToken(context: context.WithIncrementedDepth());
                     var entry = new JObject();
-                    entry.Add("element", element);
-                    entry.Add("priority", priority);
-                    entries.Add(entry);
+                    entry.Add(propertyName: "element", value: element);
+                    entry.Add(propertyName: "priority", value: priority);
+                    entries.Add(item: entry);
                 }
 
                 i += 1;
@@ -143,16 +145,17 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collecti
                 var remainingCount = count - context.Config.MaxElementsPerCollection;
                 if (remainingCount > 0)
                 {
-                    entries.Add($"... ({remainingCount} more items)");
+                    entries.Add(item: $"... ({remainingCount} more items)");
                 }
                 else
                 {
-                    entries.Add("... (more items)");
+                    entries.Add(item: "... (more items)");
                 }
             }
 
-            result.Add("value", entries);
+            result.Add(propertyName: "value", value: entries);
             return result;
         }
     }
 }
+#endif

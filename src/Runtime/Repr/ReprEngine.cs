@@ -37,7 +37,8 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
             {
                 // Get formatter and format - no safety concerns needed in formatters!
                 var formatter =
-                    ReprFormatterRegistry.GetStandardFormatter(type: obj.GetType(), context: context);
+                    ReprFormatterRegistry.GetStandardFormatter(type: obj.GetType(),
+                        context: context);
 
                 var result = formatter.ToRepr(obj: obj, context: context);
 
@@ -123,11 +124,11 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
         {
             return new JObject
             {
-                ["type"] = "CircularReference",
-                ["target"] = new JObject
+                [propertyName: "type"] = "CircularReference",
+                [propertyName: "target"] = new JObject
                 {
-                    ["type"] = obj.GetReprTypeName(),
-                    ["hashCode"] = $"0x{id:X8}"
+                    [propertyName: "type"] = obj.GetReprTypeName(),
+                    [propertyName: "hashCode"] = $"0x{id:X8}"
                 }
             };
         }
@@ -136,9 +137,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
         {
             return new JObject
             {
-                ["type"] = typeof(T).GetReprTypeName(),
-                ["kind"] = typeof(T).GetTypeKind(),
-                ["value"] = null
+                [propertyName: "type"] = typeof(T).GetReprTypeName(),
+                [propertyName: "kind"] = typeof(T).GetTypeKind(),
+                [propertyName: "value"] = null
             };
         }
 
@@ -151,9 +152,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
             {
                 var nullJson = new JObject
                 {
-                    ["type"] = reprName,
-                    ["kind"] = type.UnderlyingSystemType.GetTypeKind(),
-                    ["value"] = null
+                    [propertyName: "type"] = reprName,
+                    [propertyName: "kind"] = type.UnderlyingSystemType.GetTypeKind(),
+                    [propertyName: "value"] = null
                 };
                 return nullJson;
             }
@@ -162,7 +163,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
             var formatter =
                 ReprFormatterRegistry.GetTreeFormatter(type: value.GetType(), context: context);
             var valueRepr = formatter.ToReprTree(obj: value, context: context);
-            valueRepr["type"] = reprName;
+            valueRepr[key: "type"] = reprName;
 
             return valueRepr;
         }

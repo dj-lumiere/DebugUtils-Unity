@@ -176,20 +176,20 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Generic
             {
                 return new JObject
                 {
-                    ["type"] = type.GetReprTypeName(),
-                    ["kind"] = type.GetTypeKind(),
-                    ["maxDepthReached"] = "true",
-                    ["depth"] = context.Depth
+                    [propertyName: "type"] = type.GetReprTypeName(),
+                    [propertyName: "kind"] = type.GetTypeKind(),
+                    [propertyName: "maxDepthReached"] = "true",
+                    [propertyName: "depth"] = context.Depth
                 };
             }
 
             var result = new JObject();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
             if (!type.IsValueType)
             {
-                result.Add("hashCode",
-                    $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+                result.Add(propertyName: "hashCode",
+                    value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
             }
 
             var propertyCount = 0;
@@ -207,7 +207,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Generic
 
                 var value = field.GetValue(obj: obj);
                 var addingValue = value.FormatAsJToken(context: context.WithIncrementedDepth());
-                result.Add(field.Name, addingValue);
+                result.Add(propertyName: field.Name, value: addingValue);
                 propertyCount += 1;
             }
 
@@ -230,11 +230,11 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Generic
                     var value = prop.GetValue(obj: obj);
                     var addingValue =
                         value.FormatAsJToken(context: context.WithIncrementedDepth());
-                    result.Add(prop.Name, addingValue);
+                    result.Add(propertyName: prop.Name, value: addingValue);
                 }
                 catch (Exception ex)
                 {
-                    result.Add(prop.Name, $"Error: {ex.Message}");
+                    result.Add(propertyName: prop.Name, value: $"Error: {ex.Message}");
                 }
 
                 propertyCount += 1;
@@ -266,7 +266,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Generic
                 var value = field.GetValue(obj: obj);
                 var addingValue = value.FormatAsJToken(context: context.WithIncrementedDepth());
                 var fieldName = field.Name;
-                result.Add($"private_{fieldName}", addingValue);
+                result.Add(propertyName: $"private_{fieldName}", value: addingValue);
                 propertyCount += 1;
             }
 
@@ -290,11 +290,12 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Generic
                     var value = prop.GetValue(obj: obj);
                     var addingValue =
                         value.FormatAsJToken(context: context.WithIncrementedDepth());
-                    result.Add($"private_{prop.Name}", addingValue);
+                    result.Add(propertyName: $"private_{prop.Name}", value: addingValue);
                 }
                 catch (Exception ex)
                 {
-                    result.Add($"private_{prop.Name}", $"Error: {ex.Message}");
+                    result.Add(propertyName: $"private_{prop.Name}",
+                        value: $"Error: {ex.Message}");
                 }
 
                 propertyCount += 1;
@@ -308,12 +309,12 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Generic
     {
         public static bool IsCompilerGeneratedName(this string fieldName)
         {
-            return fieldName.Contains("k__BackingField") || // Auto-property backing fields
-                   fieldName.StartsWith("<") || // Most compiler-generated fields
-                   fieldName.Contains("__") || // Various compiler patterns
-                   fieldName.Contains("DisplayClass") || // Closure fields
-                   fieldName.EndsWith("__0") || // State machine fields
-                   fieldName.Contains("c__Iterator") || // Iterator fields
+            return fieldName.Contains(value: "k__BackingField") || // Auto-property backing fields
+                   fieldName.StartsWith(value: "<") || // Most compiler-generated fields
+                   fieldName.Contains(value: "__") || // Various compiler patterns
+                   fieldName.Contains(value: "DisplayClass") || // Closure fields
+                   fieldName.EndsWith(value: "__0") || // State machine fields
+                   fieldName.Contains(value: "c__Iterator") || // Iterator fields
                    fieldName == "EqualityContract"; // Record EqualityContract
         }
     }

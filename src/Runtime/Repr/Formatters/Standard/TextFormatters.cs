@@ -37,12 +37,12 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
             }
 
             var result = new JObject();
-            result.Add("type", "string");
-            result.Add("kind", "class");
-            result.Add("hashCode",
-                $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
-            result.Add("length", s.Length);
-            result.Add("value", s);
+            result.Add(propertyName: "type", value: "string");
+            result.Add(propertyName: "kind", value: "class");
+            result.Add(propertyName: "hashCode",
+                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+            result.Add(propertyName: "length", value: s.Length);
+            result.Add(propertyName: "value", value: s);
             return result;
         }
     }
@@ -71,11 +71,11 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
             var type = obj.GetType();
             var sb = (StringBuilder)obj;
             var s = sb.ToString();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("hashCode", RuntimeHelpers.GetHashCode(o: obj));
-            result.Add("length", s.Length);
-            result.Add("value", ToRepr(obj: obj, context: context));
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "hashCode", value: RuntimeHelpers.GetHashCode(o: obj));
+            result.Add(propertyName: "length", value: s.Length);
+            result.Add(propertyName: "value", value: ToRepr(obj: obj, context: context));
             return result;
         }
     }
@@ -111,11 +111,11 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
         {
             var c = (char)obj;
             var result = new JObject();
-            result.Add("type", "char");
-            result.Add("kind", "struct");
+            result.Add(propertyName: "type", value: "char");
+            result.Add(propertyName: "kind", value: "struct");
             // should truncate ' prefix and suffix
-            result.Add("value", ToRepr(obj: c, context: context)[1..^1]);
-            result.Add("unicodeValue", $"0x{(int)c:X4}");
+            result.Add(propertyName: "value", value: ToRepr(obj: c, context: context)[1..^1]);
+            result.Add(propertyName: "unicodeValue", value: $"0x{(int)c:X4}");
             return result;
         }
     }

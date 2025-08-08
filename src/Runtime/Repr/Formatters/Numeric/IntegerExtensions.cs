@@ -67,7 +67,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
                    .IsIntegerPrimitiveType())
             {
                 // cast byte, ushort, uint, ulong to ulong
-                var u = Convert.ToUInt64(obj);
+                var u = Convert.ToUInt64(value: obj);
                 return $"0b{u.FormatUlongAsBinary()}";
             }
 
@@ -137,7 +137,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
                    .IsIntegerPrimitiveType())
             {
                 // cast byte, ushort, uint, ulong to ulong
-                var u = Convert.ToUInt64(obj);
+                var u = Convert.ToUInt64(value: obj);
                 return $"0x{u.FormatUlongAsHex()}";
             }
 
@@ -159,7 +159,8 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
 
             // Reverse for big-endian display (the most significant byte first)
             Array.Reverse(array: bytes);
-            return "0x" + string.Join("", bytes.Select(x => $"{x:X2}"));
+            return "0x" + String.Join(separator: "",
+                values: bytes.Select(selector: x => $"{x:X2}"));
         }
 
         private static byte[] GetBytes(this object obj)
@@ -173,12 +174,12 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
                         : sb)
                 },
                 byte b => new[] { b }, // BitConverter.GetBytes(byte) doesn't exist
-                short s => BitConverter.GetBytes(s),
-                ushort us => BitConverter.GetBytes(us),
-                int i => BitConverter.GetBytes(i),
-                uint ui => BitConverter.GetBytes(ui),
-                long l => BitConverter.GetBytes(l),
-                ulong ul => BitConverter.GetBytes(ul),
+                short s => BitConverter.GetBytes(value: s),
+                ushort us => BitConverter.GetBytes(value: us),
+                int i => BitConverter.GetBytes(value: i),
+                uint ui => BitConverter.GetBytes(value: ui),
+                long l => BitConverter.GetBytes(value: l),
+                ulong ul => BitConverter.GetBytes(value: ul),
                 #if NET7_0_OR_GREATER
             Int128 i128 => i128.GetBytesFromInt128(),
             UInt128 u128 => u128.GetBytesFromUInt128(),
@@ -230,7 +231,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
                 }
             }
 
-            var result = BitConverter.ToUInt64(buffer, startIndex: 0);
+            var result = BitConverter.ToUInt64(value: buffer, startIndex: 0);
             return result;
         }
 
@@ -245,9 +246,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
             var lowBytes = (uint)value;
 
             return ((highBytes != 0
-                        ? Convert.ToString(highBytes, toBase: 2)
+                        ? Convert.ToString(value: highBytes, toBase: 2)
                         : "") +
-                    Convert.ToString(lowBytes, toBase: 2)
+                    Convert.ToString(value: lowBytes, toBase: 2)
                            .PadLeft(totalWidth: highBytes == 0
                                 ? 0
                                 : 32, paddingChar: '0'))
@@ -264,9 +265,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
             var lowBytes = (uint)value;
 
             return ((highBytes != 0
-                        ? Convert.ToString(highBytes, toBase: 16)
+                        ? Convert.ToString(value: highBytes, toBase: 16)
                         : "") +
-                    Convert.ToString(lowBytes, toBase: 16)
+                    Convert.ToString(value: lowBytes, toBase: 16)
                            .PadLeft(totalWidth: highBytes == 0
                                 ? 0
                                 : 8, paddingChar: '0'))
@@ -289,7 +290,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
             var result = new StringBuilder();
             while (value != 0)
             {
-                result.Append(value % 2);
+                result.Append(value: value % 2);
                 value /= 2;
             }
 
@@ -307,7 +308,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
             }
 
             var signed = value < 0;
-            var absValue = BigInteger.Abs(value);
+            var absValue = BigInteger.Abs(value: value);
             var hexString = absValue.ToString(format: "X"); // Built-in hex formatting
 
             return signed

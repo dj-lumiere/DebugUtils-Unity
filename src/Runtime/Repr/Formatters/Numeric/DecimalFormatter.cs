@@ -26,13 +26,13 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
             var flags = bits[3]; // Scale and sign
             var scale = (byte)(flags >> 16); // How many digits after decimal
             var isNegative = (flags & 0x80000000) != 0;
-            var scaleBits = Convert.ToString(scale, toBase: 2)
+            var scaleBits = Convert.ToString(value: scale, toBase: 2)
                                    .PadLeft(totalWidth: 8, paddingChar: '0');
-            var hiBits = Convert.ToString(hi, toBase: 2)
+            var hiBits = Convert.ToString(value: hi, toBase: 2)
                                 .PadLeft(totalWidth: 32, paddingChar: '0');
-            var midBits = Convert.ToString(mid, toBase: 2)
+            var midBits = Convert.ToString(value: mid, toBase: 2)
                                  .PadLeft(totalWidth: 32, paddingChar: '0');
-            var loBits = Convert.ToString(lo, toBase: 2)
+            var loBits = Convert.ToString(value: lo, toBase: 2)
                                 .PadLeft(totalWidth: 32, paddingChar: '0');
 
             return config.FloatMode switch
@@ -55,9 +55,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
         {
             var result = new JObject();
             var type = obj.GetType();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("value", ToRepr(obj: obj, context: context));
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "value", value: ToRepr(obj: obj, context: context));
             return result;
         }
     }

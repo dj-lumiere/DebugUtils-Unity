@@ -22,9 +22,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
         {
             var result = new JObject();
             var type = obj.GetType();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("value", ToRepr(obj: obj, context: context));
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "value", value: ToRepr(obj: obj, context: context));
             return result;
         }
     }
@@ -37,7 +37,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
         {
             var e = (Enum)obj;
             var underlyingType = Enum.GetUnderlyingType(enumType: e.GetType());
-            var numericValue = Convert.ChangeType(e, conversionType: underlyingType);
+            var numericValue = Convert.ChangeType(value: e, conversionType: underlyingType);
             return
                 $"{e.GetReprTypeName()}.{e} ({numericValue.Repr(context: context)})";
         }
@@ -47,12 +47,13 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
             var e = (Enum)obj;
             var result = new JObject();
             var underlyingType = Enum.GetUnderlyingType(enumType: e.GetType());
-            var numericValue = Convert.ChangeType(e, conversionType: underlyingType);
+            var numericValue = Convert.ChangeType(value: e, conversionType: underlyingType);
 
-            result.Add("type", e.GetReprTypeName());
-            result.Add("kind", "enum");
-            result.Add("name", e.ToString());
-            result.Add("value", numericValue.FormatAsJToken(context: context));
+            result.Add(propertyName: "type", value: e.GetReprTypeName());
+            result.Add(propertyName: "kind", value: "enum");
+            result.Add(propertyName: "name", value: e.ToString());
+            result.Add(propertyName: "value",
+                value: numericValue.FormatAsJToken(context: context));
             return result;
         }
     }
