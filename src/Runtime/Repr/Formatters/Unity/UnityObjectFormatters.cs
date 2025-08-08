@@ -1,80 +1,89 @@
-﻿using DebugUtils.Unity.Repr.Interfaces;
+﻿using System.Runtime.CompilerServices;
+using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Interfaces;
+using DebugUtils.Unity.Repr.TypeHelpers;
 using DebugUtils.Unity.SceneNavigator;
-using Color = UnityEngine.Color;
+using Unity.Plastic.Newtonsoft.Json.Linq;
+using UnityEngine;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
-    internal class ColorFormatter : IReprFormatter
+    [ReprFormatter(typeof(GameObject))]
+    [ReprOptions(needsPrefix: true)]
+    internal class GameObjectFormatter : IReprFormatter, IReprTreeFormatter
     {
         public string ToRepr(object obj, ReprContext context)
         {
-            var t = (Color)obj;
+            var t = (GameObject)obj;
             return
-                $"Color(R{(int)(t.r * 255)}G{(int)(t.g * 255)}B{(int)(t.b * 255)}A{(int)(t.a * 255)})";
+                $"{t.gameObject.RetrievePath()}/{t.GetType().Name} @ {t.transform.position.Repr()}";
+        }
+        public JToken ToReprTree(object obj, ReprContext context)
+        {
+            var t = (GameObject)obj;
+            var result = new JObject();
+            var type = obj.GetType();
+            var kind = type.GetTypeKind();
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: kind);
+            result.Add(propertyName: "name", value: t.name);
+            result.Add(propertyName: "hashCode", value: $"{RuntimeHelpers.GetHashCode(o: t):X8}");
+            result.Add(propertyName: "path", value: t.gameObject.RetrievePath());
+            result.Add(propertyName: "position",
+                value: t.transform.position.FormatAsJToken(context: context));
+            if (t.transform.childCount > 0)
+            {
+                var children = new JArray();
+                for (var i = 0; i < t.transform.childCount; i++)
+                {
+                    children.Add(item: t.transform
+                                        .GetChild(index: i)
+                                        .gameObject
+                                        .FormatAsJToken(context: context));
+                }
+
+                result.Add(propertyName: "children", value: children);
+            }
+
+            return result;
         }
     }
 
-    internal class Vector2Formatter : IReprFormatter
+    [ReprFormatter(typeof(Transform))]
+    [ReprOptions(true)]
+    internal class TransformFormatter : IReprFormatter, IReprTreeFormatter
     {
         public string ToRepr(object obj, ReprContext context)
         {
-            var t = (UnityEngine.Vector2)obj;
-            return $"Vector2({t.x:F2},{t.y:F2})";
-        }
-    }
-
-    internal class Vector3Formatter : IReprFormatter
-    {
-        public string ToRepr(object obj, ReprContext context)
-        {
-            var t = (UnityEngine.Vector3)obj;
-            return $"Vector3({t.x:F2},{t.y:F2},{t.z:F2})";
-        }
-    }
-
-    internal class Vector4Formatter : IReprFormatter
-    {
-        public string ToRepr(object obj, ReprContext context)
-        {
-            var t = (UnityEngine.Vector4)obj;
-            return $"Vector4({t.x:F2},{t.y:F2},{t.z:F2},{t.w:F2})";
-        }
-    }
-
-    internal class QuaternionFormatter : IReprFormatter
-    {
-        public string ToRepr(object obj, ReprContext context)
-        {
-            var t = (UnityEngine.Quaternion)obj;
-            return $"Quaternion({t.x:F2},{t.y:F2},{t.z:F2},{t.w:F2})";
-        }
-    }
-
-    internal class Color32Formatter : IReprFormatter
-    {
-        public string ToRepr(object obj, ReprContext context)
-        {
-            var t = (UnityEngine.Color32)obj;
-            return $"Color32(R{t.r:X2}G{t.g:X2}B{t.b:X2}A{t.a:X2})";
-        }
-    }
-
-    internal class GameObjectFormatter : IReprFormatter
-    {
-        public string ToRepr(object obj, ReprContext context)
-        {
-            var t = (UnityEngine.GameObject)obj;
-            return
-                $"Component {t.gameObject.RetrievePath()}/{t.GetType().Name} @ {t.transform.position.Repr()}";
-        }
-    }
-
-    internal class TransformFormatter : IReprFormatter
-    {
-        public string ToRepr(object obj, ReprContext context)
-        {
-            var t = (UnityEngine.Transform)obj;
+            var t = (Transform)obj;
             return $"Transform {t.gameObject.RetrievePath()}/{t.name} @ {t.position.Repr()}";
+        }
+        public JToken ToReprTree(object obj, ReprContext context)
+        {
+            var t = (Transform)obj;
+            var result = new JObject();
+            var type = obj.GetType();
+            var kind = type.GetTypeKind();
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: kind);
+            result.Add(propertyName: "name", value: t.name);
+            result.Add(propertyName: "hashCode", value: $"{RuntimeHelpers.GetHashCode(o: t):X8}");
+            result.Add(propertyName: "path", value: t.gameObject.RetrievePath());
+            result.Add(propertyName: "position",
+                value: t.position.FormatAsJToken(context: context));
+            if (t.childCount > 0)
+            {
+                var children = new JArray();
+                for (var i = 0; i < t.childCount; i++)
+                {
+                    children.Add(item: t.GetChild(index: i)
+                                        .FormatAsJToken(context: context));
+                }
+
+                result.Add(propertyName: "children", value: children);
+            }
+
+            return result;
         }
     }
 }
