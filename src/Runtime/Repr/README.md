@@ -404,6 +404,8 @@ Debug.Log(player1.Repr());
 
 - **Unity 2021.3 LTS** or higher
 - **Newtonsoft.Json for Unity** (available through Package Manager)
+- Compatible with all Unity render pipelines (Built-in, URP, HDRP)
+- Works in both Editor and Runtime
 
 ## Installation
 

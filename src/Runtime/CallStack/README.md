@@ -535,9 +535,8 @@ public class CollisionHandler : MonoBehaviour
 ## Target Frameworks
 
 - **Unity 2021.3 LTS** and higher
-- **Unity 2022.3 LTS** (recommended)
-- **Unity 2023.3 LTS** (latest)
 - Compatible with all Unity render pipelines (Built-in, URP, HDRP)
+- Works in both Editor and Runtime
 
 ## Platform Compatibility
 

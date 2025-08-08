@@ -409,13 +409,10 @@ public void TestPlayerMovement()
 
 ## Unity Version Compatibility
 
-- **Unity 2021.3 LTS** and higher (recommended)
-- **Unity 2022.3 LTS**
-- **Unity 2023.3 LTS**
-- **Unity 6000.0**
-- **Unity 6000.1** (latest)
+
+- **Unity 2021.3 LTS** and higher
 - Compatible with all Unity render pipelines (Built-in, URP, HDRP)
-- Works on all Unity-supported platforms
+- Works in both Editor and Runtime
 
 ## Dependencies
 

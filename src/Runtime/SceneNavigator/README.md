@@ -251,7 +251,7 @@ private void SetupUI()
 
 ## Unity Version Compatibility
 
-- **Unity 2019.4 LTS** and higher
+- **Unity 2021.3 LTS** and higher
 - Compatible with all Unity render pipelines (Built-in, URP, HDRP)
 - Works in both Editor and Runtime
 
