@@ -40,9 +40,9 @@ namespace DebugUtils.Unity.Repr.Formatters
                 Significand: (ulong)(rawExponent == 0
                     ? mantissa
                     : (1 << halfSpec.MantissaBitSize) + mantissa),
-                ExpBits: Convert.ToString(rawExponent, toBase: 2)
+                ExpBits: Convert.ToString(value: rawExponent, toBase: 2)
                                 .PadLeft(totalWidth: halfSpec.ExpBitSize, paddingChar: '0'),
-                MantissaBits: Convert.ToString(mantissa, toBase: 2)
+                MantissaBits: Convert.ToString(value: mantissa, toBase: 2)
                                      .PadLeft(totalWidth: halfSpec.MantissaBitSize,
                                           paddingChar: '0'),
                 TypeName: FloatTypeKind.Half
@@ -113,7 +113,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             return info.TypeName switch
             {
                 FloatTypeKind.Half =>
-                    $"{UnityMath.math.f16tof32(((Half)obj).value).ToString(roundingFormatString)}",
+                    $"{UnityMath.math.f16tof32(x: ((Half)obj).value).ToString(format: roundingFormatString)}",
                 FloatTypeKind.Float =>
                     $"{((float)obj).ToString(format: roundingFormatString)}",
                 FloatTypeKind.Double =>
@@ -240,7 +240,7 @@ namespace DebugUtils.Unity.Repr.Formatters
 
         public static bool IsNormal(this Half value)
         {
-            ushort exp = (ushort)(value.value & ExponentMask);
+            var exp = (ushort)(value.value & ExponentMask);
             return exp != 0 && exp != ExponentAllOnes;
         }
 
@@ -257,8 +257,8 @@ namespace DebugUtils.Unity.Repr.Formatters
         public static string ToString(this Half value, string format)
         {
             return UnityMath.math
-                            .f16tof32(value.value)
-                            .ToString(format);
+                            .f16tof32(x: value.value)
+                            .ToString(format: format);
         }
     }
 }

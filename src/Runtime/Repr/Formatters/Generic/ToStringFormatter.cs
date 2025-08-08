@@ -1,5 +1,4 @@
-﻿
-using DebugUtils.Unity.Repr.Attributes;
+﻿using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Interfaces;
 
 namespace DebugUtils.Unity.Repr.Formatters

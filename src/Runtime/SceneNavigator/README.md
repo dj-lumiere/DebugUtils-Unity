@@ -1,6 +1,7 @@
 # DebugUtils.Unity.SceneNavigator for Unity
 
-A lightweight Unity scene navigation utility for Unity developers. **Stop manually traversing complex GameObject hierarchies - find any GameObject or component with simple path strings.**
+A lightweight Unity scene navigation utility for Unity developers. **Stop manually traversing complex GameObject
+hierarchies - find any GameObject or component with simple path strings.**
 
 ## Core Features
 
@@ -12,7 +13,8 @@ A lightweight Unity scene navigation utility for Unity developers. **Stop manual
 
 ## The Problem We Solve
 
-When working with complex Unity scenes, finding specific GameObjects buried deep in the hierarchy becomes tedious and error-prone.
+When working with complex Unity scenes, finding specific GameObjects buried deep in the hierarchy becomes tedious and
+error-prone.
 
 ```csharp
 public class UIManager : MonoBehaviour
@@ -120,7 +122,8 @@ public class DebugHelper : MonoBehaviour
 
 ## Installation
 
-Add this project as a reference to your Unity project or copy the `SceneNavigator.cs` file to your project's Scripts folder.
+Add this project as a reference to your Unity project or copy the `SceneNavigator.cs` file to your project's Scripts
+folder.
 
 ## API Reference
 
@@ -131,11 +134,13 @@ public static GameObject FindGameObjectAtPath(string path)
 ```
 
 **Parameters:**
+
 - `path` - A slash-separated string representing the GameObject hierarchy (e.g., "Canvas/Panel/Button")
 
 **Returns:** The `GameObject` at the specified path, or `null` if not found.
 
 **Example Paths:**
+
 - `"Player"` - Root GameObject named "Player"
 - `"UI/Canvas/MainMenu"` - MainMenu under Canvas under UI
 - `"Level/Enemies/Boss/HealthBar"` - Deeply nested GameObject
@@ -147,12 +152,14 @@ public static T FindComponentAtPath<T>(string path) where T : Component
 ```
 
 **Parameters:**
+
 - `path` - A slash-separated string representing the GameObject hierarchy
 - `T` - The type of component to retrieve
 
 **Returns:** The component of type `T` attached to the GameObject at the specified path, or `null` if not found.
 
 **Common Usage:**
+
 ```csharp
 Button btn = SceneNavigator.FindComponentAtPath<Button>("UI/MainMenu/PlayButton");
 AudioSource audio = SceneNavigator.FindComponentAtPath<AudioSource>("Audio/BackgroundMusic");
@@ -168,6 +175,7 @@ public static string RetrievePath(this GameObject obj)
 **Returns:** A string representing the GameObject's full hierarchy path, prefixed with the scene name.
 
 **Possible Return Values:**
+
 - `"SampleScene/Canvas/MainPanel/Button"` - Normal case
 - `"[null gameObject]"` - When the GameObject is null
 - `"[invalid scene]/GameObject/Path"` - When the scene is invalid
@@ -195,6 +203,7 @@ string path = nullObj.RetrievePath();  // Returns "[null gameObject]"
 ## Best Practices
 
 ### Use Descriptive Paths
+
 ```csharp
 // ✅ Good: Clear, descriptive hierarchy
 Button saveBtn = SceneNavigator.FindComponentAtPath<Button>("UI/MainMenu/SaveButton");
@@ -204,6 +213,7 @@ Button btn = SceneNavigator.FindComponentAtPath<Button>("Canvas/Button");
 ```
 
 ### Cache References When Possible
+
 ```csharp
 public class UIManager : MonoBehaviour
 {
@@ -229,6 +239,7 @@ public class UIManager : MonoBehaviour
 ```
 
 ### Handle Missing Objects Gracefully
+
 ```csharp
 private void SetupUI()
 {
@@ -245,7 +256,8 @@ private void SetupUI()
 
 ## Performance Considerations
 
-- **Path Resolution**: Uses Unity's built-in `Transform.Find()` method, which is reasonably efficient for moderate hierarchy depths.
+- **Path Resolution**: Uses Unity's built-in `Transform.Find()` method, which is reasonably efficient for moderate
+  hierarchy depths.
 - **Caching**: For frequently accessed objects, cache the references rather than calling path methods repeatedly.
 - **Scene Search**: Only searches the active scene's root GameObjects, keeping searches focused and performant.
 
