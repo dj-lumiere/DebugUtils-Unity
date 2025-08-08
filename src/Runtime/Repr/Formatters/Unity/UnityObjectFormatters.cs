@@ -1,9 +1,8 @@
-﻿using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Interfaces;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.SceneNavigator;
+﻿using DebugUtils.Unity.Repr.Interfaces;
+using DebugUtils.Unity.SceneNavigator;
 using Color = UnityEngine.Color;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Unity
+namespace DebugUtils.Unity.Repr.Formatters
 {
     internal class ColorFormatter : IReprFormatter
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records
+namespace DebugUtils.Unity.Repr
 {
     /// <summary>
     /// Represents the context for managing the representation process within the system.

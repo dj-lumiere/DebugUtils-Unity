@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers;
+using DebugUtils.Unity.Repr.TypeHelpers;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
+namespace DebugUtils.Unity.Repr.Formatters
 {
     internal static class IntegerExtensions
     {

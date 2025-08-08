@@ -1,11 +1,10 @@
 using System;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Interfaces;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers;
+using DebugUtils.Unity.Repr.Interfaces;
+using DebugUtils.Unity.Repr.TypeHelpers;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 using Unity.Plastic.Newtonsoft.Json;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
+namespace DebugUtils.Unity.Repr
 {
     /// <summary>
     /// Provides extension methods for generating detailed string representations of .NET objects.

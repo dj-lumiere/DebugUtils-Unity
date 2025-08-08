@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.SceneNavigator
+namespace DebugUtils.Unity.SceneNavigator
 {
     /// <summary>
     /// Provides utility methods for navigating and interacting with GameObjects

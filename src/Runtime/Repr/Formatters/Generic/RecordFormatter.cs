@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Attributes;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Interfaces;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
+using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Interfaces;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Generic
+namespace DebugUtils.Unity.Repr.Formatters
 {
     /// <summary>
     ///     A generic formatter for any record type.

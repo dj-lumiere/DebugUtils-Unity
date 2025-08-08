@@ -1,9 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers;
+using DebugUtils.Unity.Repr.TypeHelpers;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
+namespace DebugUtils.Unity.Repr
 {
     internal static class ReprEngine
     {

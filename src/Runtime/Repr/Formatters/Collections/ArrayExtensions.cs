@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collections
+namespace DebugUtils.Unity.Repr.Formatters
 {
     internal static class ArrayExtensions
     {

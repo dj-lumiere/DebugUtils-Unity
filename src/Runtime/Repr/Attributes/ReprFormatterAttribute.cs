@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Attributes
+namespace DebugUtils.Unity.Repr.Attributes
 {
     /// <summary>
     /// Marks a class as a formatter for specific types in the Repr system.

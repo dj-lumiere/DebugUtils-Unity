@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Attributes;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Interfaces;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers;
+using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Interfaces;
+using DebugUtils.Unity.Repr.TypeHelpers;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Generic
+namespace DebugUtils.Unity.Repr.Formatters
 {
     /// <summary>
     ///     The default object pointer that handles any type not specifically registered.

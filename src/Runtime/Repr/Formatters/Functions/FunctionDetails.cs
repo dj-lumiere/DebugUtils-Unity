@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers;
+using DebugUtils.Unity.Repr.TypeHelpers;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Functions
+namespace DebugUtils.Unity.Repr.Formatters
 {
     internal readonly struct FunctionDetails
     {

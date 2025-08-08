@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Attributes;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Interfaces;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
+using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Interfaces;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collections
+namespace DebugUtils.Unity.Repr.Formatters
 {
     [ReprOptions(needsPrefix: true)]
     internal class SetFormatter : IReprFormatter

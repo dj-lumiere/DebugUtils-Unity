@@ -1,6 +1,6 @@
 using System;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Attributes
+namespace DebugUtils.Unity.Repr.Attributes
 {
     /// <summary>
     /// Provides declarative options for customizing how a type is represented in the Repr system.

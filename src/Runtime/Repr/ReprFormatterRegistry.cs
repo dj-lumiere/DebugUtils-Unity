@@ -3,16 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Attributes;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collections;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Functions;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Generic;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Interfaces;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers;
+using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Formatters;
+using DebugUtils.Unity.Repr.Interfaces;
+using DebugUtils.Unity.Repr.TypeHelpers;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr
+namespace DebugUtils.Unity.Repr
 {
     internal static class ReprFormatterRegistry
     {

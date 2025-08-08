@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Attributes;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
+using DebugUtils.Unity.Repr.Attributes;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers
+namespace DebugUtils.Unity.Repr.TypeHelpers
 {
     internal static class TypeClassifier
     {

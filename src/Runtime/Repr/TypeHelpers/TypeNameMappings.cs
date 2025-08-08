@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers
+namespace DebugUtils.Unity.Repr.TypeHelpers
 {
     internal static class TypeNameMappings
     {

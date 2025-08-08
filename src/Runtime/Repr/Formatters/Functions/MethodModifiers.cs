@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Functions
+namespace DebugUtils.Unity.Repr.Formatters
 {
     internal readonly struct MethodModifiers
     {

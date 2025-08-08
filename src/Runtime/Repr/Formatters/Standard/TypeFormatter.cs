@@ -2,14 +2,12 @@
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Attributes;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Generic;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Interfaces;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers;
+using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Interfaces;
+using DebugUtils.Unity.Repr.TypeHelpers;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
+namespace DebugUtils.Unity.Repr.Formatters
 {
     [ReprOptions(needsPrefix: false)]
     internal class TypeFormatter : IReprFormatter, IReprTreeFormatter

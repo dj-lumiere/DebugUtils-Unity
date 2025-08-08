@@ -1,4 +1,4 @@
-﻿namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records
+﻿namespace DebugUtils.Unity.Repr
 {
     /// <summary>
     /// Specifies how floating-point numbers should be represented in object representations.

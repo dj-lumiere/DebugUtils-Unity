@@ -9,7 +9,7 @@ using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
 using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Collections
+namespace DebugUtils.Unity.Repr.Formatters
 {
     [ReprOptions(needsPrefix: true)]
     internal class PriorityQueueFormatter : IReprFormatter, IReprTreeFormatter

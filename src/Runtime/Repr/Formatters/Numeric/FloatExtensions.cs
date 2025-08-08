@@ -2,11 +2,10 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Numerics;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
 using UnityMath = Unity.Mathematics;
 using Half = Unity.Mathematics.half;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
+namespace DebugUtils.Unity.Repr.Formatters
 {
     internal static class FloatExtensions
     {

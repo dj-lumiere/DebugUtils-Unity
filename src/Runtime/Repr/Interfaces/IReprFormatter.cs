@@ -1,6 +1,4 @@
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
-
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Interfaces
+namespace DebugUtils.Unity.Repr.Interfaces
 {
     /// <summary>
     /// Defines the contract for custom object formatters in the Repr system.

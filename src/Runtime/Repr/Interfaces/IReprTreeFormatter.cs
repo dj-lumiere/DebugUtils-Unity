@@ -1,7 +1,6 @@
-﻿using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+﻿using Unity.Plastic.Newtonsoft.Json.Linq;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Interfaces
+namespace DebugUtils.Unity.Repr.Interfaces
 {
     /// <summary>
     /// Defines the contract for custom object formatters in the Repr system.

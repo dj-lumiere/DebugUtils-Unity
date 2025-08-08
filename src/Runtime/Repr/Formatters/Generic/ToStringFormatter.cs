@@ -1,8 +1,8 @@
-﻿using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Attributes;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Interfaces;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
+﻿
+using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Interfaces;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Generic
+namespace DebugUtils.Unity.Repr.Formatters
 {
     // The default formatter that opts for ToString. This formatter should not be used when
 // ToString method overrides object.ToString.

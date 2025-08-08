@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers
+namespace DebugUtils.Unity.Repr.TypeHelpers
 {
     /// <summary>
     /// Provides utilities for generating human-readable type names and categorizing types

@@ -1,4 +1,4 @@
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.CallStack
+namespace DebugUtils.Unity.CallStack
 {
     /// <summary>
     /// Represents information about the caller of a method, including class name, method name,

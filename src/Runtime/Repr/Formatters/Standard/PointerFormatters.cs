@@ -1,13 +1,12 @@
 ﻿using System;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Attributes;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Interfaces;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
 using Unity.Plastic.Newtonsoft.Json.Linq;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers;
+using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Interfaces;
+using DebugUtils.Unity.Repr.TypeHelpers;
 
 // ReSharper disable BuiltInTypeReferenceStyle
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Standard
+namespace DebugUtils.Unity.Repr.Formatters
 {
     [ReprFormatter(typeof(IntPtr))]
     [ReprOptions(needsPrefix: true)]

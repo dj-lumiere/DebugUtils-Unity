@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
+namespace DebugUtils.Unity.Repr.Formatters
 {
     internal static class DecimalExtensions
     {
