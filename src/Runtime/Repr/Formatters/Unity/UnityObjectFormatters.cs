@@ -50,7 +50,7 @@ namespace DebugUtils.Unity.Repr.Formatters
     }
 
     [ReprFormatter(typeof(Transform))]
-    [ReprOptions(true)]
+    [ReprOptions(needsPrefix: true)]
     internal class TransformFormatter : IReprFormatter, IReprTreeFormatter
     {
         public string ToRepr(object obj, ReprContext context)
