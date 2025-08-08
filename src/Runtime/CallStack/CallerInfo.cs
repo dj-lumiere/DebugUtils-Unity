@@ -1,3 +1,4 @@
+#nullable enable
 namespace DebugUtils.Unity.CallStack
 {
     /// <summary>

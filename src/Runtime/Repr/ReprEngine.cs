@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿#nullable enable
+using System.Runtime.CompilerServices;
 using DebugUtils.Unity.Repr.TypeHelpers;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 

@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;

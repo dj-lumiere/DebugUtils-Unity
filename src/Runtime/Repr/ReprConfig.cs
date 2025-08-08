@@ -1,4 +1,5 @@
-﻿namespace DebugUtils.Unity.Repr
+﻿#nullable enable
+namespace DebugUtils.Unity.Repr
 {
     /// <summary>
     /// Specifies how floating-point numbers should be represented in object representations.
