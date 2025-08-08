@@ -31,7 +31,7 @@ Navigate Unity scene hierarchies with simple path strings instead of manual Game
 ```csharp
 using DebugUtils.CallStack;
 using DebugUtils.Repr;
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.SceneNavigator;
+using DebugUtils.Unity.SceneNavigator;
 using UnityEngine;
 
 // 🔍 Better object representation in Unity

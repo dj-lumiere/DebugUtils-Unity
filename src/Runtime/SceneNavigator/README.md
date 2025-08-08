@@ -39,7 +39,7 @@ Navigate Unity scenes with simple, readable path strings that mirror your hierar
 Use `FindGameObjectAtPath()` to locate GameObjects anywhere in your scene hierarchy.
 
 ```csharp
-using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.SceneNavigator;
+using DebugUtils.Unity.SceneNavigator;
 
 public class UIManager : MonoBehaviour
 {
