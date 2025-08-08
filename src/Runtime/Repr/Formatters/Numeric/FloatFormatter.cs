@@ -5,16 +5,11 @@ using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Interfaces;
 using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
 using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.TypeHelpers;
 using Unity.Plastic.Newtonsoft.Json.Linq;
+using Half = Unity.Mathematics.half;
 
 namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
 {
-    [ReprFormatter(
-        typeof(float),
-        typeof(double)
-        #if NET5_0_OR_GREATER
-    ,typeof(Half)
-        #endif
-    )]
+    [ReprFormatter(typeof(float), typeof(double), typeof(Half))]
     [ReprOptions(needsPrefix: true)]
     internal class FloatFormatter : IReprFormatter, IReprTreeFormatter
     {
@@ -22,9 +17,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
         {
             var info = obj switch
             {
-                #if NET5_0_OR_GREATER
-            Half h => h.AnalyzeHalf(),
-                #endif
+                Half h => h.AnalyzeHalf(),
                 float f => f.AnalyzeFloat(),
                 double d => d.AnalyzeDouble(),
                 _ => throw new ArgumentException(message: "Invalid type")
@@ -39,14 +32,16 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
                     {
                         FloatTypeKind.Half or FloatTypeKind.Float or FloatTypeKind.Double =>
                             $"0x{info.Bits.ToString(format: $"X{(info.Spec.TotalSize + 3) / 4}")}",
-                        _ => throw new InvalidEnumArgumentException(message: "Invalid FloatTypeKind")
+                        _ => throw new InvalidEnumArgumentException(
+                            message: "Invalid FloatTypeKind")
                     };
                 case FloatReprMode.BitField:
                     return info.TypeName switch
                     {
                         FloatTypeKind.Half or FloatTypeKind.Float or FloatTypeKind.Double =>
                             $"{(info.IsNegative ? 1 : 0)}|{info.ExpBits}|{info.MantissaBits}",
-                        _ => throw new InvalidEnumArgumentException(message: "Invalid FloatTypeKind")
+                        _ => throw new InvalidEnumArgumentException(
+                            message: "Invalid FloatTypeKind")
                     };
             }
 
@@ -115,9 +110,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
         {
             var result = new JObject();
             var type = obj.GetType();
-            result.Add("type", type.GetReprTypeName());
-            result.Add("kind", type.GetTypeKind());
-            result.Add("value", ToRepr(obj: obj, context: context));
+            result.Add(propertyName: "type", value: type.GetReprTypeName());
+            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "value", value: ToRepr(obj: obj, context: context));
             return result;
         }
     }

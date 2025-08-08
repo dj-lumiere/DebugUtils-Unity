@@ -3,15 +3,17 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Numerics;
 using DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Records;
+using UnityMath = Unity.Mathematics;
+using Half = Unity.Mathematics.half;
 
 namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
 {
     internal static class FloatExtensions
     {
-        #if NET5_0_OR_GREATER
-    private static readonly FloatSpec halfSpec = new(ExpBitSize: 5, MantissaBitSize: 10,
-        TotalSize: 16, MantissaMask: 0x3FF, MantissaMsbMask: 0x3FF, ExpMask: 0x1F, ExpOffset: 15);
-        #endif
+        private static readonly FloatSpec halfSpec = new(ExpBitSize: 5, MantissaBitSize: 10,
+            TotalSize: 16, MantissaMask: 0x3FF, MantissaMsbMask: 0x3FF, ExpMask: 0x1F,
+            ExpOffset: 15);
+
         private static readonly FloatSpec floatSpec = new(ExpBitSize: 8, MantissaBitSize: 23,
             TotalSize: 32, MantissaMask: 0x7FFFFF, MantissaMsbMask: 0x7FFFFF, ExpMask: 0xFF,
             ExpOffset: 127);
@@ -20,37 +22,36 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
             new(ExpBitSize: 11, MantissaBitSize: 52, TotalSize: 64, MantissaMask: 0xFFFFFFFFFFFFFL,
                 MantissaMsbMask: 0x8000000000000L, ExpMask: 0x7FFL, ExpOffset: 1023);
 
-        #if NET5_0_OR_GREATER
-    public static FloatInfo AnalyzeHalf(this Half value)
-    {
-        var bits = BitConverter.HalfToInt16Bits(value);
-        var rawExponent = (int)(bits >> halfSpec.MantissaBitSize & halfSpec.ExpMask);
-        var mantissa = bits & halfSpec.MantissaMask;
+        public static FloatInfo AnalyzeHalf(this Half value)
+        {
+            var bits = value.value;
+            var rawExponent = (int)(bits >> halfSpec.MantissaBitSize & halfSpec.ExpMask);
+            var mantissa = bits & halfSpec.MantissaMask;
 
-        return new FloatInfo(
-            Spec: halfSpec,
-            Bits: bits,
-            IsNegative: bits < 0,
-            IsPositiveInfinity: Half.IsPositiveInfinity(value),
-            IsNegativeInfinity: Half.IsNegativeInfinity(value),
-            IsQuietNaN: Half.IsNaN(value) && (bits & halfSpec.MantissaMsbMask) != 0,
-            IsSignalingNaN: Half.IsNaN(value) && (bits & halfSpec.MantissaMsbMask) == 0,
-            RealExponent: rawExponent - halfSpec.ExpOffset,
-            Mantissa: mantissa,
-            Significand: (ulong)(rawExponent == 0
-                ? mantissa
-                : (1 << halfSpec.MantissaBitSize) + mantissa),
-            ExpBits: Convert.ToString(rawExponent, toBase: 2)
-                            .PadLeft(totalWidth: halfSpec.ExpBitSize, paddingChar: '0'),
-            MantissaBits: Convert.ToString(mantissa, toBase: 2)
-                                 .PadLeft(totalWidth: halfSpec.MantissaBitSize, paddingChar: '0'),
-            TypeName: FloatTypeKind.Half
-        );
-    }
-        #endif
+            return new FloatInfo(
+                Spec: halfSpec,
+                Bits: bits,
+                IsNegative: bits >> 15 == 1,
+                IsPositiveInfinity: value.IsPositiveInfinity(),
+                IsNegativeInfinity: value.IsNegativeInfinity(),
+                IsQuietNaN: value.IsQuietNaN(),
+                IsSignalingNaN: value.IsSignalingNaN(),
+                RealExponent: rawExponent - halfSpec.ExpOffset,
+                Mantissa: mantissa,
+                Significand: (ulong)(rawExponent == 0
+                    ? mantissa
+                    : (1 << halfSpec.MantissaBitSize) + mantissa),
+                ExpBits: Convert.ToString(rawExponent, toBase: 2)
+                                .PadLeft(totalWidth: halfSpec.ExpBitSize, paddingChar: '0'),
+                MantissaBits: Convert.ToString(mantissa, toBase: 2)
+                                     .PadLeft(totalWidth: halfSpec.MantissaBitSize,
+                                          paddingChar: '0'),
+                TypeName: FloatTypeKind.Half
+            );
+        }
         public static FloatInfo AnalyzeFloat(this float value)
         {
-            var bits = BitConverter.SingleToInt32Bits(value);
+            var bits = BitConverter.SingleToInt32Bits(value: value);
             var rawExponent = (int)(bits >> floatSpec.MantissaBitSize & floatSpec.ExpMask);
             var mantissa = bits & floatSpec.MantissaMask;
 
@@ -67,16 +68,17 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
                 Significand: (ulong)(rawExponent == 0
                     ? mantissa
                     : (1 << floatSpec.MantissaBitSize) + mantissa),
-                ExpBits: Convert.ToString(rawExponent, toBase: 2)
+                ExpBits: Convert.ToString(value: rawExponent, toBase: 2)
                                 .PadLeft(totalWidth: floatSpec.ExpBitSize, paddingChar: '0'),
-                MantissaBits: Convert.ToString(mantissa, toBase: 2)
-                                     .PadLeft(totalWidth: floatSpec.MantissaBitSize, paddingChar: '0'),
+                MantissaBits: Convert.ToString(value: mantissa, toBase: 2)
+                                     .PadLeft(totalWidth: floatSpec.MantissaBitSize,
+                                          paddingChar: '0'),
                 TypeName: FloatTypeKind.Float
             );
         }
         public static FloatInfo AnalyzeDouble(this double value)
         {
-            var bits = BitConverter.DoubleToInt64Bits(value);
+            var bits = BitConverter.DoubleToInt64Bits(value: value);
             var rawExponent = (int)(bits >> doubleSpec.MantissaBitSize & doubleSpec.ExpMask);
             var mantissa = bits & doubleSpec.MantissaMask;
 
@@ -93,9 +95,9 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
                 Significand: (ulong)(rawExponent == 0
                     ? mantissa
                     : (1L << doubleSpec.MantissaBitSize) + mantissa),
-                ExpBits: Convert.ToString(rawExponent, toBase: 2)
+                ExpBits: Convert.ToString(value: rawExponent, toBase: 2)
                                 .PadLeft(totalWidth: doubleSpec.ExpBitSize, paddingChar: '0'),
-                MantissaBits: Convert.ToString(mantissa, toBase: 2)
+                MantissaBits: Convert.ToString(value: mantissa, toBase: 2)
                                      .PadLeft(totalWidth: doubleSpec.MantissaBitSize,
                                           paddingChar: '0'),
                 TypeName: FloatTypeKind.Double
@@ -111,10 +113,8 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
                 : 0);
             return info.TypeName switch
             {
-                #if NET5_0_OR_GREATER
-            FloatTypeKind.Half =>
-                $"{((Half)obj).ToString(format: roundingFormatString)}",
-                #endif
+                FloatTypeKind.Half =>
+                    $"{UnityMath.math.f16tof32(((Half)obj).value).ToString(roundingFormatString)}",
                 FloatTypeKind.Float =>
                     $"{((float)obj).ToString(format: roundingFormatString)}",
                 FloatTypeKind.Double =>
@@ -177,7 +177,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
 
             if (realExponent >= 0)
             {
-                numerator = significand * BigInteger.Pow(2, exponent: realExponent);
+                numerator = significand * BigInteger.Pow(value: 2, exponent: realExponent);
                 powerOf10Denominator = 0;
             }
             else
@@ -185,7 +185,7 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
                 // We want enough decimal places to represent 1/2^(-binaryExponent) exactly
                 // Since 2^n × 5^n = spec.MantissaBitSize^n, we need n = -binaryExponent decimal places
                 powerOf10Denominator = -realExponent;
-                numerator = significand * BigInteger.Pow(5, exponent: powerOf10Denominator);
+                numerator = significand * BigInteger.Pow(value: 5, exponent: powerOf10Denominator);
             }
 
             // Now we have: numerator / halfSpec.MantissaBitSize^powerOf10Denominator
@@ -196,6 +196,70 @@ namespace DebugUtils.Unity.DebugUtils.Unity.src.Runtime.Repr.Formatters.Numeric
                                              .TrimEnd(trimChar: '0')
                                              .PadLeft(totalWidth: 1, paddingChar: '0');
             return $"{sign}{integerPart}.{fractionalPart}E{realPowerOf10}";
+        }
+    }
+
+    internal static class UnityHalfExtensions
+    {
+        // Half-precision float bit layout (IEEE 754):
+        // Sign: 1 bit (bit 15)
+        // Exponent: 5 bits (bits 14-10) 
+        // Mantissa: 10 bits (bits 9-0)
+        private const ushort ExponentMask = 0x7C00; // 0111 1100 0000 0000
+        private const ushort MantissaMask = 0x03FF; // 0000 0011 1111 1111
+        private const ushort PositiveInfinityBits = 0x7C00;
+        private const ushort NegativeInfinityBits = 0xFC00;
+        private const ushort ExponentAllOnes = 0x7C00;
+
+        public static bool IsPositiveInfinity(this Half value)
+        {
+            return value.value == PositiveInfinityBits;
+        }
+        public static bool IsNegativeInfinity(this Half value)
+        {
+            return value.value == NegativeInfinityBits;
+        }
+        public static bool IsQuietNaN(this Half value)
+        {
+            // Quiet NaN: exponent = all 1s, mantissa MSB = 1, rest can be anything
+            return (value.value & ExponentMask) == ExponentAllOnes &&
+                   (value.value & MantissaMask) != 0 &&
+                   (value.value & 0x0200) != 0; // Check mantissa MSB (bit 9)
+        }
+        public static bool IsSignalingNaN(this Half value)
+        {
+            // Signaling NaN: exponent = all 1s, mantissa MSB = 0, but mantissa != 0
+            return (value.value & ExponentMask) == ExponentAllOnes &&
+                   (value.value & MantissaMask) != 0 &&
+                   (value.value & 0x0200) == 0; // Check mantissa MSB (bit 9)
+        }
+
+        public static bool IsFinite(this Half value)
+        {
+            return (value.value & ExponentMask) != ExponentAllOnes;
+        }
+
+        public static bool IsNormal(this Half value)
+        {
+            ushort exp = (ushort)(value.value & ExponentMask);
+            return exp != 0 && exp != ExponentAllOnes;
+        }
+
+        public static bool IsSubnormal(this Half value)
+        {
+            return (value.value & ExponentMask) == 0 && (value.value & MantissaMask) != 0;
+        }
+
+        public static bool IsZero(this Half value)
+        {
+            return (value.value & 0x7FFF) == 0; // Ignore sign bit
+        }
+
+        public static string ToString(this Half value, string format)
+        {
+            return UnityMath.math
+                            .f16tof32(value.value)
+                            .ToString(format);
         }
     }
 }
