@@ -224,5 +224,129 @@ namespace DebugUtils.Unity.Tests
                 Object.DestroyImmediate(obj: parent);
             }
         }
+
+        [Test]
+        public void TestFindGameObjectByPath_WithIndices_NullOrEmptyPath()
+        {
+            Assert.IsNull(anObject: SceneNavigator.FindGameObjectByPath(path: null));
+            Assert.IsNull(anObject: SceneNavigator.FindGameObjectByPath(path: ""));
+        }
+
+        [Test]
+        public void TestRoundTripPathFinding_NullOrEmptyPath()
+        {
+            Assert.IsNull(anObject: SceneNavigator.FindGameObjectByPath(path: null));
+            Assert.IsNull(anObject: SceneNavigator.FindGameObjectByPath(path: ""));
+            Assert.IsNull(
+                anObject: SceneNavigator.FindGameObjectByPath(((GameObject)null).GetScenePath()));
+        }
+
+        [Test]
+        public void TestPathParsingErrors_CharacterPositions()
+        {
+            // Test multiple scene separators
+            var ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Scene1:/Object:/Scene2"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character"));
+            Assert.That(ex.Message, Does.Contain("multiple scene separators"));
+
+            // Test malformed brackets - empty object name
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("[0]/Object"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character 0"));
+            Assert.That(ex.Message, Does.Contain("Empty object name before '['"));
+
+            // Test too many brackets
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Object[0][1]"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character"));
+            Assert.That(ex.Message, Does.Contain("Too many brackets"));
+
+            // Test malformed brackets - missing closing bracket
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Object[0/Child"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character"));
+            Assert.That(ex.Message, Does.Contain("malformed brackets"));
+
+            // Test invalid index - non-numeric
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Object[abc]"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character"));
+            Assert.That(ex.Message, Does.Contain("invalid index 'abc'"));
+            Assert.That(ex.Message, Does.Contain("Expected non-negative integer"));
+
+            // Test invalid index - negative
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Object[-1]"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character"));
+            Assert.That(ex.Message, Does.Contain("invalid index '-1'"));
+
+            // Test invalid backwards index - ^0
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Object[^0]"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character"));
+            Assert.That(ex.Message, Does.Contain("invalid index '^0'"));
+        }
+
+        [Test]
+        public void TestPathParsingErrors_ExactCharacterPositions()
+        {
+            var ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Scene1:/Object:/Scene2"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character 14"));
+
+            // Test malformed brackets - empty object name
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("[0]/Object"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character 0"));
+
+            // Test too many brackets
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Object[0][1]"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character 9"));
+            // Test malformed brackets - missing closing bracket
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Object[0/Child"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character 8"));
+
+            // Test invalid index - non-numeric
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Object[abc]"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character 7"));
+
+            // Test invalid index - negative
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Object[-1]"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character 7"));
+
+            // Test invalid backwards index - ^0
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Object[^0]"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character 7"));
+            
+            // Test invalid backwards index - ^-1
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Object[^-1]"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character 7"));
+            Assert.That(ex.Message, Does.Contain("invalid index '^-1'"));
+            
+            // Test character position calculation for nested errors
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Parent/Child[xyz]/GrandChild"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character 13"));
+            Assert.That(ex.Message, Does.Contain("invalid index 'xyz'"));
+
+            // Test position for empty object name in middle of path
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("Parent/[2]"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character 7"));
+            Assert.That(ex.Message, Does.Contain("Empty object name before '['"));
+
+            // Test position for too many brackets in middle
+            ex = Assert.Throws<System.ArgumentException>(() =>
+                SceneNavigator.FindGameObjectByPath("A/B[1][2]/C"));
+            Assert.That(ex.Message, Does.Contain("Syntax Error at character 6"));
+            Assert.That(ex.Message, Does.Contain("Too many brackets"));
+        }
     }
 }
