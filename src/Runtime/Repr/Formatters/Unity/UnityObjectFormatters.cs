@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
@@ -16,7 +15,7 @@ namespace DebugUtils.Unity.Repr.Formatters
         {
             var t = (GameObject)obj;
             return
-                $"{t.gameObject.RetrievePath()}/{t.GetType().Name} @ {t.transform.position.Repr()}";
+                $"{t.gameObject.GetScenePath()} @ {t.transform.position.Repr()}";
         }
         public JToken ToReprTree(object obj, ReprContext context)
         {
@@ -33,7 +32,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             result.Add(propertyName: "kind", value: kind);
             result.Add(propertyName: "name", value: t.name);
             result.Add(propertyName: "hashCode", value: $"{RuntimeHelpers.GetHashCode(o: t):X8}");
-            result.Add(propertyName: "path", value: t.gameObject.RetrievePath());
+            result.Add(propertyName: "path", value: t.gameObject.GetScenePath());
             result.Add(propertyName: "position",
                 value: t.transform.position.FormatAsJToken(
                     context: context.WithIncrementedDepth()));
@@ -45,9 +44,12 @@ namespace DebugUtils.Unity.Repr.Formatters
 
             var children = new JArray();
             var childCount = t.transform.childCount;
-            var maxChildren = context.Config.MaxElementsPerCollection >= 0
-                ? Math.Min(val1: childCount, val2: context.Config.MaxElementsPerCollection)
-                : childCount;
+            var maxChildren = childCount;
+            if (context.Config.MaxElementsPerCollection >= 0 &&
+                maxChildren > context.Config.MaxElementsPerCollection)
+            {
+                maxChildren = context.Config.MaxElementsPerCollection;
+            }
 
             for (var i = 0; i < maxChildren; i++)
             {
@@ -78,7 +80,7 @@ namespace DebugUtils.Unity.Repr.Formatters
         public string ToRepr(object obj, ReprContext context)
         {
             var t = (Transform)obj;
-            return $"Transform {t.gameObject.RetrievePath()}/{t.name} @ {t.position.Repr()}";
+            return $"Transform {t.gameObject.GetScenePath()}/{t.name} @ {t.position.Repr()}";
         }
         public JToken ToReprTree(object obj, ReprContext context)
         {
@@ -95,7 +97,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             result.Add(propertyName: "kind", value: kind);
             result.Add(propertyName: "name", value: t.name);
             result.Add(propertyName: "hashCode", value: $"{RuntimeHelpers.GetHashCode(o: t):X8}");
-            result.Add(propertyName: "path", value: t.gameObject.RetrievePath());
+            result.Add(propertyName: "path", value: t.gameObject.GetScenePath());
             result.Add(propertyName: "position",
                 value: t.position.FormatAsJToken(context: context.WithIncrementedDepth()));
             result.Add(propertyName: "rotation",
@@ -110,9 +112,12 @@ namespace DebugUtils.Unity.Repr.Formatters
 
             var children = new JArray();
             var childCount = t.childCount;
-            var maxChildren = context.Config.MaxElementsPerCollection >= 0
-                ? Math.Min(val1: childCount, val2: context.Config.MaxElementsPerCollection)
-                : childCount;
+            var maxChildren = childCount;
+            if (context.Config.MaxElementsPerCollection >= 0 &&
+                maxChildren > context.Config.MaxElementsPerCollection)
+            {
+                maxChildren = context.Config.MaxElementsPerCollection;
+            }
 
             for (var i = 0; i < maxChildren; i++)
             {
@@ -141,10 +146,6 @@ namespace DebugUtils.Unity.Repr.Formatters
         public string ToRepr(object obj, ReprContext context)
         {
             var rb = (Rigidbody)obj;
-            if (rb == null)
-            {
-                return "null";
-            }
 
             var status = rb.isKinematic
                 ? "kinematic"
@@ -156,10 +157,6 @@ namespace DebugUtils.Unity.Repr.Formatters
         public JToken ToReprTree(object obj, ReprContext context)
         {
             var rb = (Rigidbody)obj;
-            if (rb == null)
-            {
-                return JValue.CreateNull();
-            }
 
             return new JObject
             {
@@ -207,7 +204,7 @@ namespace DebugUtils.Unity.Repr.Formatters
                 [propertyName: "collisionDetectionMode"] = rb.collisionDetectionMode.ToString(),
 
                 // GameObject reference
-                [propertyName: "gameObject"] = rb.gameObject.RetrievePath()
+                [propertyName: "gameObject"] = rb.gameObject.GetScenePath()
             };
         }
     }
@@ -276,7 +273,7 @@ namespace DebugUtils.Unity.Repr.Formatters
                 [propertyName: "simulated"] = rb.simulated,
 
                 // GameObject reference  
-                [propertyName: "gameObject"] = rb.gameObject.RetrievePath()
+                [propertyName: "gameObject"] = rb.gameObject.GetScenePath()
             };
         }
     }
