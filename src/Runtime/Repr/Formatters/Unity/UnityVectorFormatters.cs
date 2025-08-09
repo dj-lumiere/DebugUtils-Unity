@@ -104,7 +104,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             var t = (Quaternion)obj;
             return new JObject
             {
-                [propertyName: "type"] = "Vector4",
+                [propertyName: "type"] = "Quaternion",
                 [propertyName: "kind"] = "struct",
                 [propertyName: "x"] = t.x.FormatAsJToken(context: context.WithIncrementedDepth()),
                 [propertyName: "y"] = t.y.FormatAsJToken(context: context.WithIncrementedDepth()),
