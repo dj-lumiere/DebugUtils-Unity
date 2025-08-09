@@ -13,8 +13,11 @@ namespace DebugUtils.Unity
     /// <remarks>
     /// SceneNavigator is intended as a debugging utility for when proper Unity 
     /// workflows are broken or unavailable. Use sparingly and avoid in production code.
-    /// For production systems, prefer component references, FindObjectOfType, or tags.
+    /// For production systems, prefer component references, <c>Object.FindFirstObjectByType</c>,
+    /// <c>Object.FindAnyObjectByType</c>, or tags.
     /// </remarks>
+    /// <seealso cref="UnityEngine.Object.FindFirstObjectByType{T}(FindObjectsInactive)"/>
+    /// <seealso cref="UnityEngine.Object.FindAnyObjectByType{T}(FindObjectsInactive)"/>
     public static class SceneNavigator
     {
         #region Public API
@@ -23,9 +26,9 @@ namespace DebugUtils.Unity
         /// Finds a GameObject in the scene hierarchy using a structured path with scene and index information.
         /// </summary>
         /// <param name="path">
-        /// Structured path in the format "SceneName:/GameObject[index]/Child[index]".
-        /// Scene name is optional (defaults to active scene if omitted).
-        /// Index is optional (defaults to first match [0] if omitted).
+        /// Structured path in the format <c>SceneName:/GameObject[index]/Child[index]</c>.
+        /// Scene name is optional (defaults to an active scene if omitted).
+        /// Index is optional (defaults to the first match [0] if omitted).
         /// </param>
         /// <returns>
         /// The GameObject at the specified path, or null if not found.
@@ -33,17 +36,18 @@ namespace DebugUtils.Unity
         /// <remarks>
         /// <para>
         /// This method provides flexible object finding with optional explicit indexing:
-        /// - Without indices: Finds first matching object at each level
-        /// - With indices: Finds specific object by position among same-named siblings
-        /// - Mixed usage: Can mix indexed and non-indexed segments in same path
+        /// - Without indices: Finds the first matching object at each level
+        /// - With indices: Finds the specific object by position among same-named siblings
+        /// - Mixed usage: Can mix indexed and non-indexed segments in the same path
         /// </para>
         /// <para>
-        /// Path format options:
+        /// Format options:
         /// <list type="bullet">
-        /// <item>Scene prefix: "SceneName:/" (optional, defaults to active scene)</item>
-        /// <item>Simple hierarchy: "Parent/Child" (finds first match at each level)</item>
-        /// <item>Explicit indexing: "Parent[0]/Child[2]" (finds specific instances)</item>
-        /// <item>Mixed format: "Parent/Child[1]" (first Parent, second Child)</item>
+        /// <item>Scene prefix: <c>SceneName:/</c> (optional, defaults to active scene)</item>
+        /// <item>Simple hierarchy: <c>Parent/Child</c> (finds first match at each level)</item>
+        /// <item>Explicit indexing: <c>Parent[0]/Child[2]</c> (finds specific instances)</item>
+        /// <item>Backwards indexing: <c>Parent[0]/Child[^2]</c> (finds child second to last)</item>
+        /// <item>Mixed format: <c>Parent/Child[1]</c> (first Parent, second Child)</item>
         /// </list>
         /// </para>
         /// <para>Scene Handling:</para>
@@ -59,35 +63,35 @@ namespace DebugUtils.Unity
         /// </remarks>
         /// <example>
         /// <code>
-        /// // Simple paths - find first match at each level
+        /// // Simple paths - find the first match at each level
         /// // This works if that scene is loaded.
-        /// var player = SceneNavigator.FindGameObjectAtPath("Player");                    // First "Player" in active scene
-        /// var weapon = SceneNavigator.FindGameObjectAtPath("Player/Equipment/Weapon");   // First weapon found
+        /// var player = SceneNavigator.FindGameObjectByPath("Player");                    // First "Player" in active scene
+        /// var weapon = SceneNavigator.FindGameObjectByPath("Player/Equipment/Weapon");   // First weapon found
         ///
         /// 
         /// // Explicit scene, auto-index objects
-        /// var enemy = SceneNavigator.FindGameObjectAtPath("BattleScene:/Enemies/Goblin"); // First Goblin in BattleScene
+        /// var enemy = SceneNavigator.FindGameObjectByPath("BattleScene:/Enemies/Goblin"); // First Goblin in BattleScene
         ///
         /// 
         /// // Explicit indices when you need specific objects
-        /// var secondEnemy = SceneNavigator.FindGameObjectAtPath("Enemies/Goblin[1]");     // Second Goblin specifically
-        /// var lastButton = SceneNavigator.FindGameObjectAtPath("UI/Menu/Button[^1]");     // Last button
+        /// var secondEnemy = SceneNavigator.FindGameObjectByPath("Enemies/Goblin[1]");     // Second Goblin specifically
+        /// var lastButton = SceneNavigator.FindGameObjectByPath("UI/Menu/Button[^1]");     // Last button
         ///
         /// 
         /// // Mixed usage - some indexed, some not
-        /// var specificWeapon = SceneNavigator.FindGameObjectAtPath("Player/Equipment[0]/Weapon[2]"); // First equipment slot, third weapon
+        /// var specificWeapon = SceneNavigator.FindGameObjectByPath("Player/Equipment[0]/Weapon[2]"); // First equipment slot, third weapon
         ///
         /// 
         /// // Multi-scene with explicit indices
-        /// var specificUI = SceneNavigator.FindGameObjectAtPath("UIScene:/Canvas[0]/Panel[1]/Button[0]");
+        /// var specificUI = SceneNavigator.FindGameObjectByPath("UIScene:/Canvas[0]/Panel[1]/Button[0]");
         ///
         /// 
         /// // Exploratory debugging - just find first matches
-        /// var someObject = SceneNavigator.FindGameObjectAtPath("Level/SomeGroup/SomeObject"); // Quick and easy
+        /// var someObject = SceneNavigator.FindGameObjectByPath("Level/SomeGroup/SomeObject"); // Quick and easy
         ///
         /// 
         /// // Handle not found
-        /// var missing = SceneNavigator.FindGameObjectAtPath("NonExistent/Path");
+        /// var missing = SceneNavigator.FindGameObjectByPath("NonExistent/Path");
         /// if (missing == null)
         /// {
         ///     Debug.LogWarning("Object not found - try using explicit indices or check hierarchy");
@@ -97,11 +101,17 @@ namespace DebugUtils.Unity
         /// <exception cref="System.ArgumentException">
         /// Thrown when path format is invalid (malformed brackets, invalid indices, etc.).
         /// </exception>
-        /// <seealso cref="FindComponentAtPath{T}(string)"/>
-        /// <seealso cref="RetrievePath(GameObject)"/>
-        public static GameObject FindGameObjectAtPath(string path)
+        /// <seealso cref="FindComponentByPath{T}"/>
+        /// <seealso cref="GetScenePath"/>
+        public static GameObject FindGameObjectByPath(string path)
         {
             if (String.IsNullOrEmpty(value: path))
+            {
+                return null;
+            }
+
+            // GetScenePath roundtrip
+            if (path == "[null gameObject]")
             {
                 return null;
             }
@@ -147,7 +157,7 @@ namespace DebugUtils.Unity
         /// Flexible path in the format "SceneName:/GameObject/Child" or "SceneName:/GameObject[index]/Child[index]".
         /// Scene name is optional (defaults to the active scene if omitted).
         /// Indices are optional (defaults to the first match [0] if omitted).
-        /// Same format as FindGameObjectAtPath.
+        /// Same format as FindGameObjectByPath.
         /// </param>
         /// <returns>
         /// The component of type T if found on the GameObject at the specified path, or null if not found.
@@ -155,7 +165,7 @@ namespace DebugUtils.Unity
         /// </returns>
         /// <remarks>
         /// <para>
-        /// This method combines FindGameObjectAtPath() with GetComponent&lt;T&gt;() For convenient component access.
+        /// This method combines FindGameObjectByPath() with GetComponent&lt;T&gt;() For convenient component access.
         /// It uses the same flexible path format with optional scene names and indices.
         /// </para>
         /// <para>
@@ -175,25 +185,25 @@ namespace DebugUtils.Unity
         /// <example>
         /// <code>
         /// // Simple component finding - first match at each level
-        /// Button playBtn = SceneNavigator.FindComponentAtPath&lt;Button&gt;("UI/MainMenu/PlayButton");
-        /// Rigidbody playerRB = SceneNavigator.FindComponentAtPath&lt;Rigidbody&gt;("Player");
+        /// Button playBtn = SceneNavigator.FindComponentByPath&lt;Button&gt;("UI/MainMenu/PlayButton");
+        /// Rigidbody playerRB = SceneNavigator.FindComponentByPath&lt;Rigidbody&gt;("Player");
         ///
         /// 
         /// // Explicit scene specification
-        /// AudioSource bgMusic = SceneNavigator.FindComponentAtPath&lt;AudioSource&gt;("AudioScene:/BackgroundMusic");
+        /// AudioSource bgMusic = SceneNavigator.FindComponentByPath&lt;AudioSource&gt;("AudioScene:/BackgroundMusic");
         ///
         /// 
         /// // Explicit indexing when you need specific instances
-        /// Text firstScore = SceneNavigator.FindComponentAtPath&lt;Text&gt;("UI/Scoreboard/PlayerScore[0]");
-        /// Text secondScore = SceneNavigator.FindComponentAtPath&lt;Text&gt;("UI/Scoreboard/PlayerScore[1]");
+        /// Text firstScore = SceneNavigator.FindComponentByPath&lt;Text&gt;("UI/Scoreboard/PlayerScore[0]");
+        /// Text secondScore = SceneNavigator.FindComponentByPath&lt;Text&gt;("UI/Scoreboard/PlayerScore[1]");
         ///
         /// 
         /// // Mixed usage - some indexed, some auto-index
-        /// Slider volumeSlider = SceneNavigator.FindComponentAtPath&lt;Slider&gt;("Settings/Audio[0]/VolumeSlider");
+        /// Slider volumeSlider = SceneNavigator.FindComponentByPath&lt;Slider&gt;("Settings/Audio[0]/VolumeSlider");
         ///
         /// 
         /// // Safe usage with null checking
-        /// var healthBar = SceneNavigator.FindComponentAtPath&lt;Slider&gt;("UI/HUD/HealthBar");
+        /// var healthBar = SceneNavigator.FindComponentByPath&lt;Slider&gt;("UI/HUD/HealthBar");
         /// if (healthBar != null)
         /// {
         ///     healthBar.value = currentHealth / maxHealth;
@@ -205,36 +215,36 @@ namespace DebugUtils.Unity
         ///
         /// 
         /// // Returns null if GameObject exists but component doesn't
-        /// Rigidbody uiRigidbody = SceneNavigator.FindComponentAtPath&lt;Rigidbody&gt;("UI/Canvas");
+        /// Rigidbody uiRigidbody = SceneNavigator.FindComponentByPath&lt;Rigidbody&gt;("UI/Canvas");
         /// // uiRigidbody will be null - UI objects typically don't have Rigidbody components
         ///
         /// 
         /// // Complex nested component finding
-        /// WeaponController weaponCtrl = SceneNavigator.FindComponentAtPath&lt;WeaponController&gt;("Player/Equipment[0]/Weapon[2]");
+        /// WeaponController weaponCtrl = SceneNavigator.FindComponentByPath&lt;WeaponController&gt;("Player/Equipment[0]/Weapon[2]");
         ///
         /// 
-        /// // Use with explicit paths from RetrievePath for reliable access
-        /// string weaponPath = someWeapon.RetrievePath(); // "GameScene:/Player[0]/Equipment[0]/Sword[1]"
-        /// WeaponController sameWeapon = SceneNavigator.FindComponentAtPath&lt;WeaponController&gt;(weaponPath);
+        /// // Use with explicit paths from GetScenePath for reliable access
+        /// string weaponPath = someWeapon.GetScenePath(); // "GameScene:/Player[0]/Equipment[0]/Sword[1]"
+        /// WeaponController sameWeapon = SceneNavigator.FindComponentByPath&lt;WeaponController&gt;(weaponPath);
         /// </code>
         /// </example>
         /// <exception cref="System.ArgumentException">
         /// Thrown when path format is invalid (malformed brackets, invalid indices, etc.).
-        /// Same validation rules as FindGameObjectAtPath.
+        /// Same validation rules as FindGameObjectByPath.
         /// </exception>
-        /// <seealso cref="FindGameObjectAtPath(string)"/>
-        /// <seealso cref="RetrievePath(GameObject)"/>
+        /// <seealso cref="FindGameObjectByPath"/>
+        /// <seealso cref="GetScenePath"/>
         /// <seealso cref="UnityEngine.Component.GetComponent{T}()"/>
-        public static T FindComponentAtPath<T>(string path) where T : Component
+        public static T FindComponentByPath<T>(string path) where T : Component
         {
-            var obj = FindGameObjectAtPath(path: path);
+            var obj = FindGameObjectByPath(path: path);
             return obj != null
                 ? obj.GetComponent<T>()
                 : null;
         }
 
         /// <summary>
-        /// Retrieves the complete explicit path of a GameObject including scene name and exact sibling indices.
+        /// Gets the complete explicit path of a GameObject including scene name and exact sibling indices.
         /// Always returns a fully qualified path that can reliably locate the same object instance.
         /// </summary>
         /// <param name="obj">The GameObject to get the path for (can be null).</param>
@@ -250,7 +260,7 @@ namespace DebugUtils.Unity
         /// <item>Scene name: Always included, even for the active scene</item>
         /// <item>Indices: Always included for every path segment based on sibling order</item>
         /// <item>Deterministic: The same object always produces the same path</item>
-        /// <item>Round-trip safe: Path can be used with <c>FindGameObjectAtPath()</c> to find the same object</item>
+        /// <item>Round-trip safe: Path can be used with <c>FindGameObjectByPath()</c> to find the same object</item>
         /// </list>
         /// </para>
         /// <para>
@@ -267,34 +277,34 @@ namespace DebugUtils.Unity
         /// <code>
         /// // Always get explicit paths with scene and indices
         /// GameObject player = GameObject.Find("Player");
-        /// string playerPath = player.RetrievePath();
+        /// string playerPath = player.GetScenePath();
         /// Debug.Log(playerPath); // Output: "GameScene:/Player[0]" (always explicit)
         ///
         /// 
         /// // Even simple objects get full paths
         /// GameObject canvas = GameObject.Find("Canvas");
-        /// string canvasPath = canvas.RetrievePath();
+        /// string canvasPath = canvas.GetScenePath();
         /// Debug.Log(canvasPath); // Output: "UIScene:/Canvas[0]" (not just "Canvas")
         ///
         /// 
         /// // Nested objects show complete explicit hierarchy
         /// Transform weapon = player.transform.Find("Equipment/Weapon");
-        /// string weaponPath = weapon.gameObject.RetrievePath();
+        /// string weaponPath = weapon.gameObject.GetScenePath();
         /// Debug.Log(weaponPath); // Output: "GameScene:/Player[0]/Equipment[0]/Weapon[1]"
         ///
         /// 
         /// // Perfect for collision debugging - get exact object identity
         /// void OnTriggerEnter(Collider other)
         /// {
-        ///     string colliderPath = other.gameObject.RetrievePath();
+        ///     string colliderPath = other.gameObject.GetScenePath();
         ///     Debug.Log($"Collision with: {colliderPath}");
         ///     // Output: "BattleScene:/Enemies[0]/Goblin[2]/Weapon[0]" - know exactly which Goblin!
         /// }
         ///
         /// 
-        /// // Round-trip reliability - explicit path works with FindGameObjectAtPath
-        /// string explicitPath = myGameObject.RetrievePath();
-        /// GameObject foundObject = SceneNavigator.FindGameObjectAtPath(explicitPath);
+        /// // Round-trip reliability - explicit path works with FindGameObjectByPath
+        /// string explicitPath = myGameObject.GetScenePath();
+        /// GameObject foundObject = SceneNavigator.FindGameObjectByPath(explicitPath);
         /// Debug.Assert(foundObject == myGameObject); // Always true with explicit paths
         ///
         /// 
@@ -302,19 +312,19 @@ namespace DebugUtils.Unity
         /// Dictionary&lt;string, float&gt; objectHealths = new Dictionary&lt;string, float&gt;();
         /// foreach (var enemy in enemies)
         /// {
-        ///     string enemyPath = enemy.RetrievePath(); // Unique identifier
+        ///     string enemyPath = enemy.GetScenePath(); // Unique identifier
         ///     objectHealths[enemyPath] = enemy.GetComponent&lt;Health&gt;().currentHealth;
         /// }
         ///
         /// 
         /// // Handle edge cases
         /// GameObject nullObj = null;
-        /// string nullPath = nullObj.RetrievePath(); // Returns "[null gameObject]"
+        /// string nullPath = nullObj.GetScenePath(); // Returns "[null gameObject]"
         /// </code>
         /// </example>
-        /// <seealso cref="FindGameObjectAtPath(string)"/>
-        /// <seealso cref="FindComponentAtPath{T}(string)"/>
-        public static string RetrievePath(this GameObject obj)
+        /// <seealso cref="FindGameObjectByPath"/>
+        /// <seealso cref="FindComponentByPath{T}"/>
+        public static string GetScenePath(this GameObject obj)
         {
             if (obj == null)
             {
@@ -382,11 +392,13 @@ namespace DebugUtils.Unity
             if (sep >= 0)
             {
                 // Check for multiple separators
-                if (path.IndexOf(value: ":/", startIndex: sep + 2,
-                        comparisonType: StringComparison.Ordinal) >= 0)
+                var second = path.IndexOf(value: ":/", startIndex: sep + 2,
+                    comparisonType: StringComparison.Ordinal);
+                if (second >= 0)
                 {
                     throw new ArgumentException(
-                        message: "Invalid path format: too many scene separators",
+                        message:
+                        $"Syntax Error at character {second}: Path contains multiple scene separators.",
                         paramName: nameof(path));
                 }
 

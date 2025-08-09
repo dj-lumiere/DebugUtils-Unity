@@ -9,9 +9,9 @@ namespace DebugUtils.Unity.Tests
     public class SceneNavigatorTest
     {
         [Test]
-        public void TestFindGameObjectAtPath_ValidPath()
+        public void TestFindGameObjectByPath_ValidPath()
         {
-            // Create test hierarchy
+            // Create a test hierarchy
             var parent = new GameObject(name: "TestParent");
             var child = new GameObject(name: "TestChild");
             child.transform.SetParent(p: parent.transform);
@@ -19,11 +19,11 @@ namespace DebugUtils.Unity.Tests
             try
             {
                 // Test finding parent
-                var foundParent = SceneNavigator.FindGameObjectAtPath(path: "TestParent");
+                var foundParent = SceneNavigator.FindGameObjectByPath(path: "TestParent");
                 Assert.AreEqual(expected: parent, actual: foundParent);
 
                 // Test finding child
-                var foundChild = SceneNavigator.FindGameObjectAtPath(path: "TestParent/TestChild");
+                var foundChild = SceneNavigator.FindGameObjectByPath(path: "TestParent/TestChild");
                 Assert.AreEqual(expected: child, actual: foundChild);
             }
             finally
@@ -34,21 +34,21 @@ namespace DebugUtils.Unity.Tests
         }
 
         [Test]
-        public void TestFindGameObjectAtPath_InvalidPath()
+        public void TestFindGameObjectByPath_InvalidPath()
         {
-            var result = SceneNavigator.FindGameObjectAtPath(path: "NonExistent/Path");
+            var result = SceneNavigator.FindGameObjectByPath(path: "NonExistent/Path");
             Assert.IsNull(anObject: result);
         }
 
         [Test]
-        public void TestFindGameObjectAtPath_NullOrEmptyPath()
+        public void TestFindGameObjectByPath_NullOrEmptyPath()
         {
-            Assert.IsNull(anObject: SceneNavigator.FindGameObjectAtPath(path: null));
-            Assert.IsNull(anObject: SceneNavigator.FindGameObjectAtPath(path: ""));
+            Assert.IsNull(anObject: SceneNavigator.FindGameObjectByPath(path: null));
+            Assert.IsNull(anObject: SceneNavigator.FindGameObjectByPath(path: ""));
         }
 
         [Test]
-        public void TestFindComponentAtPath_ValidComponent()
+        public void TestFindComponentByPath_ValidComponent()
         {
             var gameObject = new GameObject(name: "TestComponent");
             var transform = gameObject.transform;
@@ -56,7 +56,7 @@ namespace DebugUtils.Unity.Tests
             try
             {
                 var foundTransform =
-                    SceneNavigator.FindComponentAtPath<Transform>(path: "TestComponent");
+                    SceneNavigator.FindComponentByPath<Transform>(path: "TestComponent");
                 Assert.AreEqual(expected: transform, actual: foundTransform);
             }
             finally
@@ -66,14 +66,14 @@ namespace DebugUtils.Unity.Tests
         }
 
         [Test]
-        public void TestFindComponentAtPath_InvalidComponent()
+        public void TestFindComponentByPath_InvalidComponent()
         {
             var gameObject = new GameObject(name: "TestComponent");
 
             try
             {
                 var notFound =
-                    SceneNavigator.FindComponentAtPath<Rigidbody>(path: "TestComponent");
+                    SceneNavigator.FindComponentByPath<Rigidbody>(path: "TestComponent");
                 Assert.IsNull(anObject: notFound);
             }
             finally
@@ -83,7 +83,7 @@ namespace DebugUtils.Unity.Tests
         }
 
         [Test]
-        public void TestRetrievePath_ValidGameObject()
+        public void TestGetPath_ValidGameObject()
         {
             var parent = new GameObject(name: "Parent");
             var child = new GameObject(name: "Child");
@@ -91,8 +91,8 @@ namespace DebugUtils.Unity.Tests
 
             try
             {
-                var parentPath = parent.RetrievePath();
-                var childPath = child.RetrievePath();
+                var parentPath = parent.GetScenePath();
+                var childPath = child.GetScenePath();
 
                 Assert.IsTrue(condition: parentPath.Contains(value: "Parent[0]"));
                 Assert.IsTrue(condition: childPath.Contains(value: "Parent[0]/Child[0]"));
@@ -107,15 +107,15 @@ namespace DebugUtils.Unity.Tests
         }
 
         [Test]
-        public void TestRetrievePath_NullGameObject()
+        public void TestGetPath_NullGameObject()
         {
             GameObject nullObject = null;
-            var result = nullObject.RetrievePath();
+            var result = nullObject.GetScenePath();
             Assert.AreEqual(expected: "[null gameObject]", actual: result);
         }
 
         [Test]
-        public void TestFindGameObjectAtPath_WithIndices()
+        public void TestFindGameObjectByPath_WithIndices()
         {
             // Create a test hierarchy with duplicate names
             var parent1 = new GameObject(name: "Parent");
@@ -128,24 +128,24 @@ namespace DebugUtils.Unity.Tests
             try
             {
                 // Test finding first parent (default index [0])
-                var foundParent1 = SceneNavigator.FindGameObjectAtPath(path: "Parent");
+                var foundParent1 = SceneNavigator.FindGameObjectByPath(path: "Parent");
                 Assert.AreEqual(expected: parent1, actual: foundParent1);
 
                 // Test finding second parent with explicit index
-                var foundParent2 = SceneNavigator.FindGameObjectAtPath(path: "Parent[1]");
+                var foundParent2 = SceneNavigator.FindGameObjectByPath(path: "Parent[1]");
                 Assert.AreEqual(expected: parent2, actual: foundParent2);
 
                 // Test finding first child (default index [0])
-                var foundChild1 = SceneNavigator.FindGameObjectAtPath(path: "Parent/Child");
+                var foundChild1 = SceneNavigator.FindGameObjectByPath(path: "Parent/Child");
                 Assert.AreEqual(expected: child1, actual: foundChild1);
 
                 // Test finding second child with explicit index
-                var foundChild2 = SceneNavigator.FindGameObjectAtPath(path: "Parent/Child[1]");
+                var foundChild2 = SceneNavigator.FindGameObjectByPath(path: "Parent/Child[1]");
                 Assert.AreEqual(expected: child2, actual: foundChild2);
 
                 // Test finding second child with explicit parent index
                 var foundChild2Alt =
-                    SceneNavigator.FindGameObjectAtPath(path: "Parent[0]/Child[1]");
+                    SceneNavigator.FindGameObjectByPath(path: "Parent[0]/Child[1]");
                 Assert.AreEqual(expected: child2, actual: foundChild2Alt);
             }
             finally
@@ -158,14 +158,14 @@ namespace DebugUtils.Unity.Tests
         }
 
         [Test]
-        public void TestFindGameObjectAtPath_InvalidIndex()
+        public void TestFindGameObjectByPath_InvalidIndex()
         {
             var parent = new GameObject(name: "TestParent");
 
             try
             {
                 // Test index out of range
-                var result = SceneNavigator.FindGameObjectAtPath(path: "TestParent[5]");
+                var result = SceneNavigator.FindGameObjectByPath(path: "TestParent[5]");
                 Assert.IsNull(anObject: result);
             }
             finally
@@ -175,7 +175,7 @@ namespace DebugUtils.Unity.Tests
         }
 
         [Test]
-        public void TestFindGameObjectAtPath_NegativeIndex()
+        public void TestFindGameObjectByPath_NegativeIndex()
         {
             // Create multiple objects with the same name
             var obj1 = new GameObject(name: "TestObj");
@@ -185,10 +185,10 @@ namespace DebugUtils.Unity.Tests
             try
             {
                 // Test negative index (from end)
-                var lastObj = SceneNavigator.FindGameObjectAtPath(path: "TestObj[^1]");
+                var lastObj = SceneNavigator.FindGameObjectByPath(path: "TestObj[^1]");
                 Assert.AreEqual(expected: obj3, actual: lastObj);
 
-                var secondToLastObj = SceneNavigator.FindGameObjectAtPath(path: "TestObj[^2]");
+                var secondToLastObj = SceneNavigator.FindGameObjectByPath(path: "TestObj[^2]");
                 Assert.AreEqual(expected: obj2, actual: secondToLastObj);
             }
             finally
@@ -210,10 +210,10 @@ namespace DebugUtils.Unity.Tests
             try
             {
                 // Get an explicit path from an object
-                var explicitPath = child.RetrievePath();
+                var explicitPath = child.GetScenePath();
 
                 // Find an object using that path
-                var foundObject = SceneNavigator.FindGameObjectAtPath(path: explicitPath);
+                var foundObject = SceneNavigator.FindGameObjectByPath(path: explicitPath);
 
                 // Should be the same object
                 Assert.AreEqual(expected: child, actual: foundObject);
