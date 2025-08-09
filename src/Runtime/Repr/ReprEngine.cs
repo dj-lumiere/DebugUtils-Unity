@@ -124,11 +124,11 @@ namespace DebugUtils.Unity.Repr
         {
             return new JObject
             {
-                [propertyName: "type"] = "CircularReference",
+                [propertyName: "type"] = new JValue(value: "CircularReference"),
                 [propertyName: "target"] = new JObject
                 {
-                    [propertyName: "type"] = obj.GetReprTypeName(),
-                    [propertyName: "hashCode"] = $"0x{id:X8}"
+                    [propertyName: "type"] = new JValue(value: obj.GetReprTypeName()),
+                    [propertyName: "hashCode"] = new JValue(value: $"0x{id:X8}")
                 }
             };
         }
@@ -137,8 +137,8 @@ namespace DebugUtils.Unity.Repr
         {
             return new JObject
             {
-                [propertyName: "type"] = typeof(T).GetReprTypeName(),
-                [propertyName: "kind"] = typeof(T).GetTypeKind(),
+                [propertyName: "type"] = new JValue(value: typeof(T).GetReprTypeName()),
+                [propertyName: "kind"] = new JValue(value: typeof(T).GetTypeKind()),
                 [propertyName: "value"] = null
             };
         }
