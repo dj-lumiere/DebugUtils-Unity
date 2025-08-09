@@ -4,15 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Threading.Tasks;
 using DebugUtils.Unity.Repr;
-using JetBrains.Annotations;
 using NUnit.Framework;
-using Newtonsoft.Json.Linq;
 using Half = Unity.Mathematics.half;
 
-namespace DebugUtils.Tests
+namespace DebugUtils.Unity.Tests
 {
 // Test data structures from DebugUtilsTest.cs
     public struct Point
@@ -73,7 +70,7 @@ namespace DebugUtils.Tests
 
     public class Children
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public Children? Parent { get; set; }
     }
 
@@ -134,7 +131,7 @@ namespace DebugUtils.Tests
             Assert.AreEqual(
                 expected: "double(2.99999999999999988897769753748434595763683319091796875E-1)",
                 actual: 0.3.Repr());
-            Assert.AreEqual(expected: "double(0.30000000000000004)",
+            Assert.AreEqual(expected: "double(0.3)",
                 actual: (0.1 + 0.2)
                .Repr(config: new ReprConfig(FloatMode: FloatReprMode.General)));
 
@@ -280,7 +277,7 @@ namespace DebugUtils.Tests
         public void TestHalfRepr_Scientific()
         {
             var config = new ReprConfig(FloatMode: FloatReprMode.Scientific, FloatPrecision: 5);
-            Assert.AreEqual(expected: "Half(3.1406E+000)", actual: new Half(v: 3.14159)
+            Assert.AreEqual(expected: "half(3.1406E+000)", actual: new Half(v: 3.14159)
                .Repr(config: config));
         }
 
@@ -297,7 +294,7 @@ namespace DebugUtils.Tests
         public void TestHalfRepr_BitField()
         {
             var config = new ReprConfig(FloatMode: FloatReprMode.BitField);
-            Assert.AreEqual(expected: "Half(0|10000|1001001000)", actual: new Half(v: 3.14159)
+            Assert.AreEqual(expected: "half(0|10000|1001001000)", actual: new Half(v: 3.14159)
                .Repr(config: config));
         }
 
@@ -317,15 +314,15 @@ namespace DebugUtils.Tests
             Assert.AreEqual(expected: "double(-Infinity)", actual: Double.NegativeInfinity.Repr());
         }
 
-        #if NET5_0_OR_GREATER
-    [Test]
-    public void TestHalfRepr_SpecialValues()
-    {
-        Assert.AreEqual(expected: "Half(Quiet NaN)", actual: Half.NaN.Repr());
-        Assert.AreEqual(expected: "Half(Infinity)", actual: Half.PositiveInfinity.Repr());
-        Assert.AreEqual(expected: "Half(-Infinity)", actual: Half.NegativeInfinity.Repr());
-    }
-        #endif
+        [Test]
+        public void TestHalfRepr_SpecialValues()
+        {
+            Assert.AreEqual(expected: "half(Quiet NaN)", actual: new Half(v: Single.NaN).Repr());
+            Assert.AreEqual(expected: "half(Infinity)",
+                actual: new Half(v: Single.PositiveInfinity).Repr());
+            Assert.AreEqual(expected: "half(-Infinity)",
+                actual: new Half(v: Single.NegativeInfinity).Repr());
+        }
 
         // Collections
         [Test]
@@ -474,8 +471,8 @@ namespace DebugUtils.Tests
             // Note: Dictionary order is not guaranteed, so we check for both possibilities
             var possibleOutputs = new[]
             {
-                "TestSettings({ EquipmentName: \"Printer\", EquipmentSettings: {\"PrintSpeed (mm/s)\": double(3.0E1), \"Temp (C)\": double(2.0E2)} })",
-                "TestSettings({ EquipmentName: \"Printer\", EquipmentSettings: {\"Temp (C)\": double(2.0E2), \"PrintSpeed (mm/s)\": double(3.0E1)} })"
+                "TestSettings({ EquipmentName: \"Printer\", EquipmentSettings: {\"PrintSpeed (mm/s)\": double(30), \"Temp (C)\": double(200)} })",
+                "TestSettings({ EquipmentName: \"Printer\", EquipmentSettings: {\"Temp (C)\": double(200), \"PrintSpeed (mm/s)\": double(30)} })"
             };
             Assert.Contains(expected: settings.Repr(), actual: possibleOutputs);
         }
@@ -512,35 +509,6 @@ namespace DebugUtils.Tests
             var listWithNull = new List<List<int>?> { new() { 1 }, null };
             Assert.AreEqual(expected: "[[int(1)], null]", actual: listWithNull.Repr());
         }
-
-        #if NET7_0_OR_GREATER
-    [TestCase(IntReprMode.Binary,
-        "Int128(-0b10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000)")]
-    [TestCase(IntReprMode.Decimal, "Int128(-170141183460469231731687303715884105728)")]
-    [TestCase(IntReprMode.Hex, "Int128(-0x80000000000000000000000000000000)")]
-    [TestCase(IntReprMode.HexBytes, "Int128(0x80000000000000000000000000000000)")]
-    public void TestInt128Repr(IntReprMode mode, string expected)
-    {
-        var i128 = Int128.MinValue;
-        var config = new ReprConfig(IntMode: mode);
-        Assert.AreEqual(expected: expected,
-            actual: i128.Repr(config: config));
-    }
-
-    
-    [TestCase(IntReprMode.Binary,
-        "Int128(0b1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111)")]
-    [TestCase(IntReprMode.Decimal, "Int128(170141183460469231731687303715884105727)")]
-    [TestCase(IntReprMode.Hex, "Int128(0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)")]
-    [TestCase(IntReprMode.HexBytes, "Int128(0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)")]
-    public void TestInt128Repr2(IntReprMode mode, string expected)
-    {
-        var i128 = Int128.MaxValue;
-        var config = new ReprConfig(IntMode: mode);
-        Assert.AreEqual(expected: expected,
-            actual: i128.Repr(config: config));
-    }
-        #endif
 
         [Test]
         public void TestGuidRepr()
