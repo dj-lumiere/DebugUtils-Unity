@@ -17,6 +17,8 @@ namespace DebugUtils.Unity
     /// </remarks>
     public static class SceneNavigator
     {
+        #region Public API
+
         /// <summary>
         /// Finds a GameObject in the scene hierarchy using a structured path with scene and index information.
         /// </summary>
@@ -104,90 +106,14 @@ namespace DebugUtils.Unity
                 return null;
             }
 
-            Scene currentScene;
-            string hierarchyPath;
-            var sep = path.IndexOf(value: ":/", comparisonType: StringComparison.Ordinal);
-            if (sep >= 0)
+            if (!TryParseScenePath(path: path, hierarchyPath: out var hierarchyPath,
+                    currentScene: out var currentScene))
             {
-                // Check for multiple separators
-                if (path.IndexOf(value: ":/", startIndex: sep + 2,
-                        comparisonType: StringComparison.Ordinal) >= 0)
-                {
-                    throw new ArgumentException(
-                        message: "Invalid path format: too many scene separators",
-                        paramName: nameof(path));
-                }
-
-                var sceneName = path[..sep];
-                hierarchyPath = path[(sep + 2)..];
-                currentScene = SceneManager.GetSceneByName(name: sceneName);
-
-                if (!currentScene.IsValid())
-                {
-                    #if UNITY_EDITOR
-                    Debug.LogWarning(
-                        message: $"Scene '{sceneName}' not found - using active scene instead");
-                    #endif
-                    return null;
-                }
-            }
-            else
-            {
-                currentScene = SceneManager.GetActiveScene();
-                hierarchyPath = path;
+                return null;
             }
 
-            var pathParts = hierarchyPath.Split(separator: '/');
-
-            var cleanNames = new string[pathParts.Length];
-            var indices = new int[pathParts.Length];
-            for (var i = 0; i < pathParts.Length; i++)
-            {
-                indices[i] = 0;
-                var itemParts = pathParts[i]
-                   .Split(separator: '[');
-                cleanNames[i] = itemParts[0];
-
-                if (itemParts.Length == 1)
-                {
-                    continue;
-                }
-
-                if (itemParts.Length != 2)
-                {
-                    throw new ArgumentException(message: "Invalid path format",
-                        paramName: nameof(path));
-                }
-
-                var indexParts = itemParts[1]
-                   .Split(separator: ']');
-                if (indexParts.Length != 2 || !String.IsNullOrEmpty(value: indexParts[1]))
-                {
-                    throw new ArgumentException(
-                        message: $"Invalid path format: malformed brackets in '{pathParts[i]}'",
-                        paramName: nameof(path));
-                }
-
-                var indexString = indexParts[0];
-                var shouldFlip = false;
-                if (indexString.StartsWith(value: "^"))
-                {
-                    shouldFlip = true;
-                    indexString = indexString.Substring(startIndex: 1);
-                }
-
-                if (!Int32.TryParse(s: indexString, result: out var index))
-                {
-                    throw new ArgumentException(
-                        message:
-                        $"Invalid path format: invalid index '{indexString}' in '{pathParts[i]}'",
-                        paramName: nameof(path));
-                }
-
-                indices[i] = shouldFlip
-                    ? -index
-                    : index;
-            }
+            ExtractPathIndicesAndNames(hierarchyPath: hierarchyPath,
+                cleanNames: out var cleanNames, indices: out var indices);
 
             // Select the root object by index
             var rootObject =
@@ -195,12 +121,12 @@ namespace DebugUtils.Unity
 
             if (rootObject == null)
             {
-                return rootObject;
+                return null;
             }
 
             // Navigate through the path
             var current = rootObject.transform;
-            for (var i = 1; i < pathParts.Length; i++)
+            for (var i = 1; i < cleanNames.Length; i += 1)
             {
                 current = current.PickChildByNameAndIndex(name: cleanNames[i], index: indices[i]);
                 if (current == null)
@@ -210,94 +136,6 @@ namespace DebugUtils.Unity
             }
 
             return current.gameObject;
-        }
-
-        private static GameObject PickRootByNameAndIndex(this Scene scene, string name, int index)
-        {
-            var roots = scene.GetRootGameObjects();
-            var count = 0;
-            if (index >= 0)
-            {
-                for (var i = 0; i < roots.Length; i++)
-                {
-                    if (roots[i].name != name)
-                    {
-                        continue;
-                    }
-
-                    if (count == index)
-                    {
-                        return roots[i];
-                    }
-
-                    count += 1;
-                }
-
-                return null;
-            }
-
-            var targetFromEnd = -index - 1;
-            for (var i = roots.Length - 1; i >= 0; i--)
-            {
-                if (roots[i].name != name)
-                {
-                    continue;
-                }
-
-                if (count == targetFromEnd)
-                {
-                    return roots[i];
-                }
-
-                count += 1;
-            }
-
-            return null;
-        }
-
-        private static Transform PickChildByNameAndIndex(this Transform parent, string name,
-            int index)
-        {
-            var count = 0;
-            if (index >= 0)
-            {
-                for (var i = 0; i < parent.childCount; i++)
-                {
-                    var child = parent.GetChild(index: i);
-                    if (child.name != name)
-                    {
-                        continue;
-                    }
-
-                    if (count == index)
-                    {
-                        return child;
-                    }
-
-                    count += 1;
-                }
-
-                return null;
-            }
-
-            var targetFromEnd = -index - 1;
-            for (var i = parent.childCount - 1; i >= 0; i--)
-            {
-                var child = parent.GetChild(index: i);
-                if (child.name != name)
-                {
-                    continue;
-                }
-
-                if (count == targetFromEnd)
-                {
-                    return child;
-                }
-
-                count += 1;
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -390,12 +228,9 @@ namespace DebugUtils.Unity
         public static T FindComponentAtPath<T>(string path) where T : Component
         {
             var obj = FindGameObjectAtPath(path: path);
-            if (obj != null)
-            {
-                return obj.GetComponent<T>();
-            }
-
-            return null;
+            return obj != null
+                ? obj.GetComponent<T>()
+                : null;
         }
 
         /// <summary>
@@ -498,7 +333,7 @@ namespace DebugUtils.Unity
 
             var k = depth - 1;
             // Pass 2: Fill pre-allocated arrays
-            for (var t = obj.transform; t != null; t = t.parent, k--)
+            for (var t = obj.transform; t != null; t = t.parent, k -= 1)
             {
                 names[k] = t.name;
                 indices[k] = t.GetSameNameIndex();
@@ -510,7 +345,7 @@ namespace DebugUtils.Unity
                 ? scene.name
                 : "[invalid Scene]";
             var cap = sceneName.Length + 2;
-            for (var i = 0; i < depth; i++)
+            for (var i = 0; i < depth; i += 1)
             {
                 // [000]/ overhead. This is rough guessing to avoid growth of StringBuilder.
                 cap += names[i].Length + 6;
@@ -520,7 +355,7 @@ namespace DebugUtils.Unity
             sb.Append(value: sceneName)
               .Append(value: ":/");
 
-            for (var i = 0; i < depth; i++)
+            for (var i = 0; i < depth; i += 1)
             {
                 if (i != 0)
                 {
@@ -535,6 +370,196 @@ namespace DebugUtils.Unity
 
             return sb.ToString();
         }
+
+        #endregion
+
+        #region Path Parsing
+
+        private static bool TryParseScenePath(string path, out string hierarchyPath,
+            out Scene currentScene)
+        {
+            var sep = path.IndexOf(value: ":/", comparisonType: StringComparison.Ordinal);
+            if (sep >= 0)
+            {
+                // Check for multiple separators
+                if (path.IndexOf(value: ":/", startIndex: sep + 2,
+                        comparisonType: StringComparison.Ordinal) >= 0)
+                {
+                    throw new ArgumentException(
+                        message: "Invalid path format: too many scene separators",
+                        paramName: nameof(path));
+                }
+
+                var sceneName = path[..sep];
+                hierarchyPath = path[(sep + 2)..];
+                currentScene = SceneManager.GetSceneByName(name: sceneName);
+
+                if (currentScene.IsValid())
+                {
+                    return true;
+                }
+
+                #if UNITY_EDITOR
+                Debug.LogWarning(
+                    message: $"Scene '{sceneName}' not found - returning null");
+                #endif
+                return false;
+            }
+
+            currentScene = SceneManager.GetActiveScene();
+            hierarchyPath = path;
+            return true;
+        }
+
+        private static void ExtractPathIndicesAndNames(string hierarchyPath,
+            out string[] cleanNames,
+            out int[] indices)
+        {
+            var pathParts = hierarchyPath.Split(separator: '/');
+
+            cleanNames = new string[pathParts.Length];
+            indices = new int[pathParts.Length];
+            for (var i = 0; i < pathParts.Length; i += 1)
+            {
+                indices[i] = 0;
+                var itemParts = pathParts[i]
+                   .Split(separator: '[');
+                cleanNames[i] = itemParts[0];
+
+                if (itemParts.Length == 1)
+                {
+                    continue;
+                }
+
+                if (itemParts.Length != 2)
+                {
+                    throw new ArgumentException(message: "Invalid path format",
+                        paramName: nameof(hierarchyPath));
+                }
+
+                var indexParts = itemParts[1]
+                   .Split(separator: ']');
+                if (indexParts.Length != 2 || !String.IsNullOrEmpty(value: indexParts[1]))
+                {
+                    throw new ArgumentException(
+                        message: $"Invalid path format: malformed brackets in '{pathParts[i]}'",
+                        paramName: nameof(hierarchyPath));
+                }
+
+                var indexString = indexParts[0];
+                var shouldFlip = false;
+                if (indexString.StartsWith(value: "^"))
+                {
+                    shouldFlip = true;
+                    indexString = indexString.Substring(startIndex: 1);
+                }
+
+                if (!Int32.TryParse(s: indexString, result: out var index))
+                {
+                    throw new ArgumentException(
+                        message:
+                        $"Invalid path format: invalid index '{indexString}' in '{pathParts[i]}'",
+                        paramName: nameof(hierarchyPath));
+                }
+
+                indices[i] = shouldFlip
+                    ? -index
+                    : index;
+            }
+        }
+
+        #endregion
+
+        #region Object Selection
+
+        private static GameObject PickRootByNameAndIndex(this Scene scene, string name, int index)
+        {
+            var roots = scene.GetRootGameObjects();
+            var count = 0;
+            if (index >= 0)
+            {
+                foreach (var t in roots)
+                {
+                    if (t.name != name)
+                    {
+                        continue;
+                    }
+
+                    if (count == index)
+                    {
+                        return t;
+                    }
+
+                    count += 1;
+                }
+
+                return null;
+            }
+
+            var targetFromEnd = -index - 1;
+            for (var i = roots.Length - 1; i >= 0; i -= 1)
+            {
+                if (roots[i].name != name)
+                {
+                    continue;
+                }
+
+                if (count == targetFromEnd)
+                {
+                    return roots[i];
+                }
+
+                count += 1;
+            }
+
+            return null;
+        }
+
+        private static Transform PickChildByNameAndIndex(this Transform parent, string name,
+            int index)
+        {
+            var count = 0;
+            if (index >= 0)
+            {
+                for (var i = 0; i < parent.childCount; i += 1)
+                {
+                    var child = parent.GetChild(index: i);
+                    if (child.name != name)
+                    {
+                        continue;
+                    }
+
+                    if (count == index)
+                    {
+                        return child;
+                    }
+
+                    count += 1;
+                }
+
+                return null;
+            }
+
+            var targetFromEnd = -index - 1;
+            for (var i = parent.childCount - 1; i >= 0; i -= 1)
+            {
+                var child = parent.GetChild(index: i);
+                if (child.name != name)
+                {
+                    continue;
+                }
+
+                if (count == targetFromEnd)
+                {
+                    return child;
+                }
+
+                count += 1;
+            }
+
+            return null;
+        }
+
         private static int GetSameNameIndex(this Transform transform)
         {
             var parent = transform.parent;
@@ -544,7 +569,7 @@ namespace DebugUtils.Unity
             {
                 var currentScene = transform.gameObject.scene;
                 var roots = currentScene.GetRootGameObjects();
-                for (var i = 0; i < roots.Length; i++)
+                for (var i = 0; i < roots.Length; i += 1)
                 {
                     var rootCandidate = roots[i];
                     if (rootCandidate.name != transform.name)
@@ -564,7 +589,7 @@ namespace DebugUtils.Unity
             }
 
             // Find siblings with the same name
-            for (int i = 0, n = parent.childCount; i < n; i++)
+            for (int i = 0, n = parent.childCount; i < n; i += 1)
             {
                 var child = parent.GetChild(index: i);
                 if (child.name != transform.name)
@@ -582,5 +607,7 @@ namespace DebugUtils.Unity
 
             return 0; // fallback
         }
+
+        #endregion
     }
 }
