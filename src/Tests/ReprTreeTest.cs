@@ -1273,7 +1273,7 @@ namespace DebugUtils.Unity.Tests
                 t1: new JObject
                 {
                     [propertyName: "type"] = "double", [propertyName: "kind"] = "struct",
-                    [propertyName: "value"] = "2.0E2"
+                    [propertyName: "value"] = "200"
                 },
                 t2: tempSetting[key: "value"]));
 
@@ -1286,7 +1286,7 @@ namespace DebugUtils.Unity.Tests
                 t1: new JObject
                 {
                     [propertyName: "type"] = "double", [propertyName: "kind"] = "struct",
-                    [propertyName: "value"] = "3.0E1"
+                    [propertyName: "value"] = "30"
                 },
                 t2: speedSetting[key: "value"]));
         }
