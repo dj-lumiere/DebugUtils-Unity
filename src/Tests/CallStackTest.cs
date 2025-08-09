@@ -1,8 +1,5 @@
 using System;
 using NUnit.Framework;
-using DebugUtils.Unity.CallStack;
-using UnityEngine;
-using UnityEngine.TestTools;
 
 namespace DebugUtils.Unity.Tests
 {
@@ -11,7 +8,7 @@ namespace DebugUtils.Unity.Tests
         [Test]
         public void TestGetCallerName_Basic()
         {
-            var callerName = CallStack.CallStack.GetCallerName();
+            var callerName = CallStack.GetCallerName();
             Assert.AreEqual(expected: "CallStackTest.TestGetCallerName_Basic",
                 actual: callerName);
         }
@@ -20,7 +17,7 @@ namespace DebugUtils.Unity.Tests
         {
             public string GetCallerNameFromNested()
             {
-                return CallStack.CallStack.GetCallerName();
+                return CallStack.GetCallerName();
             }
         }
 
@@ -36,7 +33,7 @@ namespace DebugUtils.Unity.Tests
         [Test]
         public void TestGetCallerName_FromLambda()
         {
-            var lambdaCaller = new Func<string>(CallStack.CallStack.GetCallerName);
+            var lambdaCaller = new Func<string>(CallStack.GetCallerName);
             var callerName = lambdaCaller();
             // The exact name for lambda can vary based on compiler, but it should contain the test method name
             Assert.AreEqual(expected: "CallStackTest.TestGetCallerName_FromLambda",
@@ -46,9 +43,9 @@ namespace DebugUtils.Unity.Tests
         [Test]
         public void TestGetCallerInfo_Basic()
         {
-            var callerInfo = CallStack.CallStack.GetCallerInfo();
+            var callerInfo = CallStack.GetCallerInfo();
             Assert.AreEqual(
-                expected: "CallStackTest.TestGetCallerInfo_Basic@CallStackTest.cs:43:9",
+                expected: "CallStackTest.TestGetCallerInfo_Basic@CallStackTest.cs:46:13",
                 actual: callerInfo.ToString());
         }
     }
