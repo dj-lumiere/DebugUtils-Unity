@@ -4,7 +4,7 @@ using System.Numerics;
 using System.Text;
 using DebugUtils.Unity.Repr.TypeHelpers;
 
-namespace DebugUtils.Unity.Repr.Formatters
+namespace DebugUtils.Unity.Repr.Extensions
 {
     internal static class IntegerExtensions
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 
-namespace DebugUtils.Unity.Repr.Formatters
+namespace DebugUtils.Unity.Repr.Extensions
 {
     internal static class ArrayExtensions
     {

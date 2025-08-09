@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using DebugUtils.Unity.Repr.TypeHelpers;
 
-namespace DebugUtils.Unity.Repr.Formatters
+namespace DebugUtils.Unity.Repr.Models
 {
     internal readonly struct FunctionDetails
     {

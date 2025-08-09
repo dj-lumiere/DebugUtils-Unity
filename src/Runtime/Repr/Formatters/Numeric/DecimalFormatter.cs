@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
 using Unity.Plastic.Newtonsoft.Json.Linq;

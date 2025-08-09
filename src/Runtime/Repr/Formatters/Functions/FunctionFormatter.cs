@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Interfaces;
+using DebugUtils.Unity.Repr.Models;
 using DebugUtils.Unity.Repr.TypeHelpers;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 
