@@ -80,13 +80,13 @@ public class UIManager : MonoBehaviour
     private void Start()
     {
         // Find UI elements with simple paths
-        Button playButton = SceneNavigator.FindComponentAtPath<Button>("Canvas/MainMenu/PlayButton");
-        Text statusText = SceneNavigator.FindComponentAtPath<Text>("Canvas/HUD/StatusText");
+        Button playButton = SceneNavigator.FindComponentByPath<Button>("Canvas/MainMenu/PlayButton");
+        Text statusText = SceneNavigator.FindComponentByPath<Text>("Canvas/HUD/StatusText");
         
         if (playButton != null)
         {
             playButton.onClick.AddListener(StartGame);
-            Debug.Log($"Play button found at: {playButton.gameObject.RetrievePath()}");
+            Debug.Log($"Play button found at: {playButton.gameObject.GetScenePath()}");
         }
     }
 }
@@ -231,13 +231,13 @@ public class UIController : MonoBehaviour
     private void Start()
     {
         // Find UI elements with readable paths
-        Button playBtn = SceneNavigator.FindComponentAtPath<Button>("Canvas/MainMenu/PlayButton");
-        Text scoreText = SceneNavigator.FindComponentAtPath<Text>("Canvas/HUD/ScoreText");
-        Slider volumeSlider = SceneNavigator.FindComponentAtPath<Slider>("Canvas/Settings/Audio/VolumeSlider");
+        Button playBtn = SceneNavigator.FindComponentByPath<Button>("Canvas/MainMenu/PlayButton");
+        Text scoreText = SceneNavigator.FindComponentByPath<Text>("Canvas/HUD/ScoreText");
+        Slider volumeSlider = SceneNavigator.FindComponentByPath<Slider>("Canvas/Settings/Audio/VolumeSlider");
         
         if (playBtn != null)
         {
-            Debug.Log($"Found play button at: {playBtn.gameObject.RetrievePath()}");
+            Debug.Log($"Found play button at: {playBtn.gameObject.GetScenePath()}");
             playBtn.onClick.AddListener(StartGame);
         }
     }
@@ -245,7 +245,7 @@ public class UIController : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         var caller = CallStack.GetCallerName();
-        string otherPath = other.gameObject.RetrievePath();
+        string otherPath = other.gameObject.GetScenePath();
         Debug.Log($"[{caller}] Collision with object at: {otherPath}");
     }
 }
@@ -379,7 +379,7 @@ public class CollisionHandler : MonoBehaviour
         var caller = CallStack.GetCallerInfo();
         Debug.Log($"[{caller}] Collision with: {collision.gameObject.Repr()}");
         Debug.Log($"[{caller}] Contact points: {collision.contacts.Repr()}");
-        Debug.Log($"[{caller}] Object path: {collision.gameObject.RetrievePath()}");
+        Debug.Log($"[{caller}] Object path: {collision.gameObject.GetScenePath()}");
     }
 }
 ```
