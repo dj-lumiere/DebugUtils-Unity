@@ -1,5 +1,5 @@
 #nullable enable
-namespace DebugUtils.Unity.CallStack
+namespace DebugUtils.Unity
 {
     /// <summary>
     /// Represents information about the caller of a method, including class name, method name,

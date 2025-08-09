@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace DebugUtils.Unity.CallStack
+namespace DebugUtils.Unity
 {
     /// <summary>
     /// Provides utilities for inspecting the call stack and retrieving caller information.
