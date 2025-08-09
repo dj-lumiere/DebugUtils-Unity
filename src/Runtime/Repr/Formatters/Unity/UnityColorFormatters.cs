@@ -53,7 +53,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             var vByte = (byte)(v * 255);
             return new JObject
             {
-                [propertyName: "type"] = "Color",
+                [propertyName: "type"] = "Color32",
                 [propertyName: "kind"] = "struct",
                 [propertyName: "r"] = t.r.FormatAsJToken(context: context.WithIncrementedDepth()),
                 [propertyName: "g"] = t.g.FormatAsJToken(context: context.WithIncrementedDepth()),
