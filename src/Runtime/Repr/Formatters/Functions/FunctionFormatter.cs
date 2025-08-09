@@ -82,10 +82,10 @@ namespace DebugUtils.Unity.Repr.Formatters
 
             var result = new JObject();
             result.Add(propertyName: "name", value: new JValue(value: details.Name));
-            result.Add(propertyName: "parameters",
-                value: details.Parameters.FormatAsJToken(context: context.WithIncrementedDepth()));
             result.Add(propertyName: "returnType",
                 value: new JValue(value: details.ReturnTypeReprName));
+            result.Add(propertyName: "modifiers",
+                value: details.Modifiers.FormatAsJToken(context: context.WithIncrementedDepth()));
             var parameters = new JArray();
             foreach (var parameter in details.Parameters)
             {
