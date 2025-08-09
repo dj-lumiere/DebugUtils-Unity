@@ -126,10 +126,8 @@ namespace DebugUtils.Unity.Repr.Formatters
         {
             return info.TypeName switch
             {
-                #if NET5_0_OR_GREATER
-            FloatTypeKind.Half =>
-                $"{(Half)obj}",
-                #endif
+                FloatTypeKind.Half =>
+                    $"{(Half)obj}",
                 FloatTypeKind.Float =>
                     $"{(float)obj}",
                 FloatTypeKind.Double =>
@@ -146,10 +144,8 @@ namespace DebugUtils.Unity.Repr.Formatters
                 : 0);
             return info.TypeName switch
             {
-                #if NET5_0_OR_GREATER
-            FloatTypeKind.Half =>
-                $"{((Half)obj).ToString(format: scientificFormatString)}",
-                #endif
+                FloatTypeKind.Half =>
+                    $"{((Half)obj).ToString(format: scientificFormatString)}",
                 FloatTypeKind.Float =>
                     $"{((float)obj).ToString(format: scientificFormatString)}",
                 FloatTypeKind.Double =>
