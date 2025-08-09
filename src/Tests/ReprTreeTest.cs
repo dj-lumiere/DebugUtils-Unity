@@ -2071,12 +2071,12 @@ namespace DebugUtils.Unity.Tests
         public delegate void Add4Delegate(in int a, out int b);
 
         [Test]
-        private void TestFunction()
+        public void TestFunction()
         {
             var Add5 = new Func<int, int>((a) => a + 1);
             var a = new Func<int, int, int>(Add);
             var b = new Func<int, long>(Add2);
-            var c = new Func<int, int>(Add3);
+            var c = new Func<short, short>(Add3);
             Add4Delegate d = Add4;
             var e = new Func<int, Task<int>>(Lambda);
 
