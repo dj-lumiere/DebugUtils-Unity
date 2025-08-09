@@ -170,6 +170,7 @@ namespace DebugUtils.Unity.Repr.Formatters
         public JToken ToReprTree(object obj, ReprContext context)
         {
             var type = obj.GetType();
+            context = context.WithContainerConfig();
 
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
             {
