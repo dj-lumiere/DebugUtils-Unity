@@ -98,19 +98,19 @@ namespace DebugUtils.Unity.Repr
         /// // Basic usage
         /// var list = new List&lt;int&gt; { 1, 2, 3 };
         /// Console.WriteLine(list.Repr()); 
-        /// // Output: [1, 2, 3]
+        /// // Output: [int(1), int(2), int(3)]
         ///
         /// 
         /// // With custom configuration
         /// var config = new ReprConfig(FloatMode: FloatReprMode.Exact);
         /// Console.WriteLine(3.14f.Repr(config)); 
-        /// // Output: 3.1400001049041748046875E0
+        /// // Output: float(3.1400001049041748046875E0)
         ///
         /// 
         /// // Nullable types
         /// int? nullable = 123;
         /// Console.WriteLine(nullable.Repr()); 
-        /// // Output: 123
+        /// // Output: int?(123)
         ///
         /// 
         /// // Circular reference detection
@@ -118,7 +118,7 @@ namespace DebugUtils.Unity.Repr
         /// var child = new Node { Name = "Child", Parent = parent };
         /// parent.Child = child;
         /// Console.WriteLine(parent.Repr());
-        /// // Output: Name: "Parent", Child: Name: "Child", Parent: &lt;Circular Reference to Node @A1B2C3D4&gt;
+        /// // Output: Name: "Parent", Child: Name: "Child", Parent: &lt;Circular Reference to Node @0xA1B2C3D4&gt;
         /// </code>
         /// </example>
         /// <exception cref="StackOverflowException">
@@ -145,7 +145,7 @@ namespace DebugUtils.Unity.Repr
         /// Should be configured for hierarchical mode for optimal results.
         /// </param>
         /// <returns>
-        /// A formatted JSON string representing the complete structure of the object, including:
+        /// A formatted JSON string representing the complete structure of the object including
         /// - Type information for all values
         /// - Object relationships and hierarchies  
         /// - Circular reference markers where detected
