@@ -67,6 +67,8 @@ namespace DebugUtils.Unity.Repr.Formatters
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
+            // Apply container defaults if configured
+            context = context.WithContainerConfig();
             var details = (FunctionDetails)obj;
             var type = details.GetType();
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)

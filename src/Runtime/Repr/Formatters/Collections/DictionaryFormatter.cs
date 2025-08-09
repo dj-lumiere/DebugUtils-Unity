@@ -14,14 +14,14 @@ namespace DebugUtils.Unity.Repr.Formatters
     {
         public string ToRepr(object obj, ReprContext context)
         {
+            // Apply container defaults if configured
+            context = context.WithContainerConfig();
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
             {
                 return "<Max Depth Reached>";
             }
 
             var dict = (IDictionary)obj;
-            // Apply container defaults if configured
-            context = context.WithContainerConfig();
 
             if (dict.Count == 0)
             {
@@ -59,6 +59,8 @@ namespace DebugUtils.Unity.Repr.Formatters
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
+            // Apply container defaults if configured
+            context = context.WithContainerConfig();
             var dict = (IDictionary)obj;
             var type = dict.GetType();
 

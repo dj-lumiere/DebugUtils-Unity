@@ -14,14 +14,14 @@ namespace DebugUtils.Unity.Repr.Formatters
     {
         public string ToRepr(object obj, ReprContext context)
         {
+            // Apply container defaults if configured
+            context = context.WithContainerConfig();
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
             {
                 return "<Max Depth Reached>";
             }
 
             var array = (Array)obj;
-            // Apply container defaults if configured
-            context = context.WithContainerConfig();
 
             var rank = array.Rank;
             var content = array.ArrayToReprRecursive(indices: new int[rank], dimension: 0,
@@ -31,6 +31,8 @@ namespace DebugUtils.Unity.Repr.Formatters
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
+            // Apply container defaults if configured
+            context = context.WithContainerConfig();
             var array = (Array)obj;
             var type = array.GetType();
 
@@ -62,8 +64,6 @@ namespace DebugUtils.Unity.Repr.Formatters
             result.Add(propertyName: "rank", value: new JValue(value: array.Rank));
             result.Add(propertyName: "dimensions", value: dimensions);
             result.Add(propertyName: "elementType", value: new JValue(value: elementType));
-            // Apply container defaults if configured
-            context = context.WithContainerConfig();
 
             var rank = array.Rank;
             var content = array.ArrayToHierarchicalReprRecursive(indices: new int[rank],

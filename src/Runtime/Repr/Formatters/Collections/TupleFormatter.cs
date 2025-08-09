@@ -13,6 +13,8 @@ namespace DebugUtils.Unity.Repr.Formatters
     {
         public string ToRepr(object obj, ReprContext context)
         {
+            // Apply container defaults if configured
+            context = context.WithContainerConfig();
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
             {
                 return "<Max Depth Reached>";
@@ -55,6 +57,8 @@ namespace DebugUtils.Unity.Repr.Formatters
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
+            // Apply container defaults if configured
+            context = context.WithContainerConfig();
             var tuple = (ITuple)obj;
             var type = tuple.GetType();
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
