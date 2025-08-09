@@ -99,16 +99,19 @@ namespace DebugUtils.Unity.Repr
         /// var list = new List&lt;int&gt; { 1, 2, 3 };
         /// Console.WriteLine(list.Repr()); 
         /// // Output: [1, 2, 3]
+        ///
         /// 
         /// // With custom configuration
         /// var config = new ReprConfig(FloatMode: FloatReprMode.Exact);
         /// Console.WriteLine(3.14f.Repr(config)); 
         /// // Output: 3.1400001049041748046875E0
+        ///
         /// 
         /// // Nullable types
         /// int? nullable = 123;
         /// Console.WriteLine(nullable.Repr()); 
         /// // Output: 123
+        ///
         /// 
         /// // Circular reference detection
         /// var parent = new Node { Name = "Parent" };
@@ -242,6 +245,7 @@ namespace DebugUtils.Unity.Repr
         ///     
         ///     return string.Join(", ", parts);
         /// }
+        ///
         /// 
         /// // Plugin usage:
         /// var sharedContext = new ReprContext(myConfig);
@@ -312,6 +316,7 @@ namespace DebugUtils.Unity.Repr
         ///         ["Metadata"] = container.Meta.FormatAsJToken(context.WithIncrementedDepth())
         ///     };
         /// }
+        ///
         /// 
         /// // Plugin building custom structure:
         /// var context = new ReprContext(config);
