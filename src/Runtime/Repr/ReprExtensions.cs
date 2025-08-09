@@ -2,8 +2,8 @@
 using System;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
-using Unity.Plastic.Newtonsoft.Json.Linq;
-using Unity.Plastic.Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace DebugUtils.Unity.Repr
 {
@@ -189,14 +189,10 @@ namespace DebugUtils.Unity.Repr
             var context = config == null
                 ? new ReprContext()
                 : new ReprContext(config: config);
-            var settings = new JsonSerializerSettings
-            {
-                Formatting = config?.EnablePrettyPrintForReprTree ?? false
-                    ? Formatting.Indented
-                    : Formatting.None
-            };
-            return JsonConvert.SerializeObject(value: obj.ToReprTree(context: context),
-                settings: settings);
+            var jToken = obj.ToReprTree(context: context);
+            return config?.EnablePrettyPrintForReprTree ?? false
+                ? jToken.ToString(formatting: Formatting.Indented)
+                : jToken.ToString(formatting: Formatting.None);
         }
 
         #endregion

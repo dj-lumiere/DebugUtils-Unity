@@ -1,6 +1,6 @@
 ﻿using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Interfaces;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace DebugUtils.Unity.Repr.Formatters
@@ -18,11 +18,12 @@ namespace DebugUtils.Unity.Repr.Formatters
         public JToken ToReprTree(object obj, ReprContext context)
         {
             var t = (Color)obj;
+            context = context.WithContainerConfig();
             Color.RGBToHSV(rgbColor: t, H: out var h, S: out var s, V: out var v);
             return new JObject
             {
-                [propertyName: "type"] = "Color",
-                [propertyName: "kind"] = "struct",
+                [propertyName: "type"] = new JValue(value: "Color"),
+                [propertyName: "kind"] = new JValue(value: "struct"),
                 [propertyName: "r"] = t.r.FormatAsJToken(context: context.WithIncrementedDepth()),
                 [propertyName: "g"] = t.g.FormatAsJToken(context: context.WithIncrementedDepth()),
                 [propertyName: "b"] = t.b.FormatAsJToken(context: context.WithIncrementedDepth()),
@@ -47,14 +48,15 @@ namespace DebugUtils.Unity.Repr.Formatters
         public JToken ToReprTree(object obj, ReprContext context)
         {
             var t = (Color32)obj;
+            context = context.WithContainerConfig();
             Color.RGBToHSV(rgbColor: t, H: out var h, S: out var s, V: out var v);
             var hByte = (byte)(h * 255);
             var sByte = (byte)(s * 255);
             var vByte = (byte)(v * 255);
             return new JObject
             {
-                [propertyName: "type"] = "Color32",
-                [propertyName: "kind"] = "struct",
+                [propertyName: "type"] = new JValue(value: "Color32"),
+                [propertyName: "kind"] = new JValue(value: "struct"),
                 [propertyName: "r"] = t.r.FormatAsJToken(context: context.WithIncrementedDepth()),
                 [propertyName: "g"] = t.g.FormatAsJToken(context: context.WithIncrementedDepth()),
                 [propertyName: "b"] = t.b.FormatAsJToken(context: context.WithIncrementedDepth()),

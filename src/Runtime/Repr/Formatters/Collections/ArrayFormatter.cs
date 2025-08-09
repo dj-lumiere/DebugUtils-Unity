@@ -4,7 +4,7 @@ using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -38,10 +38,10 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 return new JObject
                 {
-                    [propertyName: "type"] = type.GetReprTypeName(),
-                    [propertyName: "kind"] = type.GetTypeKind(),
-                    [propertyName: "maxDepthReached"] = "true",
-                    [propertyName: "depth"] = context.Depth
+                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
+                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
+                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
+                    [propertyName: "depth"] = new JValue(value: context.Depth)
                 };
             }
 
@@ -49,19 +49,19 @@ namespace DebugUtils.Unity.Repr.Formatters
             var elementType = array.GetType()
                                    .GetElementType()
                                   ?.GetReprTypeName() ?? "object";
-            result.Add(propertyName: "type", value: type.GetReprTypeName());
-            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
+            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
             result.Add(propertyName: "hashCode",
-                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+                value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}"));
             var dimensions = new JArray();
             for (var i = 0; i < array.Rank; i += 1)
             {
                 dimensions.Add(item: array.GetLength(dimension: i));
             }
 
-            result.Add(propertyName: "rank", value: array.Rank);
+            result.Add(propertyName: "rank", value: new JValue(value: array.Rank));
             result.Add(propertyName: "dimensions", value: dimensions);
-            result.Add(propertyName: "elementType", value: elementType);
+            result.Add(propertyName: "elementType", value: new JValue(value: elementType));
             // Apply container defaults if configured
             context = context.WithContainerConfig();
 

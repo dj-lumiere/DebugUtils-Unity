@@ -4,7 +4,7 @@ using System.Text;
 using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -36,12 +36,12 @@ namespace DebugUtils.Unity.Repr.Formatters
             }
 
             var result = new JObject();
-            result.Add(propertyName: "type", value: "string");
-            result.Add(propertyName: "kind", value: "class");
+            result.Add(propertyName: "type", value: new JValue(value: "string"));
+            result.Add(propertyName: "kind", value: new JValue(value: "class"));
             result.Add(propertyName: "hashCode",
-                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
-            result.Add(propertyName: "length", value: s.Length);
-            result.Add(propertyName: "value", value: s);
+                value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}"));
+            result.Add(propertyName: "length", value: new JValue(value: s.Length));
+            result.Add(propertyName: "value", value: new JValue(value: s));
             return result;
         }
     }
@@ -70,10 +70,11 @@ namespace DebugUtils.Unity.Repr.Formatters
             var type = obj.GetType();
             var sb = (StringBuilder)obj;
             var s = sb.ToString();
-            result.Add(propertyName: "type", value: type.GetReprTypeName());
-            result.Add(propertyName: "kind", value: type.GetTypeKind());
-            result.Add(propertyName: "hashCode", value: RuntimeHelpers.GetHashCode(o: obj));
-            result.Add(propertyName: "length", value: s.Length);
+            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
+            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
+            result.Add(propertyName: "hashCode",
+                value: new JValue(value: RuntimeHelpers.GetHashCode(o: obj)));
+            result.Add(propertyName: "length", value: new JValue(value: s.Length));
             result.Add(propertyName: "value", value: ToRepr(obj: obj, context: context));
             return result;
         }
@@ -110,35 +111,13 @@ namespace DebugUtils.Unity.Repr.Formatters
         {
             var c = (char)obj;
             var result = new JObject();
-            result.Add(propertyName: "type", value: "char");
-            result.Add(propertyName: "kind", value: "struct");
+            result.Add(propertyName: "type", value: new JValue(value: "char"));
+            result.Add(propertyName: "kind", value: new JValue(value: "struct"));
             // should truncate ' prefix and suffix
-            result.Add(propertyName: "value", value: ToRepr(obj: c, context: context)[1..^1]);
-            result.Add(propertyName: "unicodeValue", value: $"0x{(int)c:X4}");
+            result.Add(propertyName: "value",
+                value: new JValue(value: ToRepr(obj: c, context: context)[1..^1]));
+            result.Add(propertyName: "unicodeValue", value: new JValue(value: $"0x{(int)c:X4}"));
             return result;
         }
     }
-
-    #if NET5_0_OR_GREATER
-    [ReprFormatter(typeof(Rune))]
-    [ReprOptions(needsPrefix: true)]
-    internal class RuneFormatter : IReprFormatter, IReprTreeFormatter
-    {
-        public string ToRepr(object obj, ReprContext context)
-        {
-            return $"{(Rune)obj} @ \\U{((Rune)obj).Value:X8}";
-        }
-
-        public JToken ToReprTree(object obj, ReprContext context)
-        {
-            var rune = (Rune)obj;
-            var result = new JObject();
-            result.Add("type", "Rune");
-            result.Add("kind", "struct");
-            result.Add("value", rune.ToString());
-            result.Add("unicodeValue", $"0x{rune.Value:X8}");
-            return result;
-        }
-    }
-    #endif
 }

@@ -2,7 +2,7 @@
 using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -21,9 +21,10 @@ namespace DebugUtils.Unity.Repr.Formatters
         {
             var result = new JObject();
             var type = obj.GetType();
-            result.Add(propertyName: "type", value: type.GetReprTypeName());
-            result.Add(propertyName: "kind", value: type.GetTypeKind());
-            result.Add(propertyName: "value", value: ToRepr(obj: obj, context: context));
+            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
+            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
+            result.Add(propertyName: "value",
+                value: new JValue(value: ToRepr(obj: obj, context: context)));
             return result;
         }
     }
@@ -48,9 +49,9 @@ namespace DebugUtils.Unity.Repr.Formatters
             var underlyingType = Enum.GetUnderlyingType(enumType: e.GetType());
             var numericValue = Convert.ChangeType(value: e, conversionType: underlyingType);
 
-            result.Add(propertyName: "type", value: e.GetReprTypeName());
-            result.Add(propertyName: "kind", value: "enum");
-            result.Add(propertyName: "name", value: e.ToString());
+            result.Add(propertyName: "type", value: new JValue(value: e.GetReprTypeName()));
+            result.Add(propertyName: "kind", value: new JValue(value: "enum"));
+            result.Add(propertyName: "name", value: new JValue(value: e.ToString()));
             result.Add(propertyName: "value",
                 value: numericValue.FormatAsJToken(context: context));
             return result;

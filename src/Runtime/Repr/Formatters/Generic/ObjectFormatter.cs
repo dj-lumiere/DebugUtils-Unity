@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -124,7 +124,7 @@ namespace DebugUtils.Unity.Repr.Formatters
                                           bindingAttr: BindingFlags.NonPublic |
                                                        BindingFlags.Instance)
                                      .Where(predicate: p =>
-                                          p.CanRead && p.GetMethod.IsPublic &&
+                                          p.CanRead &&
                                           !p.Name.IsCompilerGeneratedName());
             foreach (var prop in nonPublicProperties)
             {
@@ -175,20 +175,20 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 return new JObject
                 {
-                    [propertyName: "type"] = type.GetReprTypeName(),
-                    [propertyName: "kind"] = type.GetTypeKind(),
-                    [propertyName: "maxDepthReached"] = "true",
-                    [propertyName: "depth"] = context.Depth
+                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
+                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
+                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
+                    [propertyName: "depth"] = new JValue(value: context.Depth)
                 };
             }
 
             var result = new JObject();
-            result.Add(propertyName: "type", value: type.GetReprTypeName());
-            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
+            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
             if (!type.IsValueType)
             {
                 result.Add(propertyName: "hashCode",
-                    value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+                    value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}"));
             }
 
             var propertyCount = 0;
@@ -233,7 +233,8 @@ namespace DebugUtils.Unity.Repr.Formatters
                 }
                 catch (Exception ex)
                 {
-                    result.Add(propertyName: prop.Name, value: $"Error: {ex.Message}");
+                    result.Add(propertyName: prop.Name,
+                        value: new JValue(value: $"Error: {ex.Message}"));
                 }
 
                 propertyCount += 1;
@@ -294,7 +295,7 @@ namespace DebugUtils.Unity.Repr.Formatters
                 catch (Exception ex)
                 {
                     result.Add(propertyName: $"private_{prop.Name}",
-                        value: $"Error: {ex.Message}");
+                        value: new JValue(value: $"Error: {ex.Message}"));
                 }
 
                 propertyCount += 1;

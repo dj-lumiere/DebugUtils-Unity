@@ -2,7 +2,7 @@
 using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace DebugUtils.Unity.Repr.Formatters
@@ -19,20 +19,35 @@ namespace DebugUtils.Unity.Repr.Formatters
         }
         public JToken ToReprTree(object obj, ReprContext context)
         {
-            if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
-            {
-                return new JValue(value: "<Max Depth Reached>");
-            }
-
             var t = (GameObject)obj;
             var result = new JObject();
             var type = obj.GetType();
             var kind = type.GetTypeKind();
-            result.Add(propertyName: "type", value: type.GetReprTypeName());
-            result.Add(propertyName: "kind", value: kind);
-            result.Add(propertyName: "name", value: t.name);
-            result.Add(propertyName: "hashCode", value: $"{RuntimeHelpers.GetHashCode(o: t):X8}");
-            result.Add(propertyName: "path", value: t.gameObject.GetScenePath());
+
+            if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
+            {
+                return new JObject
+                {
+                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
+                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
+                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
+                    [propertyName: "depth"] = new JValue(value: context.Depth)
+                };
+            }
+
+            context = context.WithContainerConfig();
+
+            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
+            result.Add(propertyName: "kind", value: new JValue(value: kind));
+            result.Add(propertyName: "name", value: new JValue(value: t.name));
+            result.Add(propertyName: "hashCode",
+                value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: t):X8}"));
+            if (context.Depth == 0)
+            {
+                result.Add(propertyName: "path",
+                    value: new JValue(value: t.gameObject.GetScenePath()));
+            }
+
             result.Add(propertyName: "position",
                 value: t.transform.position.FormatAsJToken(
                     context: context.WithIncrementedDepth()));
@@ -63,11 +78,11 @@ namespace DebugUtils.Unity.Repr.Formatters
                 childCount > context.Config.MaxElementsPerCollection)
             {
                 var truncatedCount = childCount - context.Config.MaxElementsPerCollection;
-                children.Add(item: new JValue(value: $"... {truncatedCount} more children"));
+                children.Add(item: $"... ({truncatedCount} more items)");
             }
 
+            result.Add(propertyName: "childCount", value: new JValue(value: childCount));
             result.Add(propertyName: "children", value: children);
-            result.Add(propertyName: "childCount", value: childCount);
 
             return result;
         }
@@ -84,20 +99,34 @@ namespace DebugUtils.Unity.Repr.Formatters
         }
         public JToken ToReprTree(object obj, ReprContext context)
         {
-            if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
-            {
-                return new JValue(value: "<Max Depth Reached>");
-            }
-
             var t = (Transform)obj;
             var result = new JObject();
             var type = obj.GetType();
             var kind = type.GetTypeKind();
-            result.Add(propertyName: "type", value: type.GetReprTypeName());
-            result.Add(propertyName: "kind", value: kind);
-            result.Add(propertyName: "name", value: t.name);
-            result.Add(propertyName: "hashCode", value: $"{RuntimeHelpers.GetHashCode(o: t):X8}");
-            result.Add(propertyName: "path", value: t.gameObject.GetScenePath());
+
+            if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
+            {
+                return new JObject
+                {
+                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
+                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
+                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
+                    [propertyName: "depth"] = new JValue(value: context.Depth)
+                };
+            }
+
+            context = context.WithContainerConfig();
+            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
+            result.Add(propertyName: "kind", value: new JValue(value: kind));
+            result.Add(propertyName: "name", value: new JValue(value: t.name));
+            result.Add(propertyName: "hashCode",
+                value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: t):X8}"));
+            if (context.Depth == 0)
+            {
+                result.Add(propertyName: "path",
+                    value: new JValue(value: t.gameObject.GetScenePath()));
+            }
+
             result.Add(propertyName: "position",
                 value: t.position.FormatAsJToken(context: context.WithIncrementedDepth()));
             result.Add(propertyName: "rotation",
@@ -129,11 +158,11 @@ namespace DebugUtils.Unity.Repr.Formatters
                 childCount > context.Config.MaxElementsPerCollection)
             {
                 var truncatedCount = childCount - context.Config.MaxElementsPerCollection;
-                children.Add(item: new JValue(value: $"... {truncatedCount} more children"));
+                children.Add(item: $"... ({truncatedCount} more items)");
             }
 
-            result.Add(propertyName: "children", value: children);
-            result.Add(propertyName: "childCount", value: childCount);
+            result.Add(propertyName: "childCount", value: new JValue(value: childCount));
+            result.Add(propertyName: "children", value: new JValue(value: children));
 
             return result;
         }
@@ -158,15 +187,21 @@ namespace DebugUtils.Unity.Repr.Formatters
         {
             var rb = (Rigidbody)obj;
 
+            context = context.WithContainerConfig();
             return new JObject
             {
-                [propertyName: "type"] = "Rigidbody",
-                [propertyName: "kind"] = "class",
-                [propertyName: "hashCode"] = $"0x{RuntimeHelpers.GetHashCode(o: rb):X8}",
+                [propertyName: "type"] = new JValue(value: "Rigidbody"),
+                [propertyName: "kind"] = new JValue(value: "class"),
+                [propertyName: "hashCode"] =
+                    new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: rb):X8}"),
 
                 // Physics State
-                [propertyName: "isKinematic"] = rb.isKinematic,
-                [propertyName: "useGravity"] = rb.useGravity,
+                [propertyName: "isKinematic"] = new JValue(value: rb.isKinematic
+                   .ToString()
+                   .ToLowerInvariant()),
+                [propertyName: "useGravity"] = new JValue(value: rb.useGravity
+                   .ToString()
+                   .ToLowerInvariant()),
                 [propertyName: "mass"] =
                     rb.mass.FormatAsJToken(context: context.WithIncrementedDepth()),
                 [propertyName: "linearDamping"] =
@@ -192,19 +227,28 @@ namespace DebugUtils.Unity.Repr.Formatters
                         context: context.WithIncrementedDepth()),
 
                 // Constraints
-                [propertyName: "freezeRotation"] = rb.freezeRotation,
-                [propertyName: "constraints"] = rb.constraints.ToString(),
+                [propertyName: "freezeRotation"] = new JValue(value: rb.freezeRotation
+                   .ToString()
+                   .ToLowerInvariant()),
+                [propertyName: "constraints"] =
+                    rb.constraints.FormatAsJToken(context: context.WithIncrementedDepth()),
 
                 // Sleep State
-                [propertyName: "sleepThreshold"] = rb.sleepThreshold,
-                [propertyName: "IsSleeping"] = rb.IsSleeping(),
+                [propertyName: "sleepThreshold"] =
+                    rb.sleepThreshold.FormatAsJToken(context: context.WithIncrementedDepth()),
+                [propertyName: "IsSleeping"] = new JValue(value: rb.IsSleeping()
+                   .ToString()
+                   .ToLowerInvariant()),
 
                 // Interpolation
-                [propertyName: "interpolation"] = rb.interpolation.ToString(),
-                [propertyName: "collisionDetectionMode"] = rb.collisionDetectionMode.ToString(),
+                [propertyName: "interpolation"] =
+                    rb.interpolation.FormatAsJToken(context: context.WithIncrementedDepth()),
+                [propertyName: "collisionDetectionMode"] =
+                    rb.collisionDetectionMode.FormatAsJToken(
+                        context: context.WithIncrementedDepth()),
 
                 // GameObject reference
-                [propertyName: "gameObject"] = rb.gameObject.GetScenePath()
+                [propertyName: "gameObject"] = new JValue(value: rb.gameObject.GetScenePath())
             };
         }
     }
@@ -228,14 +272,18 @@ namespace DebugUtils.Unity.Repr.Formatters
         {
             var rb = (Rigidbody2D)obj;
 
+            context = context.WithContainerConfig();
             return new JObject
             {
-                [propertyName: "type"] = "Rigidbody2D",
-                [propertyName: "kind"] = "class",
-                [propertyName: "hashCode"] = $"0x{RuntimeHelpers.GetHashCode(o: rb):X8}",
+                [propertyName: "type"] = new JValue(value: "Rigidbody2D"),
+                [propertyName: "kind"] = new JValue(value: "class"),
 
-                // 2D Physics State
-                [propertyName: "bodyType"] = rb.bodyType.ToString(),
+                [propertyName: "hashCode"] =
+                    new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: rb):X8}"),
+
+                // Physics State
+                [propertyName: "bodyType"] =
+                    rb.bodyType.FormatAsJToken(context: context.WithIncrementedDepth()),
                 [propertyName: "gravityScale"] =
                     rb.gravityScale.FormatAsJToken(context: context.WithIncrementedDepth()),
                 [propertyName: "mass"] =
@@ -245,13 +293,13 @@ namespace DebugUtils.Unity.Repr.Formatters
                 [propertyName: "angularDamping"] =
                     rb.angularDamping.FormatAsJToken(context: context.WithIncrementedDepth()),
 
-                // 2D Motion
+                // Motion
                 [propertyName: "linearVelocity"] =
                     rb.linearVelocity.FormatAsJToken(context: context.WithIncrementedDepth()),
                 [propertyName: "angularVelocity"] =
                     rb.angularVelocity.FormatAsJToken(context: context.WithIncrementedDepth()),
 
-                // 2D Center of Mass & Inertia
+                // Center of Mass & Inertia
                 [propertyName: "centerOfMass"] =
                     rb.centerOfMass.FormatAsJToken(context: context.WithIncrementedDepth()),
                 [propertyName: "worldCenterOfMass"] =
@@ -259,21 +307,33 @@ namespace DebugUtils.Unity.Repr.Formatters
                 [propertyName: "inertia"] =
                     rb.inertia.FormatAsJToken(context: context.WithIncrementedDepth()),
 
-                // 2D Constraints
-                [propertyName: "freezeRotation"] = rb.freezeRotation,
-                [propertyName: "constraints"] = rb.constraints.ToString(),
+                // Constraints
+                [propertyName: "freezeRotation"] = new JValue(value: rb.freezeRotation
+                   .ToString()
+                   .ToLowerInvariant()),
+                [propertyName: "constraints"] =
+                    rb.constraints.FormatAsJToken(context: context.WithIncrementedDepth()),
 
                 // Sleep State
-                [propertyName: "sleepMode"] = rb.sleepMode.ToString(),
-                [propertyName: "IsSleeping"] = rb.IsSleeping(),
+                [propertyName: "sleepMode"] = rb.sleepMode
+                                                .FormatAsJToken(
+                                                     context: context.WithIncrementedDepth()),
+                [propertyName: "IsSleeping"] = new JValue(value: rb.IsSleeping()
+                   .ToString()
+                   .ToLowerInvariant()),
 
-                // 2D Specific
-                [propertyName: "interpolation"] = rb.interpolation.ToString(),
-                [propertyName: "collisionDetectionMode"] = rb.collisionDetectionMode.ToString(),
-                [propertyName: "simulated"] = rb.simulated,
+                // Interpolation
+                [propertyName: "interpolation"] =
+                    rb.interpolation.FormatAsJToken(context: context.WithIncrementedDepth()),
+                [propertyName: "collisionDetectionMode"] =
+                    rb.collisionDetectionMode.FormatAsJToken(
+                        context: context.WithIncrementedDepth()),
+                [propertyName: "simulated"] = new JValue(value: rb.simulated
+                   .ToString()
+                   .ToLowerInvariant()),
 
-                // GameObject reference  
-                [propertyName: "gameObject"] = rb.gameObject.GetScenePath()
+                // GameObject reference
+                [propertyName: "gameObject"] = new JValue(value: rb.gameObject.GetScenePath())
             };
         }
     }

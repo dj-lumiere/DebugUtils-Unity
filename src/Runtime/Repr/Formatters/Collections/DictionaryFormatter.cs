@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -66,28 +66,28 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 return new JObject
                 {
-                    [propertyName: "type"] = type.GetReprTypeName(),
-                    [propertyName: "kind"] = type.GetTypeKind(),
-                    [propertyName: "maxDepthReached"] = "true",
-                    [propertyName: "depth"] = context.Depth
+                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
+                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
+                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
+                    [propertyName: "depth"] = new JValue(value: context.Depth)
                 };
             }
 
             var result = new JObject();
             var entries = new JArray();
-            result.Add(propertyName: "type", value: type.GetReprTypeName());
-            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
+            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
             result.Add(propertyName: "hashCode",
-                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+                value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}"));
             var keyType = dict.GetType()
                               .GetGenericArguments()[0]
                               .GetReprTypeName();
             var valueType = dict.GetType()
                                 .GetGenericArguments()[1]
                                 .GetReprTypeName();
-            result.Add(propertyName: "count", value: dict.Count);
-            result.Add(propertyName: "keyType", value: keyType);
-            result.Add(propertyName: "valueType", value: valueType);
+            result.Add(propertyName: "count", value: new JValue(value: dict.Count));
+            result.Add(propertyName: "keyType", value: new JValue(value: keyType));
+            result.Add(propertyName: "valueType", value: new JValue(value: valueType));
             var count = 0;
             foreach (DictionaryEntry entry in dict)
             {
@@ -102,8 +102,7 @@ namespace DebugUtils.Unity.Repr.Formatters
                     [propertyName: "key"] =
                         entry.Key.FormatAsJToken(context: context.WithIncrementedDepth()),
                     [propertyName: "value"] =
-                        entry.Value?.FormatAsJToken(context: context.WithIncrementedDepth()) ??
-                        null
+                        entry.Value?.FormatAsJToken(context: context.WithIncrementedDepth())
                 };
                 entries.Add(item: entryJson);
                 count += 1;

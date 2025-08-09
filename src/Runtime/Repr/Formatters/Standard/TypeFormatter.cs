@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -43,39 +43,42 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 return new JObject
                 {
-                    [propertyName: "type"] = type.GetReprTypeName(),
-                    [propertyName: "kind"] = type.GetTypeKind(),
-                    [propertyName: "maxDepthReached"] = "true",
-                    [propertyName: "depth"] = context.Depth
+                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
+                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
+                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
+                    [propertyName: "depth"] = new JValue(value: context.Depth)
                 };
             }
 
             var result = new JObject();
-            result.Add(propertyName: "type", value: type.GetReprTypeName());
-            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
+            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
             result.Add(propertyName: "hashCode",
                 value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
-            result.Add(propertyName: "namespace", value: typeObject.Namespace);
-            result.Add(propertyName: "name", value: typeObject.Name);
-            result.Add(propertyName: "fullName", value: typeObject.FullName);
+            result.Add(propertyName: "namespace", value: new JValue(value: typeObject.Namespace));
+            result.Add(propertyName: "name", value: new JValue(value: typeObject.Name));
+            result.Add(propertyName: "fullName", value: new JValue(value: typeObject.FullName));
             var assemblyInfo = new JObject();
-            assemblyInfo.Add(propertyName: "name", value: typeObject.Assembly.GetName()
-               .Name);
-            assemblyInfo.Add(propertyName: "version", value: typeObject.Assembly
+            assemblyInfo.Add(propertyName: "name",
+                value: new JValue(value: typeObject.Assembly.GetName()));
+            assemblyInfo.Add(propertyName: "version", value: new JValue(value: typeObject.Assembly
                .GetName()
                .Version
-              ?.ToString());
-            assemblyInfo.Add(propertyName: "publicKeyToken", value: typeObject.Assembly
+              ?.ToString()));
+            assemblyInfo.Add(propertyName: "publicKeyToken", value: new JValue(value: typeObject
+               .Assembly
                .GetName()
                .GetPublicKeyToken()
-              ?.ToHexString() ?? "null");
-            assemblyInfo.Add(propertyName: "culture", value: typeObject.Assembly.GetName()
-               .CultureName ?? "neutral");
-            result.Add(propertyName: "assembly", value: assemblyInfo);
-            result.Add(propertyName: "guid", value: typeObject.GUID.ToString());
+              ?.ToHexString() ?? "null"));
+            assemblyInfo.Add(propertyName: "culture", value: new JValue(value: typeObject.Assembly
+               .GetName()
+               .CultureName ?? "neutral"));
+            result.Add(propertyName: "assembly", value: new JValue(value: assemblyInfo));
+            result.Add(propertyName: "guid", value: new JValue(value: typeObject.GUID.ToString()));
             result.Add(propertyName: "typeHandle",
-                value: typeObject.TypeHandle.Value.ToRepr(context: context));
-            result.Add(propertyName: "baseType", value: typeObject.BaseType?.GetReprTypeName());
+                value: new JValue(value: typeObject.TypeHandle.Value.ToRepr(context: context)));
+            result.Add(propertyName: "baseType",
+                value: new JValue(value: typeObject.BaseType?.GetReprTypeName()));
             var propertiesStartsWithIs = type
                                         .GetProperties(bindingAttr: BindingFlags.Public |
                                              BindingFlags.Instance)
@@ -121,8 +124,9 @@ namespace DebugUtils.Unity.Repr.Formatters
                 propertyCount += 1;
             }
 
-            result.Add(propertyName: "properties", value: properties);
-            result.Add(propertyName: "availableProperties", value: availableProperties);
+            result.Add(propertyName: "properties", value: new JValue(value: properties));
+            result.Add(propertyName: "availableProperties",
+                value: new JValue(value: availableProperties));
 
             return result;
         }

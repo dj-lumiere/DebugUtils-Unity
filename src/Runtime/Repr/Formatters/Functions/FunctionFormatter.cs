@@ -4,7 +4,7 @@ using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.Models;
 using DebugUtils.Unity.Repr.TypeHelpers;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -33,18 +33,17 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 return new JObject
                 {
-                    [propertyName: "type"] = "Function",
-                    [propertyName: "kind"] = type.GetTypeKind(),
-                    [propertyName: "maxDepthReached"] = true,
-                    [propertyName: "depth"] = context.Depth
+                    [propertyName: "type"] = new JValue(value: "Function"),
+                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
+                    [propertyName: "depth"] = new JValue(value: context.Depth)
                 };
             }
 
             var functionDetails = del.Method.ToFunctionDetails();
             var result = new JObject();
-            result.Add(propertyName: "type", value: "Function");
+            result.Add(propertyName: "type", value: new JValue(value: "Function"));
             result.Add(propertyName: "hashCode",
-                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+                value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}"));
             result.Add(propertyName: "properties",
                 value: functionDetails.FormatAsJToken(context: context));
             return result;
@@ -74,23 +73,27 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 return new JObject
                 {
-                    [propertyName: "type"] = type.GetReprTypeName(),
-                    [propertyName: "kind"] = type.GetTypeKind(),
-                    [propertyName: "maxDepthReached"] = "true",
-                    [propertyName: "depth"] = context.Depth
+                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
+                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
+                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
+                    [propertyName: "depth"] = new JValue(value: context.Depth)
                 };
             }
 
             var result = new JObject();
-            result.Add(propertyName: "name",
-                value: details.Name);
+            result.Add(propertyName: "name", value: new JValue(value: details.Name));
             result.Add(propertyName: "parameters",
                 value: details.Parameters.FormatAsJToken(context: context.WithIncrementedDepth()));
-            result.Add(propertyName: "type",
-                value: details.ReturnTypeReprName);
-            result.Add(propertyName: "modifier",
-                value: details.Modifiers.FormatAsJToken(
-                    context: context.WithIncrementedDepth()));
+            result.Add(propertyName: "returnType",
+                value: new JValue(value: details.ReturnTypeReprName));
+            var parameters = new JArray();
+            foreach (var parameter in details.Parameters)
+            {
+                parameters.Add(
+                    item: parameter.FormatAsJToken(context: context.WithIncrementedDepth()));
+            }
+
+            result.Add(propertyName: "parameters", value: parameters);
             return result;
         }
     }
@@ -120,7 +123,7 @@ namespace DebugUtils.Unity.Repr.Formatters
                 {
                     [propertyName: "type"] = type.GetReprTypeName(),
                     [propertyName: "kind"] = type.GetTypeKind(),
-                    [propertyName: "maxDepthReached"] = true,
+                    [propertyName: "maxDepthReached"] = "true",
                     [propertyName: "depth"] = context.Depth
                 };
             }
@@ -177,10 +180,10 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 return new JObject
                 {
-                    [propertyName: "type"] = type.GetReprTypeName(),
-                    [propertyName: "kind"] = type.GetTypeKind(),
-                    [propertyName: "maxDepthReached"] = "true",
-                    [propertyName: "depth"] = context.Depth
+                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
+                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
+                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
+                    [propertyName: "depth"] = new JValue(value: context.Depth)
                 };
             }
 

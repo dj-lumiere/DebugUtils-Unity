@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -84,22 +84,22 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 return new JObject
                 {
-                    [propertyName: "type"] = type.GetReprTypeName(),
-                    [propertyName: "kind"] = type.GetTypeKind(),
-                    [propertyName: "maxDepthReached"] = "true",
-                    [propertyName: "depth"] = context.Depth
+                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
+                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
+                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
+                    [propertyName: "depth"] = new JValue(value: context.Depth)
                 };
             }
 
             var result = new JObject();
             var entries = new JArray();
-            result.Add(propertyName: "type", value: type.GetReprTypeName());
-            result.Add(propertyName: "kind", value: type.GetTypeKind());
+            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
+            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
             result.Add(propertyName: "hashCode",
-                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
+                value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}"));
             if (itemCount is not null)
             {
-                result.Add(propertyName: "count", value: itemCount);
+                result.Add(propertyName: "count", value: new JValue(value: itemCount));
             }
 
             if (list.GetType()
@@ -109,7 +109,7 @@ namespace DebugUtils.Unity.Repr.Formatters
                 var elementType = list.GetType()
                                       .GetGenericArguments()[0]
                                       .GetReprTypeName();
-                result.Add(propertyName: "elementType", value: elementType);
+                result.Add(propertyName: "elementType", value: new JValue(value: elementType));
             }
 
             var i = 0;
