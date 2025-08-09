@@ -5,9 +5,11 @@ hierarchies - find any GameObject or component with simple path strings.**
 
 ## Core Features
 
-🎯 **`SceneNavigator.FindGameObjectAtPath()`** - Find GameObjects using slash-separated paths.  
-⚡ **`SceneNavigator.FindComponentAtPath<T>()`** - Get components directly from path strings.  
-📍 **`GameObject.RetrievePath()`** - Get the full hierarchy path of any GameObject.  
+🎯 **`SceneNavigator.FindGameObjectAtPath()`** - Find GameObjects using scene-qualified paths with optional indexing.  
+⚡ **`SceneNavigator.FindComponentAtPath<T>()`** - Get components directly from path strings with explicit object selection.  
+📍 **`GameObject.RetrievePath()`** - Get fully explicit paths with scene names and sibling indices.  
+🔢 **Smart Indexing** - Handle duplicate names with [0], [1], [^1] (last item) syntax.  
+🌐 **Multi-Scene Support** - Target specific scenes with `SceneName:/` prefix.  
 🔍 **Robust Error Handling** - Gracefully handles missing objects and invalid scenes.  
 🎮 **Unity-focused** - Built specifically for Unity's scene hierarchy system.
 
@@ -50,6 +52,12 @@ public class UIManager : MonoBehaviour
         // Clean, readable path-based navigation
         GameObject confirmButton = SceneNavigator.FindGameObjectAtPath("Canvas/MainPanel/ButtonGroup/ConfirmButton");
         
+        // Or be explicit about which objects when you have duplicates
+        GameObject secondButton = SceneNavigator.FindGameObjectAtPath("Canvas/MainPanel/ButtonGroup[1]/ConfirmButton[0]");
+        
+        // Target specific scenes
+        GameObject menuButton = SceneNavigator.FindGameObjectAtPath("MenuScene:/UI/MainMenu/StartButton");
+        
         if (confirmButton != null)
         {
             Debug.Log("Found confirm button!");
@@ -75,6 +83,13 @@ public class UIManager : MonoBehaviour
         Button confirmBtn = SceneNavigator.FindComponentAtPath<Button>("Canvas/MainPanel/ButtonGroup/ConfirmButton");
         Text statusText = SceneNavigator.FindComponentAtPath<Text>("Canvas/StatusPanel/StatusText");
         Slider volumeSlider = SceneNavigator.FindComponentAtPath<Slider>("Canvas/SettingsPanel/Audio/VolumeSlider");
+        
+        // Use indexing for precise object selection
+        Button firstBtn = SceneNavigator.FindComponentAtPath<Button>("UI/ButtonPanel/ActionButton[0]");  // First button
+        Button lastBtn = SceneNavigator.FindComponentAtPath<Button>("UI/ButtonPanel/ActionButton[^1]");   // Last button
+        
+        // Multi-scene component access
+        AudioSource bgMusic = SceneNavigator.FindComponentAtPath<AudioSource>("AudioScene:/BackgroundMusic");
         
         if (confirmBtn != null)
         {
@@ -103,11 +118,11 @@ public class DebugHelper : MonoBehaviour
 {
     private void Start()
     {
-        // Get the full path of this GameObject
+        // Get the full explicit path of this GameObject
         string myPath = this.gameObject.RetrievePath();
         Debug.Log($"This object is located at: {myPath}");
         
-        // Example output: "SampleScene/Canvas/MainPanel/ButtonGroup/ConfirmButton"
+        // Example output: "SampleScene:/Canvas[0]/MainPanel[0]/ButtonGroup[0]/ConfirmButton[0]"
     }
     
     private void OnTriggerEnter(Collider other)
@@ -115,7 +130,7 @@ public class DebugHelper : MonoBehaviour
         string otherPath = other.gameObject.RetrievePath();
         Debug.Log($"Collision with object at: {otherPath}");
         
-        // Example output: "SampleScene/Player/PlayerController"
+        // Example output: "SampleScene:/Player[0]/PlayerController[0]"
     }
 }
 ```
@@ -135,15 +150,19 @@ public static GameObject FindGameObjectAtPath(string path)
 
 **Parameters:**
 
-- `path` - A slash-separated string representing the GameObject hierarchy (e.g., "Canvas/Panel/Button")
+- `path` - A flexible path string with optional scene prefix and indexing (e.g., "SceneName:/Canvas[0]/Panel[1]/Button")
 
 **Returns:** The `GameObject` at the specified path, or `null` if not found.
 
-**Example Paths:**
+**Path Format Options:**
 
-- `"Player"` - Root GameObject named "Player"
-- `"UI/Canvas/MainMenu"` - MainMenu under Canvas under UI
-- `"Level/Enemies/Boss/HealthBar"` - Deeply nested GameObject
+- `"Player"` - Root GameObject named "Player" (first match, active scene)
+- `"Player[1]"` - Second GameObject named "Player"
+- `"Player[^1]"` - Last GameObject named "Player"
+- `"UI/Canvas/MainMenu"` - Simple hierarchy path (first matches)
+- `"UI/Canvas[0]/MainMenu[1]"` - Explicit indexing for precision
+- `"MenuScene:/UI/MainMenu"` - Target specific scene
+- `"Level/Enemies/Boss[2]/HealthBar"` - Mixed indexing (third Boss, first HealthBar)
 
 ### `SceneNavigator.FindComponentAtPath<T>(string path)`
 
@@ -153,7 +172,7 @@ public static T FindComponentAtPath<T>(string path) where T : Component
 
 **Parameters:**
 
-- `path` - A slash-separated string representing the GameObject hierarchy
+- `path` - A flexible path string with optional scene prefix and indexing (same format as FindGameObjectAtPath)
 - `T` - The type of component to retrieve
 
 **Returns:** The component of type `T` attached to the GameObject at the specified path, or `null` if not found.
@@ -161,9 +180,17 @@ public static T FindComponentAtPath<T>(string path) where T : Component
 **Common Usage:**
 
 ```csharp
+// Simple paths (first match)
 Button btn = SceneNavigator.FindComponentAtPath<Button>("UI/MainMenu/PlayButton");
 AudioSource audio = SceneNavigator.FindComponentAtPath<AudioSource>("Audio/BackgroundMusic");
 Rigidbody rb = SceneNavigator.FindComponentAtPath<Rigidbody>("Player/PlayerController");
+
+// Explicit indexing for precision
+Button secondBtn = SceneNavigator.FindComponentAtPath<Button>("UI/MainMenu/PlayButton[1]");
+Text lastScoreText = SceneNavigator.FindComponentAtPath<Text>("UI/Scoreboard/PlayerScore[^1]");
+
+// Scene-qualified paths
+AudioSource menuMusic = SceneNavigator.FindComponentAtPath<AudioSource>("MenuScene:/BackgroundMusic");
 ```
 
 ### `GameObject.RetrievePath()` Extension Method
@@ -172,13 +199,87 @@ Rigidbody rb = SceneNavigator.FindComponentAtPath<Rigidbody>("Player/PlayerContr
 public static string RetrievePath(this GameObject obj)
 ```
 
-**Returns:** A string representing the GameObject's full hierarchy path, prefixed with the scene name.
+**Returns:** A fully explicit string with scene name and exact sibling indices for deterministic object identification.
+
+**Return Format:** Always returns paths in the format `SceneName:/Object[index]/Child[index]`
 
 **Possible Return Values:**
 
-- `"SampleScene/Canvas/MainPanel/Button"` - Normal case
+- `"SampleScene:/Canvas[0]/MainPanel[0]/Button[0]"` - Normal case with explicit indices
+- `"SampleScene:/Canvas[0]/MainPanel[1]/Button[2]"` - Third button in second MainPanel
 - `"[null gameObject]"` - When the GameObject is null
-- `"[invalid scene]/GameObject/Path"` - When the scene is invalid
+- `"[invalid Scene]/Object[0]/Path[0]"` - When the scene is invalid
+
+## Advanced Path Features
+
+### Explicit Indexing
+
+When you have multiple GameObjects with the same name, use explicit indices to select specific instances:
+
+```csharp
+// Create multiple enemies with the same name
+// Enemy[0], Enemy[1], Enemy[2] in scene
+
+// Find specific enemies by index
+GameObject firstEnemy = SceneNavigator.FindGameObjectAtPath("Enemies/Enemy[0]");   // First enemy
+GameObject secondEnemy = SceneNavigator.FindGameObjectAtPath("Enemies/Enemy[1]");  // Second enemy
+GameObject lastEnemy = SceneNavigator.FindGameObjectAtPath("Enemies/Enemy[^1]");   // Last enemy (^1)
+GameObject secondToLast = SceneNavigator.FindGameObjectAtPath("Enemies/Enemy[^2]"); // Second to last (^2)
+
+// Mix indexed and non-indexed segments
+GameObject specificWeapon = SceneNavigator.FindGameObjectAtPath("Player/Equipment[0]/Weapon[2]");
+// First Equipment slot, third Weapon
+```
+
+### Scene-Qualified Paths
+
+Target GameObjects in specific scenes using the `SceneName:/` prefix:
+
+```csharp
+// Find objects in specific scenes (useful for multi-scene setups)
+GameObject menuButton = SceneNavigator.FindGameObjectAtPath("MenuScene:/UI/StartButton");
+GameObject gameUI = SceneNavigator.FindGameObjectAtPath("GameScene:/HUD/HealthBar");
+GameObject audioManager = SceneNavigator.FindGameObjectAtPath("AudioScene:/AudioManager");
+
+// Components work the same way
+Button menuBtn = SceneNavigator.FindComponentAtPath<Button>("MenuScene:/UI/StartButton");
+AudioSource bgMusic = SceneNavigator.FindComponentAtPath<AudioSource>("AudioScene:/BackgroundMusic");
+```
+
+### Round-Trip Path Resolution
+
+Use `RetrievePath()` to get exact paths that can reliably find the same object later:
+
+```csharp
+public class ObjectTracker : MonoBehaviour
+{
+    private Dictionary<string, GameObject> trackedObjects = new Dictionary<string, GameObject>();
+    
+    public void TrackObject(GameObject obj)
+    {
+        string exactPath = obj.RetrievePath();
+        trackedObjects[exactPath] = obj;
+        Debug.Log($"Tracking object at: {exactPath}");
+        // Output: "GameScene:/Player[0]/Equipment[1]/Sword[2]"
+    }
+    
+    public GameObject FindTrackedObject(string exactPath)
+    {
+        // Use the exact path to find the same object later
+        return SceneNavigator.FindGameObjectAtPath(exactPath);
+    }
+    
+    public void ValidateTrackedObjects()
+    {
+        foreach (var kvp in trackedObjects)
+        {
+            GameObject found = SceneNavigator.FindGameObjectAtPath(kvp.Key);
+            bool isValid = found == kvp.Value;
+            Debug.Log($"Object at {kvp.Key} is {(isValid ? "valid" : "invalid")}");
+        }
+    }
+}
+```
 
 ## Error Handling
 
@@ -191,9 +292,13 @@ GameObject obj2 = SceneNavigator.FindGameObjectAtPath("");          // Returns n
 
 // Missing objects in hierarchy
 GameObject obj3 = SceneNavigator.FindGameObjectAtPath("NonExistent/Path");  // Returns null
+GameObject obj4 = SceneNavigator.FindGameObjectAtPath("Player[99]");         // Returns null (index out of range)
 
 // Missing components
 Button btn = SceneNavigator.FindComponentAtPath<Button>("Canvas/TextObject");  // Returns null
+
+// Invalid scene names
+GameObject obj5 = SceneNavigator.FindGameObjectAtPath("FakeScene:/Player");   // Returns null
 
 // Null GameObject path retrieval
 GameObject nullObj = null;
@@ -207,6 +312,13 @@ string path = nullObj.RetrievePath();  // Returns "[null gameObject]"
 ```csharp
 // ✅ Good: Clear, descriptive hierarchy
 Button saveBtn = SceneNavigator.FindComponentAtPath<Button>("UI/MainMenu/SaveButton");
+
+// ✅ Good: Explicit indexing when needed
+Button firstSaveBtn = SceneNavigator.FindComponentAtPath<Button>("UI/MainMenu/SaveButton[0]");
+Button lastSaveBtn = SceneNavigator.FindComponentAtPath<Button>("UI/MainMenu/SaveButton[^1]");
+
+// ✅ Good: Scene-qualified for multi-scene setups
+Button menuSaveBtn = SceneNavigator.FindComponentAtPath<Button>("MenuScene:/UI/SaveButton");
 
 // ❌ Bad: Ambiguous or unclear
 Button btn = SceneNavigator.FindComponentAtPath<Button>("Canvas/Button");
