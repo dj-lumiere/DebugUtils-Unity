@@ -217,7 +217,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             var buffer = new byte[8];
             var bytes = obj.GetBytes();
 
-            for (var i = 0; i < byteSize; i++)
+            for (var i = 0; i < byteSize; i += 1)
             {
                 buffer[i] = bytes[i];
             }
@@ -225,7 +225,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             if (buffer[byteSize - 1] >= 0x80)
             {
                 // sign-extend
-                for (var i = byteSize; i < 8; i++)
+                for (var i = byteSize; i < 8; i += 1)
                 {
                     buffer[i] = 0xFF;
                 }

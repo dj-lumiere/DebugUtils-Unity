@@ -13,7 +13,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 // Last dimension - collect actual values
                 var items = new List<string>();
-                for (var i = 0; i < array.GetLength(dimension: dimension); i++)
+                for (var i = 0; i < array.GetLength(dimension: dimension); i += 1)
                 {
                     indices[dimension] = i;
                     if (context.Config.MaxElementsPerCollection >= 0 &&
@@ -46,7 +46,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             } // Not last dimension - recurse deeper
 
             var subArrays = new List<string>();
-            for (var i = 0; i < array.GetLength(dimension: dimension); i++)
+            for (var i = 0; i < array.GetLength(dimension: dimension); i += 1)
             {
                 if (context.Config.MaxElementsPerCollection >= 0 &&
                     i >= context.Config.MaxElementsPerCollection)
@@ -73,7 +73,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 // Last dimension - collect actual values
                 var items = new JArray();
-                for (var i = 0; i < array.GetLength(dimension: dimension); i++)
+                for (var i = 0; i < array.GetLength(dimension: dimension); i += 1)
                 {
                     indices[dimension] = i;
                     if (context.Config.MaxElementsPerCollection >= 0 &&
@@ -108,7 +108,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             } // Not last dimension - recurse deeper
 
             var subArrays = new JArray();
-            for (var i = 0; i < array.GetLength(dimension: dimension); i++)
+            for (var i = 0; i < array.GetLength(dimension: dimension); i += 1)
             {
                 if (context.Config.MaxElementsPerCollection >= 0 &&
                     i >= context.Config.MaxElementsPerCollection)

@@ -53,7 +53,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             result.Add(propertyName: "hashCode",
                 value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
             var dimensions = new JArray();
-            for (var i = 0; i < array.Rank; i++)
+            for (var i = 0; i < array.Rank; i += 1)
             {
                 dimensions.Add(item: array.GetLength(dimension: i));
             }
