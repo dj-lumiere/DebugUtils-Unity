@@ -115,7 +115,6 @@ namespace DebugUtils.Unity.Repr.Formatters
             result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
             result.Add(propertyName: "value",
                 value: new JValue(value: ToRepr(obj: obj, context: context)));
-            ;
             return result;
         }
     }
