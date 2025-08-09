@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using DebugUtils.Unity.Repr.TypeHelpers;
 using NUnit.Framework;
 
-namespace DebugUtils.Tests
+namespace DebugUtils.Unity.Tests
 {
     public class TypeNamingTest
     {
