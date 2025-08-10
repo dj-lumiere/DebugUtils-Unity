@@ -36,7 +36,9 @@ namespace DebugUtils.Unity.Repr.Extensions
                 IsNegativeInfinity: value.IsNegativeInfinity(),
                 IsQuietNaN: value.IsQuietNaN(),
                 IsSignalingNaN: value.IsSignalingNaN(),
-                RealExponent: rawExponent - halfSpec.ExpOffset,
+                RealExponent: rawExponent - halfSpec.ExpOffset + (rawExponent == 0
+                    ? 1
+                    : 0),
                 Mantissa: mantissa,
                 Significand: (ulong)(rawExponent == 0
                     ? mantissa
@@ -63,7 +65,9 @@ namespace DebugUtils.Unity.Repr.Extensions
                 IsNegativeInfinity: Single.IsNegativeInfinity(f: value),
                 IsQuietNaN: Single.IsNaN(f: value) && (bits & floatSpec.MantissaMsbMask) != 0,
                 IsSignalingNaN: Single.IsNaN(f: value) && (bits & floatSpec.MantissaMsbMask) == 0,
-                RealExponent: rawExponent - floatSpec.ExpOffset,
+                RealExponent: rawExponent - floatSpec.ExpOffset + (rawExponent == 0
+                    ? 1
+                    : 0),
                 Mantissa: mantissa,
                 Significand: (ulong)(rawExponent == 0
                     ? mantissa
@@ -90,7 +94,9 @@ namespace DebugUtils.Unity.Repr.Extensions
                 IsNegativeInfinity: Double.IsNegativeInfinity(d: value),
                 IsQuietNaN: Double.IsNaN(d: value) && (bits & doubleSpec.MantissaMsbMask) != 0,
                 IsSignalingNaN: Double.IsNaN(d: value) && (bits & doubleSpec.MantissaMsbMask) == 0,
-                RealExponent: rawExponent - doubleSpec.ExpOffset,
+                RealExponent: rawExponent - doubleSpec.ExpOffset + (rawExponent == 0
+                    ? 1
+                    : 0),
                 Mantissa: mantissa,
                 Significand: (ulong)(rawExponent == 0
                     ? mantissa
