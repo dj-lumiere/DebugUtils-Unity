@@ -418,9 +418,10 @@ namespace DebugUtils.Unity
                     comparisonType: StringComparison.Ordinal);
                 if (second >= 0)
                 {
+                    var message = "Path contains multiple scene separators.";
+                    var formattedMessage = FormatSyntaxError(path, second, 2, message);
                     throw new ArgumentException(
-                        message:
-                        $"Syntax Error at character {second}: Path contains multiple scene separators.",
+                        message: formattedMessage,
                         paramName: nameof(path));
                 }
 
@@ -460,52 +461,56 @@ namespace DebugUtils.Unity
                    .Split(separator: '[');
                 cleanNames[i] = itemParts[0];
 
-                if (itemParts.Length == 1)
+                switch (itemParts.Length)
                 {
-                    continue;
-                }
+                    case 1:
+                        foreach (var reservedChar in new[] { ':', '/', ']' })
+                        {
+                            var charIndex = cleanNames[i]
+                               .IndexOf(reservedChar);
+                            if (charIndex < 0)
+                            {
+                                continue;
+                            }
 
-                if (itemParts.Length == 0)
-                {
-                    var position = 0;
-                    for (var j = 0; j < i; j += 1)
+                            var position = FindErrorCharacterPosition(pathParts: pathParts,
+                                index: i, offset: charIndex);
+                            var message =
+                                $"Reserved character '{reservedChar}' found in object name '{pathParts[i]}'. Please rename before using SceneNavigator features.";
+                            var formattedMessage =
+                                FormatSyntaxError(hierarchyPath, position, 1, message);
+
+                            throw new ArgumentException(message: formattedMessage,
+                                paramName: nameof(hierarchyPath));
+                        }
+
+                        // no braces found, so it will use index 0 for this case.
+                        continue;
+                    case 0:
                     {
-                        position += pathParts[j].Length + 1;
+                        Debug.Assert(false, "String.Split should never return empty array");
+                        throw new InvalidOperationException("Unreachable code reached.");
                     }
-
-                    position += itemParts[0].Length;
-                    throw new ArgumentException(
-                        message:
-                        $"Syntax Error at character {position}: Empty object name before '['",
-                        paramName: nameof(hierarchyPath));
-                }
-
-                if (itemParts.Length > 2)
-                {
-                    var position = 0;
-                    for (var j = 0; j < i; j += 1)
+                    case > 2:
                     {
-                        position += pathParts[j].Length + 1;
+                        // object name, opening brace, indexing part with closing bracket
+                        var position = FindErrorCharacterPosition(pathParts: pathParts, index: i,
+                            offset: itemParts[0].Length + 1 + itemParts[1].Length);
+                        var message = "Too many brackets in path.";
+                        var formattedMessage =
+                            FormatSyntaxError(hierarchyPath, position, 1, message);
+                        throw new ArgumentException(message: formattedMessage,
+                            paramName: nameof(hierarchyPath));
                     }
-
-                    position += itemParts[0].Length + 1 + itemParts[1].Length;
-                    throw new ArgumentException(
-                        message: $"Syntax Error at character {position}: Too many brackets",
-                        paramName: nameof(hierarchyPath));
                 }
 
                 if (itemParts[0].Length == 0)
                 {
-                    var position = 0;
-                    for (var j = 0; j < i; j += 1)
-                    {
-                        position += pathParts[j].Length + 1;
-                    }
-
-                    position += itemParts[0].Length;
-                    throw new ArgumentException(
-                        message:
-                        $"Syntax Error at character {position}: Empty object name before '['",
+                    var position = FindErrorCharacterPosition(pathParts: pathParts, index: i,
+                        offset: 0);
+                    var message = "Empty object name before '['.";
+                    var formattedMessage = FormatSyntaxError(hierarchyPath, position, 1, message);
+                    throw new ArgumentException(message: formattedMessage,
                         paramName: nameof(hierarchyPath));
                 }
 
@@ -513,78 +518,93 @@ namespace DebugUtils.Unity
                    .Split(separator: ']');
                 if (indexParts.Length != 2 || !String.IsNullOrEmpty(value: indexParts[1]))
                 {
-                    var position = 0;
-                    for (var j = 0; j < i; j += 1)
-                    {
-                        position += pathParts[j].Length + 1;
-                    }
-
-                    position += itemParts[0].Length + 1 + indexParts[0].Length;
-                    throw new ArgumentException(
-                        message:
-                        $"Syntax Error at character {position}: malformed brackets in '{pathParts[i]}'",
+                    var position = FindErrorCharacterPosition(pathParts: pathParts, index: i,
+                        offset: itemParts[0].Length + 1 + indexParts[0].Length);
+                    var message = $"Malformed brackets in '{pathParts[i]}'.";
+                    var formattedMessage = FormatSyntaxError(hierarchyPath, position, 1, message);
+                    throw new ArgumentException(message: formattedMessage,
                         paramName: nameof(hierarchyPath));
                 }
 
                 var indexString = indexParts[0];
-                var shouldFlip = false;
+                var useBackwardsIndexing = false;
                 if (indexString.StartsWith(value: "^"))
                 {
-                    shouldFlip = true;
-                    indexString = indexString.Substring(startIndex: 1);
+                    useBackwardsIndexing = true;
+                    indexString = indexString[1..];
                 }
 
                 if (!Int32.TryParse(s: indexString, result: out var index))
                 {
-                    var position = 0;
-                    for (var j = 0; j < i; j += 1)
-                    {
-                        position += pathParts[j].Length + 1;
-                    }
-
-                    position += itemParts[0].Length + 1;
-                    throw new ArgumentException(
-                        message:
-                        $"Syntax Error at character {position}: invalid index '{indexString}'. Expected non-negative integer or ^N for backwards indexing.",
+                    var position = FindErrorCharacterPosition(pathParts: pathParts, index: i,
+                        offset: itemParts[0].Length + 1);
+                    var message =
+                        "Invalid index. Expected non-negative integer or ^N for backwards indexing.";
+                    var formattedMessage = FormatSyntaxError(hierarchyPath, position,
+                        indexString.Length, message);
+                    throw new ArgumentException(message: formattedMessage,
                         paramName: nameof(hierarchyPath));
                 }
 
-                if (!shouldFlip && index < 0)
+                switch (useBackwardsIndexing)
                 {
-                    var position = 0;
-                    for (var j = 0; j < i; j += 1)
+                    case false when index < 0:
                     {
-                        position += pathParts[j].Length + 1;
+                        var position = FindErrorCharacterPosition(pathParts: pathParts, index: i,
+                            offset: itemParts[0].Length + 1);
+                        var message =
+                            "Invalid index. Expected non-negative integer for indexing.";
+                        var formattedMessage = FormatSyntaxError(hierarchyPath, position,
+                            indexString.Length, message);
+                        throw new ArgumentException(message: formattedMessage,
+                            paramName: nameof(hierarchyPath));
                     }
-
-                    position += itemParts[0].Length + 1;
-
-                    throw new ArgumentException(
-                        message:
-                        $"Syntax Error at character {position}: invalid index '{indexString}'. Expected non-negative integer for indexing.",
-                        paramName: nameof(hierarchyPath));
-                }
-
-                if (shouldFlip && index <= 0)
-                {
-                    var position = 0;
-                    for (var j = 0; j < i; j += 1)
+                    case true when index <= 0:
                     {
-                        position += pathParts[j].Length + 1;
+                        var position = FindErrorCharacterPosition(pathParts: pathParts, index: i,
+                            offset: itemParts[0].Length + 1);
+                        var message =
+                            "Invalid index. Expected ^N (N > 0) for backwards indexing.";
+                        var formattedMessage = FormatSyntaxError(hierarchyPath, position,
+                            indexString.Length + 1, message);
+                        throw new ArgumentException(message: formattedMessage,
+                            paramName: nameof(hierarchyPath));
                     }
-
-                    position += itemParts[0].Length + 1;
-
-                    throw new ArgumentException(
-                        message:
-                        $"Syntax Error at character {position}: invalid index '^{indexString}'. Expected ^N (N > 0) for backwards indexing.",
-                        paramName: nameof(hierarchyPath));
+                    default:
+                        indices[i] = useBackwardsIndexing
+                            ? -index
+                            : index;
+                        break;
                 }
-
-                indices[i] = shouldFlip
-                    ? -index
-                    : index;
             }
+        }
+
+        private static int FindErrorCharacterPosition(string[] pathParts, int index, int offset)
+        {
+            var position = 0;
+            for (var j = 0; j < index; j += 1)
+            {
+                position += pathParts[j].Length + 1;
+            }
+
+            position += offset;
+            return position;
+        }
+
+        private static string FormatSyntaxError(string fullPath, int errorPosition, int count,
+            string errorMessage)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"path: \"{fullPath}\"");
+
+            // Add spacing to align the caret
+            sb.Append("      "); // "path: " is 6 characters
+            sb.Append(' ', errorPosition + 1); // +1 for opening quote
+            sb.Append('^', count);
+            sb.AppendLine();
+
+            sb.Append($"Syntax Error at character {errorPosition}: {errorMessage}");
+            return sb.ToString();
         }
 
         #endregion
