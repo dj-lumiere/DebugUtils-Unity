@@ -1,12 +1,13 @@
 # DebugUtils.Unity.SceneNavigator for Unity
 
-A lightweight Unity scene navigation utility for Unity developers. **Stop manually traversing complex GameObject 
+A lightweight Unity scene navigation utility for Unity developers. **Stop manually traversing complex GameObject
 hierarchies—find any GameObject or component with simple path strings.**
 
 ## Core Features
 
 🎯 **`SceneNavigator.FindGameObjectByPath()`** - Find GameObjects using scene-qualified paths with optional indexing.  
-⚡ **`SceneNavigator.FindComponentByPath<T>()`** - Get components directly from path strings with explicit object selection.  
+⚡ **`SceneNavigator.FindComponentByPath<T>()`** - Get components directly from path strings with explicit object
+selection.  
 📍 **`GameObject.GetScenePath()`** - Get fully explicit paths with scene names and sibling indices.  
 🔢 **Smart Indexing** - Handle duplicate names with [0], [1], [^1] (last item) syntax.  
 🌐 **Multi-Scene Support** - Target specific scenes with `SceneName:/` prefix.  
@@ -209,6 +210,8 @@ public static string GetScenePath(this GameObject obj)
 - `"SampleScene:/Canvas[0]/MainPanel[1]/Button[2]"` - Third button in second MainPanel
 - `"[null gameObject]"` - When the GameObject is null
 - `"[invalid Scene]:/Object[0]/Path[0]"` - When the scene is invalid
+
+**Limitations: GameObject names cannot contain: `:`, `/`, `[`, `]`**
 
 ## Advanced Path Features
 

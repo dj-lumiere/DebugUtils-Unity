@@ -15,6 +15,11 @@ namespace DebugUtils.Unity
     /// workflows are broken or unavailable. Use sparingly and avoid in production code.
     /// For production systems, prefer component references, <c>Object.FindFirstObjectByType</c>,
     /// <c>Object.FindAnyObjectByType</c>, or tags.
+    /// <para>Path Format: "SceneName:/GameObject[index]/Child[index]"</para>
+    /// <para>- Scene name is optional (uses the active scene if omitted)</para>
+    /// <para>- Indices start at 0 and disambiguate objects with same names</para>
+    /// <para>- Supports backward indexing with ^N syntax (^1 = last, ^2 = second-to-last)</para>
+    /// <para>- Reserved characters: ':', '/', '[', ']' cannot be used in GameObject names</para>
     /// </remarks>
     /// <seealso cref="UnityEngine.Object.FindFirstObjectByType{T}(FindObjectsInactive)"/>
     /// <seealso cref="UnityEngine.Object.FindAnyObjectByType{T}(FindObjectsInactive)"/>
@@ -322,6 +327,10 @@ namespace DebugUtils.Unity
         /// string nullPath = nullObj.GetScenePath(); // Returns "[null gameObject]"
         /// </code>
         /// </example>
+        /// <exception cref="System.ArgumentException">
+        /// Thrown when the object name contains reserved letters. SceneNavigator reserves ':', '/', '[', ']'
+        /// for internal purposes, so please change them before using SceneNavigator.
+        /// </exception>
         /// <seealso cref="FindGameObjectByPath"/>
         /// <seealso cref="FindComponentByPath{T}"/>
         public static string GetScenePath(this GameObject obj)
@@ -346,6 +355,19 @@ namespace DebugUtils.Unity
             for (var t = obj.transform; t != null; t = t.parent, k -= 1)
             {
                 names[k] = t.name;
+                foreach (var reservedChar in new[] { ':', '/', '[', ']' })
+                {
+                    var index = names[k]
+                       .IndexOf(reservedChar);
+                    if (index >= 0)
+                    {
+                        throw new ArgumentException(
+                            message:
+                            $"Reserved character '{reservedChar}' found at position {index} in object name '{names[k]}'. Please rename before using SceneNavigator features",
+                            paramName: nameof(obj));
+                    }
+                }
+
                 indices[k] = t.GetSameNameIndex();
             }
 
