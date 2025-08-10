@@ -46,6 +46,7 @@ namespace DebugUtils.Unity.Repr.Formatters
                 FloatReprMode.Scientific =>
                     $"{dec.ToString(format: "E" + (config.FloatPrecision > 0 ? config.FloatPrecision - 1 : 0))}",
                 FloatReprMode.Exact => $"{dec.FormatAsExact()}",
+                FloatReprMode.Exact_Old => $"{dec.FormatAsExact_Old()}",
                 FloatReprMode.General => $"{dec}",
                 _ => throw new InvalidEnumArgumentException(message: "Invalid FloatReprMode")
             };

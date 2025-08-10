@@ -160,7 +160,8 @@ namespace DebugUtils.Unity.Repr.Extensions
                 _ => throw new InvalidEnumArgumentException(message: "Invalid FloatTypeKind")
             };
         }
-        public static string FormatAsExact(this object obj, FloatInfo info)
+
+        public static string FormatAsExact_Old(this object obj, FloatInfo info)
         {
             var realExponent = info.RealExponent - info.Spec.MantissaBitSize;
             var significand = info.Significand;
@@ -199,69 +200,18 @@ namespace DebugUtils.Unity.Repr.Extensions
                                              .PadLeft(totalWidth: 1, paddingChar: '0');
             return $"{sign}{integerPart}.{fractionalPart}E{realPowerOf10}";
         }
-    }
-
-    internal static class UnityHalfExtensions
-    {
-        // Half-precision float bit layout (IEEE 754):
-        // Sign: 1 bit (bit 15)
-        // Exponent: 5 bits (bits 14-10) 
-        // Mantissa: 10 bits (bits 9-0)
-        private const ushort ExponentMask = 0x7C00; // 0111 1100 0000 0000
-        private const ushort MantissaMask = 0x03FF; // 0000 0011 1111 1111
-        private const ushort PositiveInfinityBits = 0x7C00;
-        private const ushort NegativeInfinityBits = 0xFC00;
-        private const ushort ExponentAllOnes = 0x7C00;
-
-        public static bool IsPositiveInfinity(this Half value)
+        public static string FormatAsExact(this object obj, FloatInfo info)
         {
-            return value.value == PositiveInfinityBits;
-        }
-        public static bool IsNegativeInfinity(this Half value)
-        {
-            return value.value == NegativeInfinityBits;
-        }
-        public static bool IsQuietNaN(this Half value)
-        {
-            // Quiet NaN: exponent = all 1s, mantissa MSB = 1, rest can be anything
-            return (value.value & ExponentMask) == ExponentAllOnes &&
-                   (value.value & MantissaMask) != 0 &&
-                   (value.value & 0x0200) != 0; // Check mantissa MSB (bit 9)
-        }
-        public static bool IsSignalingNaN(this Half value)
-        {
-            // Signaling NaN: exponent = all 1s, mantissa MSB = 0, but mantissa != 0
-            return (value.value & ExponentMask) == ExponentAllOnes &&
-                   (value.value & MantissaMask) != 0 &&
-                   (value.value & 0x0200) == 0; // Check mantissa MSB (bit 9)
-        }
-
-        public static bool IsFinite(this Half value)
-        {
-            return (value.value & ExponentMask) != ExponentAllOnes;
-        }
-
-        public static bool IsNormal(this Half value)
-        {
-            var exp = (ushort)(value.value & ExponentMask);
-            return exp != 0 && exp != ExponentAllOnes;
-        }
-
-        public static bool IsSubnormal(this Half value)
-        {
-            return (value.value & ExponentMask) == 0 && (value.value & MantissaMask) != 0;
-        }
-
-        public static bool IsZero(this Half value)
-        {
-            return (value.value & 0x7FFF) == 0; // Ignore sign bit
-        }
-
-        public static string ToString(this Half value, string format)
-        {
-            return UnityMath.math
-                            .f16tof32(x: value.value)
-                            .ToString(format: format);
+            return info.TypeName switch
+            {
+                FloatTypeKind.Half =>
+                    info.FormatHalfAsExact(),
+                FloatTypeKind.Float =>
+                    info.FormatFloatAsExact(),
+                FloatTypeKind.Double =>
+                    info.FormatDoubleAsExact(),
+                _ => throw new InvalidEnumArgumentException(message: "Invalid FloatTypeKind")
+            };
         }
     }
 }

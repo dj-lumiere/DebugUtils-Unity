@@ -50,7 +50,8 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 return config.FloatMode switch
                 {
-                    FloatReprMode.Exact or FloatReprMode.Scientific or FloatReprMode.Round
+                    FloatReprMode.Exact or FloatReprMode.Exact_Old or FloatReprMode.Scientific
+                        or FloatReprMode.Round
                         or FloatReprMode.General =>
                         "Infinity",
                     _ => throw new InvalidEnumArgumentException(message: "Invalid FloatReprMode")
@@ -61,7 +62,8 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 return config.FloatMode switch
                 {
-                    FloatReprMode.Exact or FloatReprMode.Scientific or FloatReprMode.Round
+                    FloatReprMode.Exact or FloatReprMode.Exact_Old or FloatReprMode.Scientific
+                        or FloatReprMode.Round
                         or FloatReprMode.General =>
                         "-Infinity",
                     _ => throw new InvalidEnumArgumentException(message: "Invalid FloatReprMode")
@@ -72,7 +74,8 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 return config.FloatMode switch
                 {
-                    FloatReprMode.Exact or FloatReprMode.Scientific or FloatReprMode.Round
+                    FloatReprMode.Exact or FloatReprMode.Exact_Old or FloatReprMode.Scientific
+                        or FloatReprMode.Round
                         or FloatReprMode.General =>
                         "Quiet NaN",
                     _ => throw new InvalidEnumArgumentException(message: "Invalid FloatReprMode")
@@ -90,7 +93,8 @@ namespace DebugUtils.Unity.Repr.Formatters
 
                 return config.FloatMode switch
                 {
-                    FloatReprMode.Exact or FloatReprMode.Scientific or FloatReprMode.Round
+                    FloatReprMode.Exact or FloatReprMode.Exact_Old or FloatReprMode.Scientific
+                        or FloatReprMode.Round
                         or FloatReprMode.General => payloadFormat,
                     _ => throw new InvalidEnumArgumentException(message: "Invalid FloatReprMode")
                 };
@@ -101,6 +105,7 @@ namespace DebugUtils.Unity.Repr.Formatters
                 FloatReprMode.Round => obj.FormatAsRounding(info: info, context: context),
                 FloatReprMode.Scientific => obj.FormatAsScientific(info: info, context: context),
                 FloatReprMode.General => obj.FormatAsGeneral(info: info, context: context),
+                FloatReprMode.Exact_Old => obj.FormatAsExact_Old(info: info),
                 FloatReprMode.Exact => obj.FormatAsExact(info: info),
 
                 _ => throw new InvalidEnumArgumentException(message: "Invalid FloatReprMode")
