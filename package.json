@@ -7,7 +7,7 @@
   "description": "A collection of debugging utilities for Unity developers, providing Python-like repr() functionality, advanced object representation, scene navigation, and call stack analysis tools for development and debugging.",
   "keywords": [
     "debug",
-    "logging", 
+    "logging",
     "development",
     "repr",
     "diagnostics",

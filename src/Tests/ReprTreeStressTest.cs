@@ -73,7 +73,7 @@ namespace DebugUtils.Unity.Tests
                 actual: rootObj[propertyName: "kind"]!.Type);
 
             // Navigate to child and verify structure
-            var childToken = rootObj[propertyName: "Child"];
+            var childToken = rootObj[propertyName: "Child"]!;
             Assert.IsNotNull(anObject: childToken);
             Assert.AreEqual(expected: JTokenType.Object, actual: childToken.Type);
 
@@ -97,7 +97,7 @@ namespace DebugUtils.Unity.Tests
                 LargeDictionary = Enumerable.Range(start: 0, count: 100)
                                             .ToDictionary(keySelector: i => $"key_{i}",
                                                  elementSelector: i => i * i),
-                MixedList = new List<object>
+                MixedList = new List<object?>
                 {
                     "string_value",
                     42,
@@ -381,7 +381,7 @@ namespace DebugUtils.Unity.Tests
         public void TestReprTree_JsonValidation_AllFormatters()
         {
             // Test all major formatter types to ensure valid JSON output
-            var testObjects = new object[]
+            var testObjects = new object?[]
             {
                 // Basic types
                 42,
