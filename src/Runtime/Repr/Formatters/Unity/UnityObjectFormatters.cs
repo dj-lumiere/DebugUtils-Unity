@@ -42,11 +42,8 @@ namespace DebugUtils.Unity.Repr.Formatters
             result.Add(propertyName: "name", value: new JValue(value: t.name));
             result.Add(propertyName: "hashCode",
                 value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: t):X8}"));
-            if (context.Depth == 0)
-            {
-                result.Add(propertyName: "path",
-                    value: new JValue(value: t.gameObject.GetScenePath()));
-            }
+            result.Add(propertyName: "path",
+                value: new JValue(value: t.gameObject.GetScenePath()));
 
             result.Add(propertyName: "position",
                 value: t.transform.position.FormatAsJToken(
@@ -121,12 +118,8 @@ namespace DebugUtils.Unity.Repr.Formatters
             result.Add(propertyName: "name", value: new JValue(value: t.name));
             result.Add(propertyName: "hashCode",
                 value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: t):X8}"));
-            if (context.Depth == 0)
-            {
-                result.Add(propertyName: "path",
-                    value: new JValue(value: t.gameObject.GetScenePath()));
-            }
-
+            result.Add(propertyName: "path",
+                value: new JValue(value: t.gameObject.GetScenePath()));
             result.Add(propertyName: "position",
                 value: t.position.FormatAsJToken(context: context.WithIncrementedDepth()));
             result.Add(propertyName: "rotation",
