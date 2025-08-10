@@ -358,7 +358,7 @@ namespace DebugUtils.Unity
                 foreach (var reservedChar in new[] { ':', '/', '[', ']' })
                 {
                     var index = names[k]
-                       .IndexOf(reservedChar);
+                       .IndexOf(value: reservedChar);
                     if (index >= 0)
                     {
                         throw new ArgumentException(
@@ -419,7 +419,8 @@ namespace DebugUtils.Unity
                 if (second >= 0)
                 {
                     var message = "Path contains multiple scene separators.";
-                    var formattedMessage = FormatSyntaxError(path, second, 2, message);
+                    var formattedMessage = FormatSyntaxError(fullPath: path, errorPosition: second,
+                        count: 2, errorMessage: message);
                     throw new ArgumentException(
                         message: formattedMessage,
                         paramName: nameof(path));
@@ -467,7 +468,7 @@ namespace DebugUtils.Unity
                         foreach (var reservedChar in new[] { ':', '/', ']' })
                         {
                             var charIndex = cleanNames[i]
-                               .IndexOf(reservedChar);
+                               .IndexOf(value: reservedChar);
                             if (charIndex < 0)
                             {
                                 continue;
@@ -478,7 +479,8 @@ namespace DebugUtils.Unity
                             var message =
                                 $"Reserved character '{reservedChar}' found in object name '{pathParts[i]}'. Please rename before using SceneNavigator features.";
                             var formattedMessage =
-                                FormatSyntaxError(hierarchyPath, position, 1, message);
+                                FormatSyntaxError(fullPath: hierarchyPath, errorPosition: position,
+                                    count: 1, errorMessage: message);
 
                             throw new ArgumentException(message: formattedMessage,
                                 paramName: nameof(hierarchyPath));
@@ -488,8 +490,9 @@ namespace DebugUtils.Unity
                         continue;
                     case 0:
                     {
-                        Debug.Assert(false, "String.Split should never return empty array");
-                        throw new InvalidOperationException("Unreachable code reached.");
+                        Debug.Assert(condition: false,
+                            message: "String.Split should never return empty array");
+                        throw new InvalidOperationException(message: "Unreachable code reached.");
                     }
                     case > 2:
                     {
@@ -498,7 +501,8 @@ namespace DebugUtils.Unity
                             offset: itemParts[0].Length + 1 + itemParts[1].Length);
                         var message = "Too many brackets in path.";
                         var formattedMessage =
-                            FormatSyntaxError(hierarchyPath, position, 1, message);
+                            FormatSyntaxError(fullPath: hierarchyPath, errorPosition: position,
+                                count: 1, errorMessage: message);
                         throw new ArgumentException(message: formattedMessage,
                             paramName: nameof(hierarchyPath));
                     }
@@ -509,7 +513,8 @@ namespace DebugUtils.Unity
                     var position = FindErrorCharacterPosition(pathParts: pathParts, index: i,
                         offset: 0);
                     var message = "Empty object name before '['.";
-                    var formattedMessage = FormatSyntaxError(hierarchyPath, position, 1, message);
+                    var formattedMessage = FormatSyntaxError(fullPath: hierarchyPath,
+                        errorPosition: position, count: 1, errorMessage: message);
                     throw new ArgumentException(message: formattedMessage,
                         paramName: nameof(hierarchyPath));
                 }
@@ -521,7 +526,8 @@ namespace DebugUtils.Unity
                     var position = FindErrorCharacterPosition(pathParts: pathParts, index: i,
                         offset: itemParts[0].Length + 1 + indexParts[0].Length);
                     var message = $"Malformed brackets in '{pathParts[i]}'.";
-                    var formattedMessage = FormatSyntaxError(hierarchyPath, position, 1, message);
+                    var formattedMessage = FormatSyntaxError(fullPath: hierarchyPath,
+                        errorPosition: position, count: 1, errorMessage: message);
                     throw new ArgumentException(message: formattedMessage,
                         paramName: nameof(hierarchyPath));
                 }
@@ -540,8 +546,9 @@ namespace DebugUtils.Unity
                         offset: itemParts[0].Length + 1);
                     var message =
                         "Invalid index. Expected non-negative integer or ^N for backwards indexing.";
-                    var formattedMessage = FormatSyntaxError(hierarchyPath, position,
-                        indexString.Length, message);
+                    var formattedMessage = FormatSyntaxError(fullPath: hierarchyPath,
+                        errorPosition: position,
+                        count: indexString.Length, errorMessage: message);
                     throw new ArgumentException(message: formattedMessage,
                         paramName: nameof(hierarchyPath));
                 }
@@ -554,8 +561,9 @@ namespace DebugUtils.Unity
                             offset: itemParts[0].Length + 1);
                         var message =
                             "Invalid index. Expected non-negative integer for indexing.";
-                        var formattedMessage = FormatSyntaxError(hierarchyPath, position,
-                            indexString.Length, message);
+                        var formattedMessage = FormatSyntaxError(fullPath: hierarchyPath,
+                            errorPosition: position,
+                            count: indexString.Length, errorMessage: message);
                         throw new ArgumentException(message: formattedMessage,
                             paramName: nameof(hierarchyPath));
                     }
@@ -565,8 +573,9 @@ namespace DebugUtils.Unity
                             offset: itemParts[0].Length + 1);
                         var message =
                             "Invalid index. Expected ^N (N > 0) for backwards indexing.";
-                        var formattedMessage = FormatSyntaxError(hierarchyPath, position,
-                            indexString.Length + 1, message);
+                        var formattedMessage = FormatSyntaxError(fullPath: hierarchyPath,
+                            errorPosition: position,
+                            count: indexString.Length + 1, errorMessage: message);
                         throw new ArgumentException(message: formattedMessage,
                             paramName: nameof(hierarchyPath));
                     }
@@ -595,15 +604,15 @@ namespace DebugUtils.Unity
             string errorMessage)
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"path: \"{fullPath}\"");
+            sb.AppendLine(value: $"path: \"{fullPath}\"");
 
             // Add spacing to align the caret
-            sb.Append("      "); // "path: " is 6 characters
-            sb.Append(' ', errorPosition + 1); // +1 for opening quote
-            sb.Append('^', count);
+            sb.Append(value: "      "); // "path: " is 6 characters
+            sb.Append(value: ' ', repeatCount: errorPosition + 1); // +1 for opening quote
+            sb.Append(value: '^', repeatCount: count);
             sb.AppendLine();
 
-            sb.Append($"Syntax Error at character {errorPosition}: {errorMessage}");
+            sb.Append(value: $"Syntax Error at character {errorPosition}: {errorMessage}");
             return sb.ToString();
         }
 

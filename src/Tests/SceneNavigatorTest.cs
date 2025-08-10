@@ -304,7 +304,7 @@ namespace DebugUtils.Unity.Tests
             var ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "Scene1:/Object:/Scene2"));
             var characterPosition = Int32.Parse(s: ex.Message
-                                                     .Split("\n")[2]
+                                                     .Split(separator: "\n")[2]
                                                      .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 14, actual: characterPosition);
 
@@ -312,7 +312,7 @@ namespace DebugUtils.Unity.Tests
             ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "[0]/Object"));
             characterPosition = Int32.Parse(s: ex.Message
-                                                 .Split("\n")[2]
+                                                 .Split(separator: "\n")[2]
                                                  .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 0, actual: characterPosition);
 
@@ -320,7 +320,7 @@ namespace DebugUtils.Unity.Tests
             ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "Object[0][1]"));
             characterPosition = Int32.Parse(s: ex.Message
-                                                 .Split("\n")[2]
+                                                 .Split(separator: "\n")[2]
                                                  .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 9, actual: characterPosition);
 
@@ -328,7 +328,7 @@ namespace DebugUtils.Unity.Tests
             ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "Object0]/Child"));
             characterPosition = Int32.Parse(s: ex.Message
-                                                 .Split("\n")[2]
+                                                 .Split(separator: "\n")[2]
                                                  .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 7, actual: characterPosition);
 
@@ -336,7 +336,7 @@ namespace DebugUtils.Unity.Tests
             ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "Object[0/Child"));
             characterPosition = Int32.Parse(s: ex.Message
-                                                 .Split("\n")[2]
+                                                 .Split(separator: "\n")[2]
                                                  .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 8, actual: characterPosition);
 
@@ -344,7 +344,7 @@ namespace DebugUtils.Unity.Tests
             ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "Object[abc]"));
             characterPosition = Int32.Parse(s: ex.Message
-                                                 .Split("\n")[2]
+                                                 .Split(separator: "\n")[2]
                                                  .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 7, actual: characterPosition);
 
@@ -352,7 +352,7 @@ namespace DebugUtils.Unity.Tests
             ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "Object[-1]"));
             characterPosition = Int32.Parse(s: ex.Message
-                                                 .Split("\n")[2]
+                                                 .Split(separator: "\n")[2]
                                                  .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 7, actual: characterPosition);
 
@@ -360,7 +360,7 @@ namespace DebugUtils.Unity.Tests
             ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "Object[^0]"));
             characterPosition = Int32.Parse(s: ex.Message
-                                                 .Split("\n")[2]
+                                                 .Split(separator: "\n")[2]
                                                  .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 7, actual: characterPosition);
 
@@ -368,7 +368,7 @@ namespace DebugUtils.Unity.Tests
             ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "Object[^-1]"));
             characterPosition = Int32.Parse(s: ex.Message
-                                                 .Split("\n")[2]
+                                                 .Split(separator: "\n")[2]
                                                  .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 7, actual: characterPosition);
 
@@ -376,7 +376,7 @@ namespace DebugUtils.Unity.Tests
             ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "Parent/Child[xyz]/GrandChild"));
             characterPosition = Int32.Parse(s: ex.Message
-                                                 .Split("\n")[2]
+                                                 .Split(separator: "\n")[2]
                                                  .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 13, actual: characterPosition);
 
@@ -384,7 +384,7 @@ namespace DebugUtils.Unity.Tests
             ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "Parent/[2]"));
             characterPosition = Int32.Parse(s: ex.Message
-                                                 .Split("\n")[2]
+                                                 .Split(separator: "\n")[2]
                                                  .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 7, actual: characterPosition);
 
@@ -392,7 +392,7 @@ namespace DebugUtils.Unity.Tests
             ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "A/B[1][2]/C"));
             characterPosition = Int32.Parse(s: ex.Message
-                                                 .Split("\n")[2]
+                                                 .Split(separator: "\n")[2]
                                                  .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 6, actual: characterPosition);
 
@@ -400,7 +400,7 @@ namespace DebugUtils.Unity.Tests
             ex = Assert.Throws<ArgumentException>(code: () =>
                 SceneNavigator.FindGameObjectByPath(path: "A/B[1][234]/C"));
             characterPosition = Int32.Parse(s: ex.Message
-                                                 .Split("\n")[2]
+                                                 .Split(separator: "\n")[2]
                                                  .Split(separator: " ")[4][..^1]);
             Assert.AreEqual(expected: 6, actual: characterPosition);
         }
