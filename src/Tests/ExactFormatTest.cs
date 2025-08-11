@@ -8,86 +8,86 @@ namespace DebugUtils.Tests
 {
     public class ExactFormatTest
     {
-        private static readonly ReprConfig ExactConfig = new(FloatMode: FloatReprMode.Exact_Old);
+        private static readonly ReprConfig OldExactConfig = new(FloatMode: FloatReprMode.Exact_Old);
 
-        private static readonly ReprConfig ExactBetaConfig =
+        private static readonly ReprConfig NewExactConfig =
             new(FloatMode: FloatReprMode.Exact);
 
         [Test]
         public void TestDecimal_Exact_Normal()
         {
-            Assert.That(actual: 1.0m.Repr(config: ExactConfig),
+            Assert.That(actual: 1.0m.Repr(config: OldExactConfig),
                 expression: Does.Contain(expected: "1.0E0"));
             StringAssert.Contains(expected: "-1.0E0",
-                actual: (-1.0m).Repr(config: ExactConfig));
+                actual: (-1.0m).Repr(config: OldExactConfig));
             StringAssert.Contains(expected: "3.1415926535897932384626433833E0",
-                actual: 3.1415926535897932384626433833m.Repr(config: ExactConfig));
+                actual: 3.1415926535897932384626433833m.Repr(config: OldExactConfig));
             StringAssert.Contains(expected: "1.23456789E28",
-                actual: 12345678900000000000000000000m.Repr(config: ExactConfig));
+                actual: 12345678900000000000000000000m.Repr(config: OldExactConfig));
             StringAssert.Contains(expected: "1.0E-28",
-                actual: 0.0000000000000000000000000001m.Repr(config: ExactConfig));
+                actual: 0.0000000000000000000000000001m.Repr(config: OldExactConfig));
         }
 
         [Test]
         public void TestDecimal_ExactBeta_Normal()
         {
             StringAssert.Contains(expected: "1.0E0",
-                actual: 1.0m.Repr(config: ExactBetaConfig));
+                actual: 1.0m.Repr(config: NewExactConfig));
             StringAssert.Contains(expected: "-1.0E0",
-                actual: (-1.0m).Repr(config: ExactBetaConfig));
+                actual: (-1.0m).Repr(config: NewExactConfig));
             StringAssert.Contains(expected: "3.1415926535897932384626433833E0",
-                actual: 3.1415926535897932384626433833m.Repr(config: ExactBetaConfig));
+                actual: 3.1415926535897932384626433833m.Repr(config: NewExactConfig));
             StringAssert.Contains(expected: "1.23456789E28",
-                actual: 12345678900000000000000000000m.Repr(config: ExactBetaConfig));
+                actual: 12345678900000000000000000000m.Repr(config: NewExactConfig));
             StringAssert.Contains(expected: "1.0E-28",
-                actual: 0.0000000000000000000000000001m.Repr(config: ExactBetaConfig));
+                actual: 0.0000000000000000000000000001m.Repr(config: NewExactConfig));
         }
 
         [Test]
         public void TestDecimal_Exact_Zero()
         {
             StringAssert.Contains(expected: "0.0E0",
-                actual: 0.0m.Repr(config: ExactConfig));
-            StringAssert.Contains(expected: "-0.0E0",
-                actual: (-0.0m).Repr(config: ExactConfig));
+                actual: 0.0m.Repr(config: OldExactConfig));
+            StringAssert.Contains(expected: "0.0E0",
+                actual: (-0.0m).Repr(config: OldExactConfig));
         }
 
         [Test]
         public void TestDecimal_ExactBeta_Zero()
         {
             StringAssert.Contains(expected: "0.0E0",
-                actual: 0.0m.Repr(config: ExactBetaConfig));
-            StringAssert.Contains(expected: "-0.0E0",
-                actual: (-0.0m).Repr(config: ExactBetaConfig));
+                actual: 0.0m.Repr(config: NewExactConfig));
+            StringAssert.Contains(expected: "0.0E0",
+                actual: (-0.0m).Repr(config: NewExactConfig));
         }
 
         [Test]
         public void TestDecimal_Exact_MaxMin()
         {
             StringAssert.Contains(expected: "7.9228162514264337593543950335E28",
-                actual: Decimal.MaxValue.Repr(config: ExactConfig));
+                actual: Decimal.MaxValue.Repr(config: OldExactConfig));
             StringAssert.Contains(expected: "-7.9228162514264337593543950335E28",
-                actual: Decimal.MinValue.Repr(config: ExactConfig));
+                actual: Decimal.MinValue.Repr(config: OldExactConfig));
         }
 
         [Test]
         public void TestDecimal_ExactBeta_MaxMin()
         {
             StringAssert.Contains(expected: "7.9228162514264337593543950335E28",
-                actual: Decimal.MaxValue.Repr(config: ExactBetaConfig));
+                actual: Decimal.MaxValue.Repr(config: NewExactConfig));
             StringAssert.Contains(expected: "-7.9228162514264337593543950335E28",
-                actual: Decimal.MinValue.Repr(config: ExactBetaConfig));
+                actual: Decimal.MinValue.Repr(config: NewExactConfig));
         }
 
         [Test]
         public void TestFloat_Exact_Normal()
         {
-            var result0 = 0.0f.Repr(config: ExactConfig);
-            var resultNeg0 = (-0.0f).Repr(config: ExactConfig);
-            var result1 = 1.0f.Repr(config: ExactConfig);
-            var resultNeg1 = (-1.0f).Repr(config: ExactConfig);
-            var result15 = 1.5f.Repr(config: ExactConfig);
-            var result25 = 2.5f.Repr(config: ExactConfig);
+            var result0 = 0.0f.Repr(config: OldExactConfig);
+            var resultNeg0 = (-0.0f).Repr(config: OldExactConfig);
+            var result1 = 1.0f.Repr(config: OldExactConfig);
+            var resultNeg1 = (-1.0f).Repr(config: OldExactConfig);
+            var result15 = 1.5f.Repr(config: OldExactConfig);
+            var result25 = 2.5f.Repr(config: OldExactConfig);
 
             Assert.NotNull(anObject: result0);
             Assert.NotNull(anObject: resultNeg0);
@@ -100,12 +100,12 @@ namespace DebugUtils.Tests
         [Test]
         public void TestFloat_ExactBeta_Normal()
         {
-            var result0 = 0.0f.Repr(config: ExactBetaConfig);
-            var resultNeg0 = (-0.0f).Repr(config: ExactBetaConfig);
-            var result1 = 1.0f.Repr(config: ExactBetaConfig);
-            var resultNeg1 = (-1.0f).Repr(config: ExactBetaConfig);
-            var result15 = 1.5f.Repr(config: ExactBetaConfig);
-            var result25 = 2.5f.Repr(config: ExactBetaConfig);
+            var result0 = 0.0f.Repr(config: NewExactConfig);
+            var resultNeg0 = (-0.0f).Repr(config: NewExactConfig);
+            var result1 = 1.0f.Repr(config: NewExactConfig);
+            var resultNeg1 = (-1.0f).Repr(config: NewExactConfig);
+            var result15 = 1.5f.Repr(config: NewExactConfig);
+            var result25 = 2.5f.Repr(config: NewExactConfig);
 
             Assert.NotNull(anObject: result0);
             Assert.NotNull(anObject: resultNeg0);
@@ -121,9 +121,9 @@ namespace DebugUtils.Tests
             var minValue = 1.401298E-45f; // Smallest positive subnormal float
             var subnormal = 1e-40f; // A subnormal number
 
-            var result1 = minValue.Repr(config: ExactConfig);
-            var result11 = minValue.Repr(config: ExactBetaConfig);
-            var result2 = subnormal.Repr(config: ExactConfig);
+            var result1 = minValue.Repr(config: OldExactConfig);
+            var result11 = minValue.Repr(config: NewExactConfig);
+            var result2 = subnormal.Repr(config: OldExactConfig);
 
             TestContext.WriteLine(value: result1);
             TestContext.WriteLine(value: result11);
@@ -140,8 +140,8 @@ namespace DebugUtils.Tests
             var minValue = 1.401298E-45f; // Smallest positive subnormal float
             var subnormal = 1e-40f; // A subnormal number
 
-            var result1 = minValue.Repr(config: ExactBetaConfig);
-            var result2 = subnormal.Repr(config: ExactBetaConfig);
+            var result1 = minValue.Repr(config: NewExactConfig);
+            var result2 = subnormal.Repr(config: NewExactConfig);
 
             Assert.NotNull(anObject: result1);
             Assert.NotNull(anObject: result2);
@@ -153,30 +153,30 @@ namespace DebugUtils.Tests
         public void TestFloat_Exact_SpecialValues()
         {
             StringAssert.Contains(expected: "NaN",
-                actual: Single.NaN.Repr(config: ExactConfig));
+                actual: Single.NaN.Repr(config: OldExactConfig));
             StringAssert.Contains(expected: "Infinity",
-                actual: Single.PositiveInfinity.Repr(config: ExactConfig));
+                actual: Single.PositiveInfinity.Repr(config: OldExactConfig));
             StringAssert.Contains(expected: "Infinity",
-                actual: Single.NegativeInfinity.Repr(config: ExactConfig));
+                actual: Single.NegativeInfinity.Repr(config: OldExactConfig));
         }
 
         [Test]
         public void TestFloat_ExactBeta_SpecialValues()
         {
             StringAssert.Contains(expected: "NaN",
-                actual: Single.NaN.Repr(config: ExactBetaConfig));
+                actual: Single.NaN.Repr(config: NewExactConfig));
             StringAssert.Contains(expected: "Infinity",
-                actual: Single.PositiveInfinity.Repr(config: ExactBetaConfig));
+                actual: Single.PositiveInfinity.Repr(config: NewExactConfig));
             StringAssert.Contains(expected: "Infinity",
-                actual: Single.NegativeInfinity.Repr(config: ExactBetaConfig));
+                actual: Single.NegativeInfinity.Repr(config: NewExactConfig));
         }
 
         [Test]
         public void TestFloat_Exact_MaxMin()
         {
-            var maxResult = Single.MaxValue.Repr(config: ExactConfig);
-            var minResult = Single.MinValue.Repr(config: ExactConfig);
-            var epsilonResult = Single.Epsilon.Repr(config: ExactConfig);
+            var maxResult = Single.MaxValue.Repr(config: OldExactConfig);
+            var minResult = Single.MinValue.Repr(config: OldExactConfig);
+            var epsilonResult = Single.Epsilon.Repr(config: OldExactConfig);
 
             Assert.NotNull(anObject: maxResult);
             Assert.NotNull(anObject: minResult);
@@ -189,9 +189,9 @@ namespace DebugUtils.Tests
         [Test]
         public void TestFloat_ExactBeta_MaxMin()
         {
-            var maxResult = Single.MaxValue.Repr(config: ExactBetaConfig);
-            var minResult = Single.MinValue.Repr(config: ExactBetaConfig);
-            var epsilonResult = Single.Epsilon.Repr(config: ExactBetaConfig);
+            var maxResult = Single.MaxValue.Repr(config: NewExactConfig);
+            var minResult = Single.MinValue.Repr(config: NewExactConfig);
+            var epsilonResult = Single.Epsilon.Repr(config: NewExactConfig);
 
             Assert.NotNull(anObject: maxResult);
             Assert.NotNull(anObject: minResult);
@@ -204,12 +204,12 @@ namespace DebugUtils.Tests
         [Test]
         public void TestDouble_Exact_Normal()
         {
-            var result0 = 0.0.Repr(config: ExactConfig);
-            var resultNeg0 = (-0.0).Repr(config: ExactConfig);
-            var result1 = 1.0.Repr(config: ExactConfig);
-            var resultNeg1 = (-1.0).Repr(config: ExactConfig);
-            var result15 = 1.5.Repr(config: ExactConfig);
-            var result25 = 2.5.Repr(config: ExactConfig);
+            var result0 = 0.0.Repr(config: OldExactConfig);
+            var resultNeg0 = (-0.0).Repr(config: OldExactConfig);
+            var result1 = 1.0.Repr(config: OldExactConfig);
+            var resultNeg1 = (-1.0).Repr(config: OldExactConfig);
+            var result15 = 1.5.Repr(config: OldExactConfig);
+            var result25 = 2.5.Repr(config: OldExactConfig);
 
             Assert.NotNull(anObject: result0);
             Assert.NotNull(anObject: resultNeg0);
@@ -222,12 +222,12 @@ namespace DebugUtils.Tests
         [Test]
         public void TestDouble_ExactBeta_Normal()
         {
-            var result0 = 0.0.Repr(config: ExactBetaConfig);
-            var resultNeg0 = (-0.0).Repr(config: ExactBetaConfig);
-            var result1 = 1.0.Repr(config: ExactBetaConfig);
-            var resultNeg1 = (-1.0).Repr(config: ExactBetaConfig);
-            var result15 = 1.5.Repr(config: ExactBetaConfig);
-            var result25 = 2.5.Repr(config: ExactBetaConfig);
+            var result0 = 0.0.Repr(config: NewExactConfig);
+            var resultNeg0 = (-0.0).Repr(config: NewExactConfig);
+            var result1 = 1.0.Repr(config: NewExactConfig);
+            var resultNeg1 = (-1.0).Repr(config: NewExactConfig);
+            var result15 = 1.5.Repr(config: NewExactConfig);
+            var result25 = 2.5.Repr(config: NewExactConfig);
 
             Assert.NotNull(anObject: result0);
             Assert.NotNull(anObject: resultNeg0);
@@ -243,8 +243,8 @@ namespace DebugUtils.Tests
             var minValue = 4.9406564584124654E-324; // Smallest positive subnormal double
             var subnormal = 1e-320; // A subnormal number
 
-            var result1 = minValue.Repr(config: ExactConfig);
-            var result2 = subnormal.Repr(config: ExactConfig);
+            var result1 = minValue.Repr(config: OldExactConfig);
+            var result2 = subnormal.Repr(config: OldExactConfig);
 
             Assert.NotNull(anObject: result1);
             Assert.NotNull(anObject: result2);
@@ -258,8 +258,8 @@ namespace DebugUtils.Tests
             var minValue = 4.9406564584124654E-324; // Smallest positive subnormal double
             var subnormal = 1e-320; // A subnormal number
 
-            var result1 = minValue.Repr(config: ExactBetaConfig);
-            var result2 = subnormal.Repr(config: ExactBetaConfig);
+            var result1 = minValue.Repr(config: NewExactConfig);
+            var result2 = subnormal.Repr(config: NewExactConfig);
 
             Assert.NotNull(anObject: result1);
             Assert.NotNull(anObject: result2);
@@ -271,30 +271,30 @@ namespace DebugUtils.Tests
         public void TestDouble_Exact_SpecialValues()
         {
             StringAssert.Contains(expected: "NaN",
-                actual: Double.NaN.Repr(config: ExactConfig));
+                actual: Double.NaN.Repr(config: OldExactConfig));
             StringAssert.Contains(expected: "Infinity",
-                actual: Double.PositiveInfinity.Repr(config: ExactConfig));
+                actual: Double.PositiveInfinity.Repr(config: OldExactConfig));
             StringAssert.Contains(expected: "Infinity",
-                actual: Double.NegativeInfinity.Repr(config: ExactConfig));
+                actual: Double.NegativeInfinity.Repr(config: OldExactConfig));
         }
 
         [Test]
         public void TestDouble_ExactBeta_SpecialValues()
         {
             StringAssert.Contains(expected: "NaN",
-                actual: Double.NaN.Repr(config: ExactBetaConfig));
+                actual: Double.NaN.Repr(config: NewExactConfig));
             StringAssert.Contains(expected: "Infinity",
-                actual: Double.PositiveInfinity.Repr(config: ExactBetaConfig));
+                actual: Double.PositiveInfinity.Repr(config: NewExactConfig));
             StringAssert.Contains(expected: "Infinity",
-                actual: Double.NegativeInfinity.Repr(config: ExactBetaConfig));
+                actual: Double.NegativeInfinity.Repr(config: NewExactConfig));
         }
 
         [Test]
         public void TestDouble_Exact_MaxMin()
         {
-            var maxResult = Double.MaxValue.Repr(config: ExactConfig);
-            var minResult = Double.MinValue.Repr(config: ExactConfig);
-            var epsilonResult = Double.Epsilon.Repr(config: ExactConfig);
+            var maxResult = Double.MaxValue.Repr(config: OldExactConfig);
+            var minResult = Double.MinValue.Repr(config: OldExactConfig);
+            var epsilonResult = Double.Epsilon.Repr(config: OldExactConfig);
 
             Assert.NotNull(anObject: maxResult);
             Assert.NotNull(anObject: minResult);
@@ -307,9 +307,9 @@ namespace DebugUtils.Tests
         [Test]
         public void TestDouble_ExactBeta_MaxMin()
         {
-            var maxResult = Double.MaxValue.Repr(config: ExactBetaConfig);
-            var minResult = Double.MinValue.Repr(config: ExactBetaConfig);
-            var epsilonResult = Double.Epsilon.Repr(config: ExactBetaConfig);
+            var maxResult = Double.MaxValue.Repr(config: NewExactConfig);
+            var minResult = Double.MinValue.Repr(config: NewExactConfig);
+            var epsilonResult = Double.Epsilon.Repr(config: NewExactConfig);
 
             Assert.NotNull(anObject: maxResult);
             Assert.NotNull(anObject: minResult);
@@ -323,11 +323,11 @@ namespace DebugUtils.Tests
         public void TestHalf_Exact_Normal()
         {
             var result0 = ((ushort)0x0000).BitsToHalf()
-                                          .Repr(config: ExactConfig); // Zero
+                                          .Repr(config: OldExactConfig); // Zero
             var resultNegZero = ((ushort)0x8000).BitsToHalf()
-                                                .Repr(config: ExactConfig); // Negative zero
-            var result1 = ((Half)1.0f).Repr(config: ExactConfig);
-            var resultNeg1 = ((Half)(-1.0f)).Repr(config: ExactConfig);
+                                                .Repr(config: OldExactConfig); // Negative zero
+            var result1 = ((Half)1.0f).Repr(config: OldExactConfig);
+            var resultNeg1 = ((Half)(-1.0f)).Repr(config: OldExactConfig);
 
             Assert.NotNull(anObject: result0);
             Assert.NotNull(anObject: resultNegZero);
@@ -339,11 +339,11 @@ namespace DebugUtils.Tests
         public void TestHalf_ExactBeta_Normal()
         {
             var result0 = ((ushort)0x0000).BitsToHalf()
-                                          .Repr(config: ExactBetaConfig); // Zero
+                                          .Repr(config: NewExactConfig); // Zero
             var resultNegZero = ((ushort)0x8000).BitsToHalf()
-                                                .Repr(config: ExactBetaConfig); // Negative zero
-            var result1 = ((Half)1.0f).Repr(config: ExactBetaConfig);
-            var resultNeg1 = ((Half)(-1.0f)).Repr(config: ExactBetaConfig);
+                                                .Repr(config: NewExactConfig); // Negative zero
+            var result1 = ((Half)1.0f).Repr(config: NewExactConfig);
+            var resultNeg1 = ((Half)(-1.0f)).Repr(config: NewExactConfig);
 
             Assert.NotNull(anObject: result0);
             Assert.NotNull(anObject: resultNegZero);
@@ -355,7 +355,7 @@ namespace DebugUtils.Tests
         public void TestHalf_Exact_Subnormal()
         {
             var minValue = (Half)5.9604645E-8f; // Smallest positive subnormal Half
-            var result = minValue.Repr(config: ExactConfig);
+            var result = minValue.Repr(config: OldExactConfig);
 
             Assert.NotNull(anObject: result);
             Assert.That(actual: result, expression: Is.Not.Empty);
@@ -365,7 +365,7 @@ namespace DebugUtils.Tests
         public void TestHalf_ExactBeta_Subnormal()
         {
             var minValue = (Half)5.9604645E-8f; // Smallest positive subnormal Half
-            var result = minValue.Repr(config: ExactBetaConfig);
+            var result = minValue.Repr(config: NewExactConfig);
 
             Assert.NotNull(anObject: result);
             Assert.That(actual: result, expression: Is.Not.Empty);
@@ -376,13 +376,13 @@ namespace DebugUtils.Tests
         {
             StringAssert.Contains(expected: "NaN",
                 actual: ((ushort)0x7E00).BitsToHalf()
-                                        .Repr(config: ExactConfig)); // NaN
+                                        .Repr(config: OldExactConfig)); // NaN
             StringAssert.Contains(expected: "Infinity",
                 actual: ((ushort)0x7C00).BitsToHalf()
-                                        .Repr(config: ExactConfig)); // Positive Infinity
+                                        .Repr(config: OldExactConfig)); // Positive Infinity
             StringAssert.Contains(expected: "Infinity",
                 actual: ((ushort)0xFC00).BitsToHalf()
-                                        .Repr(config: ExactConfig)); // Negative Infinity
+                                        .Repr(config: OldExactConfig)); // Negative Infinity
         }
 
         [Test]
@@ -390,24 +390,24 @@ namespace DebugUtils.Tests
         {
             StringAssert.Contains(expected: "NaN",
                 actual: ((ushort)0x7E00).BitsToHalf()
-                                        .Repr(config: ExactBetaConfig)); // NaN
+                                        .Repr(config: NewExactConfig)); // NaN
             StringAssert.Contains(expected: "Infinity",
                 actual: ((ushort)0x7C00).BitsToHalf()
-                                        .Repr(config: ExactBetaConfig)); // Positive Infinity
+                                        .Repr(config: NewExactConfig)); // Positive Infinity
             StringAssert.Contains(expected: "Infinity",
                 actual: ((ushort)0xFC00).BitsToHalf()
-                                        .Repr(config: ExactBetaConfig)); // Negative Infinity
+                                        .Repr(config: NewExactConfig)); // Negative Infinity
         }
 
         [Test]
         public void TestHalf_Exact_MaxMin()
         {
             var maxResult = ((ushort)0x7BFF).BitsToHalf()
-                                            .Repr(config: ExactConfig); // Max value
+                                            .Repr(config: OldExactConfig); // Max value
             var minResult = ((ushort)0xFBFF).BitsToHalf()
-                                            .Repr(config: ExactConfig); // Min value
+                                            .Repr(config: OldExactConfig); // Min value
             var epsilonResult = ((ushort)0x0001).BitsToHalf()
-                                                .Repr(config: ExactConfig); // Epsilon
+                                                .Repr(config: OldExactConfig); // Epsilon
 
             Assert.NotNull(anObject: maxResult);
             Assert.NotNull(anObject: minResult);
@@ -421,11 +421,11 @@ namespace DebugUtils.Tests
         public void TestHalf_ExactBeta_MaxMin()
         {
             var maxResult = ((ushort)0x7BFF).BitsToHalf()
-                                            .Repr(config: ExactBetaConfig); // Max value
+                                            .Repr(config: NewExactConfig); // Max value
             var minResult = ((ushort)0xFBFF).BitsToHalf()
-                                            .Repr(config: ExactBetaConfig); // Min value
+                                            .Repr(config: NewExactConfig); // Min value
             var epsilonResult = ((ushort)0x0001).BitsToHalf()
-                                                .Repr(config: ExactBetaConfig); // Epsilon
+                                                .Repr(config: NewExactConfig); // Epsilon
 
             Assert.NotNull(anObject: maxResult);
             Assert.NotNull(anObject: minResult);
@@ -443,7 +443,7 @@ namespace DebugUtils.Tests
         [TestCase(arg: 1e20f)]
         public void TestFloat_Exact_Consistency(float value)
         {
-            var result = value.Repr(config: ExactConfig);
+            var result = value.Repr(config: OldExactConfig);
             Assert.NotNull(anObject: result);
             Assert.That(actual: result, expression: Is.Not.Empty);
         }
@@ -456,7 +456,7 @@ namespace DebugUtils.Tests
         [TestCase(arg: 1e20f)]
         public void TestFloat_ExactBeta_Consistency(float value)
         {
-            var result = value.Repr(config: ExactBetaConfig);
+            var result = value.Repr(config: NewExactConfig);
             Assert.NotNull(anObject: result);
             Assert.That(actual: result, expression: Is.Not.Empty);
         }
@@ -469,7 +469,7 @@ namespace DebugUtils.Tests
         [TestCase(arg: 1e100)]
         public void TestDouble_Exact_Consistency(double value)
         {
-            var result = value.Repr(config: ExactConfig);
+            var result = value.Repr(config: OldExactConfig);
             Assert.NotNull(anObject: result);
             Assert.That(actual: result, expression: Is.Not.Empty);
         }
@@ -482,7 +482,7 @@ namespace DebugUtils.Tests
         [TestCase(arg: 1e100)]
         public void TestDouble_ExactBeta_Consistency(double value)
         {
-            var result = value.Repr(config: ExactBetaConfig);
+            var result = value.Repr(config: NewExactConfig);
             Assert.NotNull(anObject: result);
             Assert.That(actual: result, expression: Is.Not.Empty);
         }
@@ -496,7 +496,7 @@ namespace DebugUtils.Tests
         public void TestDecimal_Exact_Consistency(double doubleValue)
         {
             var decimalValue = (decimal)doubleValue;
-            var result = decimalValue.Repr(config: ExactConfig);
+            var result = decimalValue.Repr(config: OldExactConfig);
             Assert.NotNull(anObject: result);
             Assert.That(actual: result, expression: Is.Not.Empty);
         }
@@ -510,7 +510,7 @@ namespace DebugUtils.Tests
         public void TestDecimal_ExactBeta_Consistency(double doubleValue)
         {
             var decimalValue = (decimal)doubleValue;
-            var result = decimalValue.Repr(config: ExactBetaConfig);
+            var result = decimalValue.Repr(config: NewExactConfig);
             Assert.NotNull(anObject: result);
             Assert.That(actual: result, expression: Is.Not.Empty);
         }
@@ -522,8 +522,8 @@ namespace DebugUtils.Tests
             var half1 = ((ushort)0x07FF).BitsToHalf(); // Large mantissa, small exponent
             var half2 = ((ushort)0x7BFF).BitsToHalf(); // Max normal value with full mantissa
 
-            var result1 = half1.Repr(config: ExactConfig);
-            var result2 = half2.Repr(config: ExactConfig);
+            var result1 = half1.Repr(config: OldExactConfig);
+            var result2 = half2.Repr(config: OldExactConfig);
 
             Assert.NotNull(anObject: result1);
             Assert.NotNull(anObject: result2);
@@ -538,8 +538,8 @@ namespace DebugUtils.Tests
             var half1 = ((ushort)0x07FF).BitsToHalf(); // Large mantissa, small exponent
             var half2 = ((ushort)0x7BFF).BitsToHalf(); // Max normal value with full mantissa
 
-            var result1 = half1.Repr(config: ExactBetaConfig);
-            var result2 = half2.Repr(config: ExactBetaConfig);
+            var result1 = half1.Repr(config: NewExactConfig);
+            var result2 = half2.Repr(config: NewExactConfig);
 
             Assert.NotNull(anObject: result1);
             Assert.NotNull(anObject: result2);
@@ -554,8 +554,8 @@ namespace DebugUtils.Tests
             var float1 = ((uint)0x00FF_FFFF).BitsToFloat(); // Large mantissa, small exponent
             var float2 = ((uint)0x7FFF_FFFF).BitsToFloat(); // Max normal value with full mantissa
 
-            var result1 = float1.Repr(config: ExactConfig);
-            var result2 = float2.Repr(config: ExactConfig);
+            var result1 = float1.Repr(config: OldExactConfig);
+            var result2 = float2.Repr(config: OldExactConfig);
 
             Assert.NotNull(anObject: result1);
             Assert.NotNull(anObject: result2);
@@ -570,8 +570,8 @@ namespace DebugUtils.Tests
             var float1 = ((uint)0x00FF_FFFF).BitsToFloat(); // Large mantissa, small exponent
             var float2 = ((uint)0x7FFF_FFFF).BitsToFloat(); // Max normal value with full mantissa
 
-            var result1 = float1.Repr(config: ExactBetaConfig);
-            var result2 = float2.Repr(config: ExactBetaConfig);
+            var result1 = float1.Repr(config: NewExactConfig);
+            var result2 = float2.Repr(config: NewExactConfig);
 
             Assert.NotNull(anObject: result1);
             Assert.NotNull(anObject: result2);
@@ -589,8 +589,8 @@ namespace DebugUtils.Tests
                 ((ulong)0x3FF7_FFFF_FFFF_FFFF)
                .BitsToDouble(); // Max normal value with full mantissa
 
-            var result1 = double1.Repr(config: ExactConfig);
-            var result2 = double2.Repr(config: ExactConfig);
+            var result1 = double1.Repr(config: OldExactConfig);
+            var result2 = double2.Repr(config: OldExactConfig);
 
             Assert.NotNull(anObject: result1);
             Assert.NotNull(anObject: result2);
@@ -608,8 +608,8 @@ namespace DebugUtils.Tests
                 ((ulong)0x3FF7_FFFF_FFFF_FFFF)
                .BitsToDouble(); // Max normal value with full mantissa
 
-            var result1 = double1.Repr(config: ExactBetaConfig);
-            var result2 = double2.Repr(config: ExactBetaConfig);
+            var result1 = double1.Repr(config: NewExactConfig);
+            var result2 = double2.Repr(config: NewExactConfig);
 
             Assert.NotNull(anObject: result1);
             Assert.NotNull(anObject: result2);

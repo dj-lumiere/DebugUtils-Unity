@@ -200,18 +200,5 @@ namespace DebugUtils.Unity.Repr.Extensions
                                              .PadLeft(totalWidth: 1, paddingChar: '0');
             return $"{sign}{integerPart}.{fractionalPart}E{realPowerOf10}";
         }
-        public static string FormatAsExact(this object obj, FloatInfo info)
-        {
-            return info.TypeName switch
-            {
-                FloatTypeKind.Half =>
-                    info.FormatHalfAsExact(),
-                FloatTypeKind.Float =>
-                    info.FormatFloatAsExact(),
-                FloatTypeKind.Double =>
-                    info.FormatDoubleAsExact(),
-                _ => throw new InvalidEnumArgumentException(message: "Invalid FloatTypeKind")
-            };
-        }
     }
 }
