@@ -9,9 +9,9 @@ namespace DebugUtils.Tests
 {
     public class ExactFormatBenchmarkTest
     {
-        private static readonly ReprConfig ExactConfig = new(FloatMode: FloatReprMode.Exact_Old);
+        private static readonly ReprConfig OldExactConfig = new(FloatMode: FloatReprMode.Exact_Old);
 
-        private static readonly ReprConfig ExactBetaConfig =
+        private static readonly ReprConfig NewExactConfig =
             new(FloatMode: FloatReprMode.Exact);
 
         private const int BenchmarkIterations = 100000;
@@ -38,17 +38,17 @@ namespace DebugUtils.Tests
             for (var i = 0; i < randomFloats.Length; i++)
             {
                 Assert.AreEqual(expected: randomFloats[i]
-                   .Repr(config: ExactConfig), actual: randomFloats[i]
-                   .Repr(config: ExactBetaConfig));
+                   .Repr(config: OldExactConfig), actual: randomFloats[i]
+                   .Repr(config: NewExactConfig));
             }
 
             // Warm up JIT
             for (var i = 0; i < 100; i++)
             {
                 _ = randomFloats[0]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
                 _ = randomFloats[0]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             // Benchmark Exact mode
@@ -56,7 +56,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = randomFloats[i]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
             }
 
             sw.Stop();
@@ -67,7 +67,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = randomFloats[i]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             sw.Stop();
@@ -138,9 +138,9 @@ namespace DebugUtils.Tests
             for (var i = 0; i < 100; i++)
             {
                 _ = worstCaseFloats[0]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
                 _ = worstCaseFloats[0]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             // Benchmark Exact mode
@@ -148,7 +148,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = worstCaseFloats[i]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
             }
 
             sw.Stop();
@@ -159,7 +159,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = worstCaseFloats[i]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             sw.Stop();
@@ -210,17 +210,17 @@ namespace DebugUtils.Tests
             for (var i = 0; i < randomDoubles.Length; i++)
             {
                 Assert.AreEqual(expected: randomDoubles[i]
-                   .Repr(config: ExactConfig), actual: randomDoubles[i]
-                   .Repr(config: ExactBetaConfig));
+                   .Repr(config: OldExactConfig), actual: randomDoubles[i]
+                   .Repr(config: NewExactConfig));
             }
 
             // Warm up JIT
             for (var i = 0; i < 100; i++)
             {
                 _ = randomDoubles[0]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
                 _ = randomDoubles[0]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             // Benchmark Exact mode
@@ -228,7 +228,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = randomDoubles[i]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
             }
 
             sw.Stop();
@@ -239,7 +239,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = randomDoubles[i]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             sw.Stop();
@@ -309,9 +309,9 @@ namespace DebugUtils.Tests
             for (var i = 0; i < 100; i++)
             {
                 _ = worstCaseDoubles[0]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
                 _ = worstCaseDoubles[0]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             // Benchmark Exact mode
@@ -319,7 +319,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = worstCaseDoubles[i]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
             }
 
             sw.Stop();
@@ -330,7 +330,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = worstCaseDoubles[i]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             sw.Stop();
@@ -381,17 +381,17 @@ namespace DebugUtils.Tests
             for (var i = 0; i < randomDecimals.Length; i++)
             {
                 Assert.AreEqual(expected: randomDecimals[i]
-                   .Repr(config: ExactConfig), actual: randomDecimals[i]
-                   .Repr(config: ExactBetaConfig));
+                   .Repr(config: OldExactConfig), actual: randomDecimals[i]
+                   .Repr(config: NewExactConfig));
             }
 
             // Warm up JIT
             for (var i = 0; i < 100; i++)
             {
                 _ = randomDecimals[0]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
                 _ = randomDecimals[0]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             // Benchmark Exact mode
@@ -399,7 +399,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = randomDecimals[i]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
             }
 
             sw.Stop();
@@ -410,7 +410,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = randomDecimals[i]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             sw.Stop();
@@ -464,17 +464,17 @@ namespace DebugUtils.Tests
             for (var i = 0; i < randomHalves.Length; i++)
             {
                 Assert.AreEqual(expected: randomHalves[i]
-                   .Repr(config: ExactConfig), actual: randomHalves[i]
-                   .Repr(config: ExactBetaConfig));
+                   .Repr(config: OldExactConfig), actual: randomHalves[i]
+                   .Repr(config: NewExactConfig));
             }
 
             // Warm up JIT
             for (var i = 0; i < 100; i++)
             {
                 _ = randomHalves[0]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
                 _ = randomHalves[0]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             // Benchmark Exact mode
@@ -482,7 +482,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = randomHalves[i]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
             }
 
             sw.Stop();
@@ -493,7 +493,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = randomHalves[i]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             sw.Stop();
@@ -563,9 +563,9 @@ namespace DebugUtils.Tests
             for (var i = 0; i < 100; i++)
             {
                 _ = worstCaseHalves[0]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
                 _ = worstCaseHalves[0]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             // Benchmark Exact mode
@@ -573,7 +573,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = worstCaseHalves[i]
-                   .Repr(config: ExactConfig);
+                   .Repr(config: OldExactConfig);
             }
 
             sw.Stop();
@@ -584,7 +584,7 @@ namespace DebugUtils.Tests
             for (var i = 0; i < BenchmarkIterations; i++)
             {
                 _ = worstCaseHalves[i]
-                   .Repr(config: ExactBetaConfig);
+                   .Repr(config: NewExactConfig);
             }
 
             sw.Stop();
