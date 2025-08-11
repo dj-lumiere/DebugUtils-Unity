@@ -38,7 +38,7 @@ namespace DebugUtils.Unity.Repr.Extensions
 
             if (value == 0)
             {
-                return $"{sign}0.0E0";
+                return "0.0E0";
             }
 
             var valueStr = integerValue.ToString();
@@ -61,7 +61,12 @@ namespace DebugUtils.Unity.Repr.Extensions
             var lo = (uint)bits[0]; // Low 32 bits of 96-bit integer
             var mid = (uint)bits[1]; // Middle 32 bits  
             var hi = (uint)bits[2]; // High 32 bits
-            Array.Clear(array: Digits, index: 0, length: Digits.Length);
+
+            // Zero short-circuit (decimal doesn't preserve negative zero)
+            if (lo == 0 && mid == 0 && hi == 0)
+            {
+                return "0.0E0";
+            }
 
             // (hi*2^64+mid*2^32+lo)/10^9
             // = ((a*10^9+b)*2^64+(c*10^9+d)*2^32+e*10^9+f)/10^9
