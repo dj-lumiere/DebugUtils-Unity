@@ -96,9 +96,9 @@ components.Repr()                       // [Transform(...), Rigidbody(...), Play
 // Floating point with exact representation
 // Perfect for debugging Unity's floating point precision issues!
 (0.1f + 0.2f).Repr()                            
-// float(3.00000011920928955078125E-1)
+// float(3.00000011920928955078125E-001)
 0.3f.Repr()                                    
-// float(2.99999988079071044921875E-1)
+// float(2.99999988079071044921875E-001)
 
 (0.1f + 0.2f).Repr(new ReprConfig(FloatMode: FloatReprMode.General))
 // float(0.30000001)

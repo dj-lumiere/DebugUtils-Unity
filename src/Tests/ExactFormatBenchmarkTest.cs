@@ -9,7 +9,8 @@ namespace DebugUtils.Tests
 {
     public class ExactFormatBenchmarkTest
     {
-        private static readonly ReprConfig OldExactConfig = new(FloatMode: FloatReprMode.Exact_Old);
+        private static readonly ReprConfig
+            OldExactConfig = new(FloatMode: FloatReprMode.Exact_Old);
 
         private static readonly ReprConfig NewExactConfig =
             new(FloatMode: FloatReprMode.Exact);

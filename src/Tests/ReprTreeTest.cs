@@ -341,7 +341,7 @@ namespace DebugUtils.Unity.Tests
             {
                 [propertyName: "type"] = "float",
                 [propertyName: "kind"] = "struct",
-                [propertyName: "value"] = "3.1415927410125732421875E0"
+                [propertyName: "value"] = "3.1415927410125732421875E+000"
             };
             Assert.True(condition: JToken.DeepEquals(t1: actualJson, t2: expectedJson));
         }
@@ -386,7 +386,7 @@ namespace DebugUtils.Unity.Tests
             {
                 [propertyName: "type"] = "half",
                 [propertyName: "kind"] = "struct",
-                [propertyName: "value"] = "3.1406E+000"
+                [propertyName: "value"] = "3.14063E+000"
             };
             Assert.True(condition: JToken.DeepEquals(t1: actualJson, t2: expectedJson));
         }

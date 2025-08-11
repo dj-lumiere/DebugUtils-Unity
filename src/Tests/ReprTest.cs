@@ -125,11 +125,11 @@ namespace DebugUtils.Unity.Tests
                 actual: 42.Repr(config: new ReprConfig(IntMode: IntReprMode.Binary)));
 
             Assert.AreEqual(
-                expected: "double(3.000000000000000444089209850062616169452667236328125E-1)",
+                expected: "double(3.000000000000000444089209850062616169452667236328125E-001)",
                 actual: (0.1 + 0.2)
                .Repr());
             Assert.AreEqual(
-                expected: "double(2.99999999999999988897769753748434595763683319091796875E-1)",
+                expected: "double(2.99999999999999988897769753748434595763683319091796875E-001)",
                 actual: 0.3.Repr());
             Assert.AreEqual(expected: "double(0.3)",
                 actual: (0.1 + 0.2)
@@ -155,7 +155,7 @@ namespace DebugUtils.Unity.Tests
 
             var config = new ReprConfig(FloatMode: FloatReprMode.Exact);
             var f = 3.14f;
-            Assert.AreEqual(expected: "float(3.1400001049041748046875E0)",
+            Assert.AreEqual(expected: "float(3.1400001049041748046875E+000)",
                 actual: f.Repr(config: config));
 
             int? nullable = 123;
@@ -260,7 +260,7 @@ namespace DebugUtils.Unity.Tests
         public void TestFloatRepr_Exact()
         {
             var config = new ReprConfig(FloatMode: FloatReprMode.Exact);
-            Assert.AreEqual(expected: "float(3.1415927410125732421875E0)", actual: Single
+            Assert.AreEqual(expected: "float(3.1415927410125732421875E+000)", actual: Single
                .Parse(s: "3.1415926535")
                .Repr(config: config));
         }
@@ -277,7 +277,7 @@ namespace DebugUtils.Unity.Tests
         public void TestHalfRepr_Scientific()
         {
             var config = new ReprConfig(FloatMode: FloatReprMode.Scientific, FloatPrecision: 5);
-            Assert.AreEqual(expected: "half(3.1406E+000)", actual: new Half(v: 3.14159)
+            Assert.AreEqual(expected: "half(3.14063E+000)", actual: new Half(v: 3.14159)
                .Repr(config: config));
         }
 

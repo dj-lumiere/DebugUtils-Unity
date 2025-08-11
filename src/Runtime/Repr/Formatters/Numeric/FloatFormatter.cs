@@ -102,11 +102,12 @@ namespace DebugUtils.Unity.Repr.Formatters
 
             return config.FloatMode switch
             {
-                FloatReprMode.Round => obj.FormatAsRounding(info: info, context: context),
-                FloatReprMode.Scientific => obj.FormatAsScientific(info: info, context: context),
-                FloatReprMode.General => obj.FormatAsGeneral(info: info, context: context),
                 FloatReprMode.Exact_Old => obj.FormatAsExact_Old(info: info),
                 FloatReprMode.Exact => obj.FormatAsExact(info: info),
+                FloatReprMode.General => obj.FormatAsGeneral(info: info, context: context),
+                _ when config.FloatPrecision is < 0 or >= 100 => obj.FormatAsExact(info: info),
+                FloatReprMode.Round => obj.FormatAsRounding(info: info, context: context),
+                FloatReprMode.Scientific => obj.FormatAsScientific(info: info, context: context),
 
                 _ => throw new InvalidEnumArgumentException(message: "Invalid FloatReprMode")
             };

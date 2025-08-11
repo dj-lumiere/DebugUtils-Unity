@@ -8,7 +8,8 @@ namespace DebugUtils.Tests
 {
     public class ExactFormatTest
     {
-        private static readonly ReprConfig OldExactConfig = new(FloatMode: FloatReprMode.Exact_Old);
+        private static readonly ReprConfig
+            OldExactConfig = new(FloatMode: FloatReprMode.Exact_Old);
 
         private static readonly ReprConfig NewExactConfig =
             new(FloatMode: FloatReprMode.Exact);
@@ -17,65 +18,65 @@ namespace DebugUtils.Tests
         public void TestDecimal_Exact_Normal()
         {
             Assert.That(actual: 1.0m.Repr(config: OldExactConfig),
-                expression: Does.Contain(expected: "1.0E0"));
-            StringAssert.Contains(expected: "-1.0E0",
+                expression: Does.Contain(expected: "1.0E+000"));
+            StringAssert.Contains(expected: "-1.0E+000",
                 actual: (-1.0m).Repr(config: OldExactConfig));
-            StringAssert.Contains(expected: "3.1415926535897932384626433833E0",
+            StringAssert.Contains(expected: "3.1415926535897932384626433833E+000",
                 actual: 3.1415926535897932384626433833m.Repr(config: OldExactConfig));
-            StringAssert.Contains(expected: "1.23456789E28",
+            StringAssert.Contains(expected: "1.23456789E+028",
                 actual: 12345678900000000000000000000m.Repr(config: OldExactConfig));
-            StringAssert.Contains(expected: "1.0E-28",
+            StringAssert.Contains(expected: "1.0E-028",
                 actual: 0.0000000000000000000000000001m.Repr(config: OldExactConfig));
         }
 
         [Test]
         public void TestDecimal_ExactBeta_Normal()
         {
-            StringAssert.Contains(expected: "1.0E0",
+            StringAssert.Contains(expected: "1.0E+000",
                 actual: 1.0m.Repr(config: NewExactConfig));
-            StringAssert.Contains(expected: "-1.0E0",
+            StringAssert.Contains(expected: "-1.0E+000",
                 actual: (-1.0m).Repr(config: NewExactConfig));
-            StringAssert.Contains(expected: "3.1415926535897932384626433833E0",
+            StringAssert.Contains(expected: "3.1415926535897932384626433833E+000",
                 actual: 3.1415926535897932384626433833m.Repr(config: NewExactConfig));
-            StringAssert.Contains(expected: "1.23456789E28",
+            StringAssert.Contains(expected: "1.23456789E+028",
                 actual: 12345678900000000000000000000m.Repr(config: NewExactConfig));
-            StringAssert.Contains(expected: "1.0E-28",
+            StringAssert.Contains(expected: "1.0E-028",
                 actual: 0.0000000000000000000000000001m.Repr(config: NewExactConfig));
         }
 
         [Test]
         public void TestDecimal_Exact_Zero()
         {
-            StringAssert.Contains(expected: "0.0E0",
+            StringAssert.Contains(expected: "0.0E+000",
                 actual: 0.0m.Repr(config: OldExactConfig));
-            StringAssert.Contains(expected: "0.0E0",
+            StringAssert.Contains(expected: "0.0E+000",
                 actual: (-0.0m).Repr(config: OldExactConfig));
         }
 
         [Test]
         public void TestDecimal_ExactBeta_Zero()
         {
-            StringAssert.Contains(expected: "0.0E0",
+            StringAssert.Contains(expected: "0.0E+000",
                 actual: 0.0m.Repr(config: NewExactConfig));
-            StringAssert.Contains(expected: "0.0E0",
+            StringAssert.Contains(expected: "0.0E+000",
                 actual: (-0.0m).Repr(config: NewExactConfig));
         }
 
         [Test]
         public void TestDecimal_Exact_MaxMin()
         {
-            StringAssert.Contains(expected: "7.9228162514264337593543950335E28",
+            StringAssert.Contains(expected: "7.9228162514264337593543950335E+028",
                 actual: Decimal.MaxValue.Repr(config: OldExactConfig));
-            StringAssert.Contains(expected: "-7.9228162514264337593543950335E28",
+            StringAssert.Contains(expected: "-7.9228162514264337593543950335E+028",
                 actual: Decimal.MinValue.Repr(config: OldExactConfig));
         }
 
         [Test]
         public void TestDecimal_ExactBeta_MaxMin()
         {
-            StringAssert.Contains(expected: "7.9228162514264337593543950335E28",
+            StringAssert.Contains(expected: "7.9228162514264337593543950335E+028",
                 actual: Decimal.MaxValue.Repr(config: NewExactConfig));
-            StringAssert.Contains(expected: "-7.9228162514264337593543950335E28",
+            StringAssert.Contains(expected: "-7.9228162514264337593543950335E+028",
                 actual: Decimal.MinValue.Repr(config: NewExactConfig));
         }
 
