@@ -1,9 +1,5 @@
-﻿using System;
-using System.ComponentModel;
-using System.Globalization;
-using System.Numerics;
+﻿using System.ComponentModel;
 using DebugUtils.Unity.Repr.Models;
-using UnityMath = Unity.Mathematics;
 using Half = Unity.Mathematics.half;
 
 namespace DebugUtils.Unity.Repr.Extensions
@@ -65,10 +61,8 @@ namespace DebugUtils.Unity.Repr.Extensions
             var scientificFormatString = $"E{precision}";
             return info.TypeName switch
             {
-                #if NET5_0_OR_GREATER
             FloatTypeKind.Half =>
                 $"{((Half)obj).ToString(format: scientificFormatString)}",
-                #endif
                 FloatTypeKind.Float =>
                     $"{((float)obj).ToString(format: scientificFormatString)}",
                 FloatTypeKind.Double =>

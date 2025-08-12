@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Unity.Mathematics;
+﻿using Unity.Mathematics;
 
 namespace DebugUtils.Unity.Repr.Extensions
 {

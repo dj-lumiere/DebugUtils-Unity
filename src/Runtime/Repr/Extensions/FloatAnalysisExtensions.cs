@@ -1,9 +1,5 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Globalization;
-using System.Numerics;
 using DebugUtils.Unity.Repr.Models;
-using UnityMath = Unity.Mathematics;
 using Half = Unity.Mathematics.half;
 
 namespace DebugUtils.Unity.Repr.Extensions

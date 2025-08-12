@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Text;
-using DebugUtils.Unity.Repr.Models;
 
 namespace DebugUtils.Unity.Repr.Extensions
 {
