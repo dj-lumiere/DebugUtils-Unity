@@ -107,6 +107,16 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
             return type.IsGenericType &&
                    type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
+        public static bool IsMemoryType(this Type type)
+        {
+            return type.IsGenericType &&
+                   type.GetGenericTypeDefinition() == typeof(Memory<>);
+        }
+        public static bool IsReadOnlyMemoryType(this Type type)
+        {
+            return type.IsGenericType &&
+                   type.GetGenericTypeDefinition() == typeof(ReadOnlyMemory<>);
+        }
         public static bool OverridesToStringType(this Type type)
         {
             // Check for explicit ToString() override

@@ -90,6 +90,8 @@ namespace DebugUtils.Unity.Repr
                         new EnumerableFormatter()),
                     (t => t.IsAnonymousType(), new ObjectFormatter()),
                     (t => typeof(Type).IsAssignableFrom(c: t), new TypeFormatter()),
+                    (t => t.IsMemoryType(), new MemoryFormatter()),
+                    (t => t.IsReadOnlyMemoryType(), new ReadOnlyMemoryFormatter()),
                     (t => t.OverridesToStringType(), new ToStringFormatter())
                 });
             ConditionalReprTreeFormatters.AddRange(
@@ -106,6 +108,8 @@ namespace DebugUtils.Unity.Repr
                     (t => typeof(IEnumerable).IsAssignableFrom(c: t),
                         new EnumerableFormatter()),
                     (t => typeof(Type).IsAssignableFrom(c: t), new TypeFormatter()),
+                    (t => t.IsMemoryType(), new MemoryFormatter()),
+                    (t => t.IsReadOnlyMemoryType(), new ReadOnlyMemoryFormatter()),
                     (t => t.IsAnonymousType(), new ObjectFormatter())
                 });
         }
