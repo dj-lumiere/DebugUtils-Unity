@@ -1,6 +1,6 @@
 {
   "name": "DebugUtils.Unity.Tests",
-  "rootNamespace": "DebugUtils.Tests",
+  "rootNamespace": "DebugUtils.Unity.Tests",
   "references": [
     "DebugUtils.Unity.Runtime",
     "DebugUtils.Unity.Editor",

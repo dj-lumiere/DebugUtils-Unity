@@ -1,8 +1,7 @@
-using System;
 using System.Runtime.InteropServices;
 using Half = Unity.Mathematics.half;
 
-namespace DebugUtils.Tests.TestHelpers
+namespace DebugUtils.Unity.Tests.TestHelpers
 {
     public static class FloatingPointTestHelpers
     {

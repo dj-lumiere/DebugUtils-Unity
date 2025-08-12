@@ -1,11 +1,11 @@
 using System;
 using System.Diagnostics;
+using DebugUtils.Unity.Tests.TestHelpers;
 using DebugUtils.Unity.Repr;
 using NUnit.Framework;
 using Half = Unity.Mathematics.half;
-using static DebugUtils.Tests.TestHelpers.FloatingPointTestHelpers;
 
-namespace DebugUtils.Tests
+namespace DebugUtils.Unity.Tests
 {
     public class ExactFormatBenchmarkTest
     {
@@ -453,9 +453,9 @@ namespace DebugUtils.Tests
                 randomHalves[i] = bits.BitsToHalf();
 
                 // Skip special values for pure performance testing
-                if (randomHalves[i] == HalfConstants.NaN ||
-                    randomHalves[i] == HalfConstants.PositiveInfinity ||
-                    randomHalves[i] == HalfConstants.NegativeInfinity)
+                if (randomHalves[i] == FloatingPointTestHelpers.HalfConstants.NaN ||
+                    randomHalves[i] == FloatingPointTestHelpers.HalfConstants.PositiveInfinity ||
+                    randomHalves[i] == FloatingPointTestHelpers.HalfConstants.NegativeInfinity)
                 {
                     randomHalves[i] =
                         (Half)(random.Next() * 1000.0f); // Use normal range instead

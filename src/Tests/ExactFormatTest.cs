@@ -1,10 +1,10 @@
 using System;
+using DebugUtils.Unity.Tests.TestHelpers;
 using DebugUtils.Unity.Repr;
 using NUnit.Framework;
 using Half = Unity.Mathematics.half;
-using static DebugUtils.Tests.TestHelpers.FloatingPointTestHelpers;
 
-namespace DebugUtils.Tests
+namespace DebugUtils.Unity.Tests
 {
     public class ExactFormatTest
     {
