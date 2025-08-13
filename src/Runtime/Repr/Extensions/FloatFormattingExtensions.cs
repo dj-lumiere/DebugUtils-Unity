@@ -61,8 +61,8 @@ namespace DebugUtils.Unity.Repr.Extensions
             var scientificFormatString = $"E{precision}";
             return info.TypeName switch
             {
-            FloatTypeKind.Half =>
-                $"{((Half)obj).ToString(format: scientificFormatString)}",
+                FloatTypeKind.Half =>
+                    $"{((Half)obj).ToString(format: scientificFormatString)}",
                 FloatTypeKind.Float =>
                     $"{((float)obj).ToString(format: scientificFormatString)}",
                 FloatTypeKind.Double =>

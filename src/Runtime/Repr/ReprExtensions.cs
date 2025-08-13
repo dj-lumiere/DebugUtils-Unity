@@ -111,7 +111,7 @@ namespace DebugUtils.Unity.Repr
         ///
         /// 
         /// // With custom configuration
-        /// var config = new ReprConfig(FloatMode: FloatReprMode.Exact);
+        /// var config = new ReprConfig(FloatFormatString: "EX");
         /// Console.WriteLine(3.14f.Repr(config)); 
         /// // Output: float(3.1400001049041748046875E0)
         ///
