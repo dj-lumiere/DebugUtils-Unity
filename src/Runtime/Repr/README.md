@@ -90,8 +90,10 @@ components.Repr()                       // [Transform(...), Rigidbody(...), Play
 ```csharp
 // Integers with different representations
 42.Repr()                                              // int(42)
-42.Repr(new ReprConfig(IntMode: IntReprMode.Hex))      // int(0x2A)
-42.Repr(new ReprConfig(IntMode: IntReprMode.Binary))   // int(0b101010)
+42.Repr(new ReprConfig(IntFormatString: "X"))          // int(0x2A)
+42.Repr(new ReprConfig(IntFormatString: "B"))          // int(0b101010)
+42.Repr(new ReprConfig(IntFormatString: "HB"))         // int(0x0000002A) - hex bytes
+-42.Repr(new ReprConfig(IntFormatString: "HB"))         // int(0xFFFFFFD6) - raw hex bytes
 
 // Floating point with exact representation
 // Perfect for debugging Unity's floating point precision issues!
@@ -100,7 +102,7 @@ components.Repr()                       // [Transform(...), Rigidbody(...), Play
 0.3f.Repr()                                    
 // float(2.99999988079071044921875E-001)
 
-(0.1f + 0.2f).Repr(new ReprConfig(FloatMode: FloatReprMode.General))
+(0.1f + 0.2f).Repr(new ReprConfig(FloatFormatString: "G"))
 // float(0.30000001)
 ```
 
@@ -215,30 +217,52 @@ public class GameObjectFormatter : IReprFormatter, IReprTreeFormatter
 
 ## Configuration Options
 
-### Float Formatting
+### Float Formatting (NEW: Format Strings)
 
 ```csharp
-var config = new ReprConfig(FloatMode: FloatReprMode.Exact);
-3.14159f.Repr(config);     // Exact decimal representation down to very last digit.
+// NEW APPROACH: Format strings (recommended)
+var exact = new ReprConfig(FloatFormatString: "EX");
+3.14159f.Repr(exact);     // Exact decimal representation (custom arithmetic engine)
 
-var scientific = new ReprConfig(FloatMode: FloatReprMode.Scientific);  
-3.14159f.Repr(scientific); // Scientific notation
+var scientific = new ReprConfig(FloatFormatString: "E5");
+3.14159.Repr(scientific); // Scientific notation with 5 decimal places
 
-var rounded = new ReprConfig(FloatMode: FloatReprMode.Round, FloatPrecision: 2);
-3.14159f.Repr(rounded);    // Rounded to 2 decimal places
+var rounded = new ReprConfig(FloatFormatString: "F2");
+3.14159.Repr(rounded);    // Fixed point with 2 decimal places
+
+// Special debugging modes
+var bitField = new ReprConfig(FloatFormatString: "BF");
+3.14f.Repr(bitField);     // IEEE 754 bit field: 0|10000000|10010001111010111000011
+
+var hexBytes = new ReprConfig(FloatFormatString: "HB");
+3.14f.Repr(hexBytes);     // Raw hex bytes: 0x4048F5C3
+
+// OLD APPROACH: Enum modes (deprecated but still supported)
+var oldExact = new ReprConfig(FloatMode: FloatReprMode.Exact);
+var oldLegacy = new ReprConfig(FloatMode: FloatReprMode.Exact_Old);  // BigInteger-based
+var oldRounded = new ReprConfig(FloatMode: FloatReprMode.Round, FloatPrecision: 2);
 ```
 
-### Integer Formatting
+### Integer Formatting (NEW: Format Strings)
 
 ```csharp
-var hex = new ReprConfig(IntMode: IntReprMode.Hex);
-255.Repr(hex);            // Hexadecimal Representation
+// NEW APPROACH: Format strings (recommended)
+var hex = new ReprConfig(IntFormatString: "X");
+255.Repr(hex);            // Hexadecimal: int(0xFF)
 
-var binary = new ReprConfig(IntMode: IntReprMode.Binary);
-255.Repr(binary);         // Binary Representation
+var binary = new ReprConfig(IntFormatString: "B");
+255.Repr(binary);         // Binary: int(0b11111111)
 
-var bytes = new ReprConfig(IntMode: IntReprMode.HexBytes);
-255.Repr(bytes);          // Bytestream representation
+var hexBytes = new ReprConfig(IntFormatString: "HB");
+255.Repr(hexBytes);       // Hex bytes: int(0x000000FF)
+
+var decimal = new ReprConfig(IntFormatString: "D");
+255.Repr(decimal);        // Standard decimal: int(255)
+
+// OLD APPROACH: Enum modes (deprecated but still supported)
+var oldHex = new ReprConfig(IntMode: IntReprMode.Hex);
+var oldBinary = new ReprConfig(IntMode: IntReprMode.Binary);
+var oldBytes = new ReprConfig(IntMode: IntReprMode.HexBytes);
 ```
 
 ### Type Display
@@ -365,14 +389,24 @@ obj.FormatAsJsonNode(context)        // For building custom tree structures, sho
 ### Configuration
 
 ```csharp
-// Create configuration
+// NEW APPROACH: Format strings (recommended)
 var config = new ReprConfig(
+    FloatFormatString: "EX",           // Exact floating-point representation
+    IntFormatString: "D",              // Decimal integers
+    TypeMode: TypeReprMode.HideObvious,
+    MaxDepth: 5,
+    MaxElementsPerCollection: 50,
+    EnablePrettyPrintForReprTree: true
+);
+
+// OLD APPROACH: Enum modes (deprecated but still supported)
+var oldConfig = new ReprConfig(
     FloatMode: FloatReprMode.Exact,
     IntMode: IntReprMode.Decimal,
     TypeMode: TypeReprMode.HideObvious,
     MaxDepth: 5,
     MaxElementsPerCollection: 50,
-    EnablePrettyPrintForHierarchical: true
+    EnablePrettyPrintForReprTree: true
 );
 
 // Use with any method

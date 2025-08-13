@@ -135,22 +135,29 @@ new HashSet<string> {"a", "b"}.Repr()    // {"a", "b"}
 new Dictionary<string, int> {{"x", 1}}.Repr() // {"x": int(1)}
 ```
 
-### Numeric Types (Unity Float Precision)
+### Numeric Types
 
 ```csharp
 // Integers with different representations
 42.Repr()                                              // int(42)
-42.Repr(new ReprConfig(IntMode: IntReprMode.Hex))      // int(0x2A)
-42.Repr(new ReprConfig(IntMode: IntReprMode.Binary))   // int(0b101010)
+42.Repr(new ReprConfig(IntFormatString: "X"))          // int(0x2A)
+42.Repr(new ReprConfig(IntFormatString: "B"))          // int(0b101010)
+42.Repr(new ReprConfig(IntFormatString: "HB"))         // int(0x0000002A) - hex bytes
 
-// Floating point with exact representation - perfect for Unity's float precision issues!
-(0.1f + 0.2f).Repr()                            
-// float(3.00000011920928955078125E-001)
-0.3f.Repr()                                    
-// float(2.99999988079071044921875E-001)
+// Floating point with exact representation
+// You can now recognize the real floating point value
+// and find what went wrong when doing arithmetics!
+(0.1 + 0.2).Repr()                            
+// double(3.00000000000000444089209850062616169452667236328125E-001)
+0.3.Repr()                                    
+// double(2.99999999999999988897769753748434595763683319091796875E-001)
 
-(0.1f + 0.2f).Repr(new ReprConfig(FloatMode: FloatReprMode.General))
-// float(0.30000001)
+(0.1 + 0.2).Repr(new ReprConfig(FloatFormatString: "G"))
+// double(0.30000000000000004)
+
+// New special formatting modes
+3.14f.Repr(new ReprConfig(FloatFormatString: "BF"))    // IEEE 754 bit field
+3.14f.Repr(new ReprConfig(FloatFormatString: "HB"))    // Raw hex bytes
 ```
 
 ### 📍 Caller Method Tracking (`GetCallerName()`)
@@ -264,30 +271,50 @@ public class UIController : MonoBehaviour
 
 ## Configuration Options
 
-### Float Formatting (Perfect for Unity's Precision Issues)
+### Float Formatting (NEW: Format Strings)
 
 ```csharp
-var config = new ReprConfig(FloatMode: FloatReprMode.Exact);
-transform.position.x.Repr(config);     // Exact decimal representation down to very last digit.
+// NEW APPROACH: Format strings (recommended)
+var exact = new ReprConfig(FloatFormatString: "EX");
+3.14159.Repr(exact);      // Exact decimal representation down to very last digit
 
-var scientific = new ReprConfig(FloatMode: FloatReprMode.Scientific, FloatPrecision: 5);  
-Time.deltaTime.Repr(scientific);       // Scientific notation with 5 valid digits.
+var scientific = new ReprConfig(FloatFormatString: "E5");
+3.14159.Repr(scientific); // Scientific notation with 5 decimal places
 
-var rounded = new ReprConfig(FloatMode: FloatReprMode.Round, FloatPrecision: 3);
-Vector3.Distance(pointA, pointB).Repr(rounded);    // Rounded to 3 decimal places.
+var rounded = new ReprConfig(FloatFormatString: "F2");
+3.14159.Repr(rounded);    // Fixed point with 2 decimal places
+
+// Special debugging modes
+var bitField = new ReprConfig(FloatFormatString: "BF");
+3.14f.Repr(bitField);     // IEEE 754 bit field: 0|10000000|10010001111010111000011
+
+var hexBytes = new ReprConfig(FloatFormatString: "HB");
+3.14f.Repr(hexBytes);     // Raw hex bytes: 0x4048F5C3
+
+// OLD APPROACH: Enum modes (deprecated but still supported)
+var oldExact = new ReprConfig(FloatMode: FloatReprMode.Exact);
+var oldRounded = new ReprConfig(FloatMode: FloatReprMode.Round, FloatPrecision: 2);
 ```
 
-### Integer Formatting
+### Integer Formatting (NEW: Format Strings)
 
 ```csharp
-var hex = new ReprConfig(IntMode: IntReprMode.Hex);
-gameObject.GetInstanceID().Repr(hex);            // Hexadecimal Representation
+// NEW APPROACH: Format strings (recommended)
+var hex = new ReprConfig(IntFormatString: "X");
+255.Repr(hex);            // Hexadecimal: int(0xFF)
 
-var binary = new ReprConfig(IntMode: IntReprMode.Binary);
-layerMask.Repr(binary);         // Binary Representation for layer masks
+var binary = new ReprConfig(IntFormatString: "B");
+255.Repr(binary);         // Binary: int(0b11111111)
 
-var bytes = new ReprConfig(IntMode: IntReprMode.HexBytes);
-colorInt.Repr(bytes);          // Bytestream representation for color values
+var hexBytes = new ReprConfig(IntFormatString: "HB");
+255.Repr(hexBytes);       // Hex bytes: int(0x000000FF)
+
+var decimal = new ReprConfig(IntFormatString: "D");
+255.Repr(decimal);        // Standard decimal: int(255)
+
+// OLD APPROACH: Enum modes (deprecated but still supported)
+var oldHex = new ReprConfig(IntMode: IntReprMode.Hex);
+var oldBinary = new ReprConfig(IntMode: IntReprMode.Binary);
 ```
 
 ### Type Display
