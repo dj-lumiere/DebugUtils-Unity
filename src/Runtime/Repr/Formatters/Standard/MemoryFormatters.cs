@@ -67,7 +67,6 @@ namespace DebugUtils.Unity.Repr.Formatters
             result.Add(propertyName: "length", value: new JValue(value: itemCount));
             result.Add(propertyName: "elementType",
                 value: new JValue(value: typeof(T).GetReprTypeName()));
-            ;
 
             for (var i = 0; i < obj.Length; i += 1)
             {

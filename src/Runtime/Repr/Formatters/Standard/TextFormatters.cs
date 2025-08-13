@@ -78,6 +78,7 @@ namespace DebugUtils.Unity.Repr.Formatters
                 s = s[..context.Config.MaxStringLength] +
                     $"... ({truncatedLetterCount} more letters)";
             }
+
             result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
             result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
             result.Add(propertyName: "hashCode",
