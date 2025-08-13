@@ -11,35 +11,35 @@ namespace DebugUtils.Unity.Repr.Formatters
     {
         public string ToRepr(object obj, ReprContext context)
         {
-            var datetime = (DateTime)obj;
-            var kindSuffix = datetime.Kind switch
+            var dt = (DateTime)obj;
+            var kindSuffix = dt.Kind switch
             {
-                DateTimeKind.Utc => " UTC",
-                DateTimeKind.Local => " Local",
-                _ => " Unspecified"
+                DateTimeKind.Utc => "UTC",
+                DateTimeKind.Local => "Local",
+                _ => "Unspecified"
             };
-            return datetime.ToString(format: "yyyy-MM-dd HH:mm:ss") + kindSuffix;
+            return
+                $"{dt.Year:D4}.{dt.Month:D2}.{dt.Day:D2} {dt.Hour:D2}:{dt.Minute:D2}:{dt.Second:D2}.{dt.Millisecond:D3}{dt.Ticks % 10000:D4} {kindSuffix}";
         }
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
             var datetime = (DateTime)obj;
-            var result = new JObject();
-            result.Add(propertyName: "type", value: new JValue(value: "DateTime"));
-            result.Add(propertyName: "kind", value: new JValue(value: "struct"));
-            result.Add(propertyName: "year", value: new JValue(value: datetime.Year.ToString()));
-            result.Add(propertyName: "month", value: new JValue(value: datetime.Month.ToString()));
-            result.Add(propertyName: "day", value: new JValue(value: datetime.Day.ToString()));
-            result.Add(propertyName: "hour", value: new JValue(value: datetime.Hour.ToString()));
-            result.Add(propertyName: "minute",
-                value: new JValue(value: datetime.Minute.ToString()));
-            result.Add(propertyName: "second",
-                value: new JValue(value: datetime.Second.ToString()));
-            result.Add(propertyName: "millisecond",
-                value: new JValue(value: datetime.Millisecond.ToString()));
-            result.Add(propertyName: "ticks", value: new JValue(value: datetime.Ticks.ToString()));
-            result.Add(propertyName: "timezone",
-                value: new JValue(value: datetime.Kind.ToString()));
+            var result = new JObject
+            {
+                { "type", new JValue(value: "DateTime") },
+                { "kind", new JValue(value: "struct") },
+                { "year", new JValue(value: datetime.Year.ToString()) },
+                { "month", new JValue(value: datetime.Month.ToString()) },
+                { "day", new JValue(value: datetime.Day.ToString()) },
+                { "hour", new JValue(value: datetime.Hour.ToString()) },
+                { "minute", new JValue(value: datetime.Minute.ToString()) },
+                { "second", new JValue(value: datetime.Second.ToString()) },
+                { "millisecond", new JValue(value: datetime.Millisecond.ToString()) },
+                { "subTicks", new JValue(value: (datetime.Ticks % 10000).ToString()) },
+                { "totalTicks", new JValue(value: datetime.Ticks.ToString()) },
+                { "timezone", new JValue(value: datetime.Kind.ToString()) }
+            };
             return result;
         }
     }
@@ -51,38 +51,37 @@ namespace DebugUtils.Unity.Repr.Formatters
         public string ToRepr(object obj, ReprContext context)
         {
             var dto = (DateTimeOffset)obj;
+            var dtoTime =
+                $"{dto.Year:D4}.{dto.Month:D2}.{dto.Day:D2} {dto.Hour:D2}:{dto.Minute:D2}:{dto.Second:D2}.{dto.Millisecond:D3}{dto.Ticks % 10000:D4}";
             if (dto.Offset == TimeSpan.Zero)
             {
-                return dto.ToString(format: "yyyy-MM-dd HH:mm:ss") + "Z";
+                return dtoTime + "Z";
             }
 
-            var offset = dto.Offset.ToString(format: "c");
-            if (!offset.StartsWith(value: "+"))
-            {
-                offset = "+" + offset;
-            }
-
-            return dto.ToString(format: "yyyy-MM-dd HH:mm:ss") + offset;
+            var offset = dto.Offset;
+            return
+                $"{dtoTime}{offset.ToRepr(context: context)}";
         }
 
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
             var dto = (DateTimeOffset)obj;
-            var result = new JObject();
-            result.Add(propertyName: "type", value: new JValue(value: "DateTimeOffset"));
-            result.Add(propertyName: "kind", value: new JValue(value: "struct"));
-            result.Add(propertyName: "year", value: new JValue(value: dto.Year.ToString()));
-            result.Add(propertyName: "month", value: new JValue(value: dto.Month.ToString()));
-            result.Add(propertyName: "day", value: new JValue(value: dto.Day.ToString()));
-            result.Add(propertyName: "hour", value: new JValue(value: dto.Hour.ToString()));
-            result.Add(propertyName: "minute", value: new JValue(value: dto.Minute.ToString()));
-            result.Add(propertyName: "second", value: new JValue(value: dto.Second.ToString()));
-            result.Add(propertyName: "millisecond",
-                value: new JValue(value: dto.Millisecond.ToString()));
-            result.Add(propertyName: "ticks", value: new JValue(value: dto.Ticks.ToString()));
-            result.Add(propertyName: "offset",
-                value: dto.Offset.FormatAsJToken(context: context.WithIncrementedDepth()));
+            var result = new JObject
+            {
+                { "type", new JValue(value: "DateTimeOffset") },
+                { "kind", new JValue(value: "struct") },
+                { "year", new JValue(value: dto.Year.ToString()) },
+                { "month", new JValue(value: dto.Month.ToString()) },
+                { "day", new JValue(value: dto.Day.ToString()) },
+                { "hour", new JValue(value: dto.Hour.ToString()) },
+                { "minute", new JValue(value: dto.Minute.ToString()) },
+                { "second", new JValue(value: dto.Second.ToString()) },
+                { "millisecond", new JValue(value: dto.Millisecond.ToString()) },
+                { "subTicks", new JValue(value: (dto.Ticks % 10000).ToString()) },
+                { "totalTicks", new JValue(value: dto.Ticks.ToString()) },
+                { "offset", dto.Offset.FormatAsJToken(context: context.WithIncrementedDepth()) }
+            };
             return result;
         }
     }
@@ -93,7 +92,22 @@ namespace DebugUtils.Unity.Repr.Formatters
     {
         public string ToRepr(object obj, ReprContext context)
         {
-            return $"{((TimeSpan)obj).TotalSeconds:0.000}s";
+            var ts = (TimeSpan)obj;
+            var isNegative = ts.Ticks < 0;
+            if (isNegative)
+            {
+                ts = ts.Negate();
+            }
+
+            var subDayPart =
+                $"{ts.Hours:D2}:{ts.Minutes:D2}:{ts.Seconds:D2}.{ts.Milliseconds:D3}{ts.Ticks % 10000:D4}";
+            return (isNegative, ts.Days) switch
+            {
+                (true, 0) => $"-{subDayPart}",
+                (true, _) => $"-{ts.Days}D-{subDayPart}",
+                (false, 0) => subDayPart,
+                (false, _) => $"{ts.Days}D {subDayPart}"
+            };
         }
 
         public JToken ToReprTree(object obj, ReprContext context)
@@ -114,7 +128,9 @@ namespace DebugUtils.Unity.Repr.Formatters
             result.Add(propertyName: "second", value: new JValue(value: ts.Seconds.ToString()));
             result.Add(propertyName: "millisecond",
                 value: new JValue(value: ts.Milliseconds.ToString()));
-            result.Add(propertyName: "ticks", value: new JValue(value: ts.Ticks.ToString()));
+            result.Add(propertyName: "subTicks",
+                value: new JValue(value: (ts.Ticks % 10000).ToString()));
+            result.Add(propertyName: "totalTicks", value: new JValue(value: ts.Ticks.ToString()));
             result.Add(propertyName: "isNegative", value: new JValue(value: isNegative.ToString()
                .ToLowerInvariant()));
             return result;
