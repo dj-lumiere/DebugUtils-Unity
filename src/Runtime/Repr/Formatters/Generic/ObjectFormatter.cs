@@ -98,34 +98,40 @@ namespace DebugUtils.Unity.Repr.Formatters
             }
 
             var members = obj.GetObjectMembers(context: context);
-            foreach (var member in members.PublicFields)
+            foreach (var (k, v) in
+                     members.PublicFields.Select(p => obj.ToReprTreeParts(p, context)))
             {
-                result.Add(content: obj.ToReprTreeParts(f: member, context: context));
+                result.Add(k, v);
             }
 
-            foreach (var member in members.PublicAutoProps)
+            foreach (var (k, v) in members.PublicAutoProps.Select(p =>
+                         obj.ToReprTreeParts(p, context)))
             {
-                result.Add(content: obj.ToReprTreeParts(pair: member, context: context));
+                result.Add(k, v);
             }
 
-            foreach (var member in members.PublicProperties)
+            foreach (var (k, v) in members.PublicProperties.Select(p =>
+                         obj.ToReprTreeParts(p, context)))
             {
-                result.Add(content: obj.ToReprTreeParts(p: member, context: context));
+                result.Add(k, v);
             }
 
-            foreach (var member in members.PrivateFields)
+            foreach (var (k, v) in members.PrivateFields.Select(p =>
+                         obj.ToPrivateReprTreeParts(p, context)))
             {
-                result.Add(content: obj.ToPrivateReprTreeParts(f: member, context: context));
+                result.Add(k, v);
             }
 
-            foreach (var member in members.PrivateAutoProps)
+            foreach (var (k, v) in members.PrivateAutoProps.Select(p =>
+                         obj.ToPrivateReprTreeParts(p, context)))
             {
-                result.Add(content: obj.ToPrivateReprTreeParts(pair: member, context: context));
+                result.Add(k, v);
             }
 
-            foreach (var member in members.PrivateProperties)
+            foreach (var (k, v) in members.PrivateProperties.Select(p =>
+                         obj.ToPrivateReprTreeParts(p, context)))
             {
-                result.Add(content: obj.ToPrivateReprTreeParts(p: member, context: context));
+                result.Add(k, v);
             }
 
             return result;

@@ -83,7 +83,7 @@ namespace DebugUtils.Unity.Tests
             // Verify FastProperty - should work fine
             var fastProp = jsonNode[key: "FastProperty"];
             Assert.NotNull(anObject: fastProp);
-            Assert.AreEqual(expected: "string", actual: fastProp[key: "type"]
+            Assert.AreEqual(expected: "string", actual: fastProp![key: "type"]
               ?.ToString());
             Assert.AreEqual(expected: "class", actual: fastProp[key: "kind"]
               ?.ToString());

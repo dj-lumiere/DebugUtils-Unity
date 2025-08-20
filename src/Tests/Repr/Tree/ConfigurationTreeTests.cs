@@ -181,12 +181,12 @@ namespace DebugUtils.Unity.Tests
         public void TestReprConfig_ShowNonPublicProperties_ReprTree()
         {
             var classified =
-                new ClassifiedData(writer: "writer", data: "secret", password: "REDACTED");
+                new ClassifiedData(writer: "writer", dataValue: "secret", password: "REDACTED");
             var config = ReprConfig.Configure()
                                    .ViewMode(mode: MemberReprMode.PublicFieldAutoProperty)
                                    .Build();
             var actualJson = JToken.Parse(json: classified.ReprTree(config: config));
-            Assert.NotNull(anObject: actualJson);
+             Assert.NotNull(anObject: actualJson);
             Assert.AreEqual(expected: "ClassifiedData", actual: actualJson[key: "type"]
               ?.ToString());
             Assert.AreEqual(expected: "class", actual: actualJson[key: "kind"]
@@ -216,17 +216,17 @@ namespace DebugUtils.Unity.Tests
               ?.ToString());
             var secretDataNode = actualJson[key: "private_Data"];
             Assert.NotNull(anObject: secretDataNode);
-            Assert.AreEqual(expected: "string", actual: secretDataNode[key: "type"]
+            Assert.AreEqual(expected: "string", actual: secretDataNode![key: "type"]
               ?.ToString());
-            Assert.AreEqual(expected: 6, actual: secretDataNode[key: "length"]!.Value<int>());
-            Assert.AreEqual(expected: "secret", actual: secretDataNode[key: "value"]
+            Assert.AreEqual(expected: 6, actual: secretDataNode![key: "length"]!.Value<int>());
+            Assert.AreEqual(expected: "secret", actual: secretDataNode![key: "value"]
               ?.ToString());
             var secretPasswordNode = actualJson[key: "private_Password"];
             Assert.NotNull(anObject: secretPasswordNode);
-            Assert.AreEqual(expected: "string", actual: secretPasswordNode[key: "type"]
+            Assert.AreEqual(expected: "string", actual: secretPasswordNode![key: "type"]
               ?.ToString());
-            Assert.AreEqual(expected: 8, actual: secretPasswordNode[key: "length"]!.Value<int>());
-            Assert.AreEqual(expected: "REDACTED", actual: secretPasswordNode[key: "value"]
+            Assert.AreEqual(expected: 8, actual: secretPasswordNode![key: "length"]!.Value<int>());
+            Assert.AreEqual(expected: "REDACTED", actual: secretPasswordNode![key: "value"]
               ?.ToString());
         }
 
@@ -246,6 +246,88 @@ namespace DebugUtils.Unity.Tests
             Assert.NotNull(anObject: actualJson[key: "hashCode"]);
             Assert.AreEqual(expected: "3.14_f32", actual: actualJson[key: "x"]!.ToString());
             Assert.AreEqual(expected: "2.71_f32", actual: actualJson[key: "y"]!.ToString());
+        }
+
+        [Test]
+        public void TestReprConfig_AllPublicMode_ReprTree()
+        {
+            var classified = new ClassifiedData(
+                writer: "Lumi",
+                dataValue: "Now Top Secret Accessing",
+                password: "REDACTED"
+            );
+
+            var config = new ReprConfig(ViewMode: MemberReprMode.AllPublic);
+            var actualJson = JToken.Parse(classified.ReprTree(config))!;
+
+            // Should include all public fields and properties
+            Assert.AreEqual("ClassifiedData", actualJson["type"]?.ToString());
+            Assert.AreEqual("class", actualJson["kind"]?.ToString());
+            Assert.NotNull(actualJson["hashCode"]);
+
+            // Public fields
+            Assert.AreEqual("10_i32", actualJson["Age"]?.ToString());
+            Assert.AreEqual("5_i64", actualJson["Id"]?.ToString());
+
+            // Public auto-properties  
+            var nameNode = (JObject)(actualJson["Name"]!);
+            Assert.AreEqual("string", nameNode["type"]?.ToString());
+            Assert.AreEqual("Lumi", nameNode["value"]?.ToString());
+
+            var writerNode = (JObject)(actualJson["Writer"]!);
+            Assert.AreEqual("string", writerNode["type"]?.ToString());
+            Assert.AreEqual("Lumi", writerNode["value"]?.ToString());
+
+            // Public computed property
+            var realDateNode = (actualJson["RealDate"]!);
+            Assert.AreEqual("DateTimeOffset", realDateNode["type"]?.ToString());
+            Assert.AreEqual("1970", realDateNode["year"]?.ToString());
+
+            // Should NOT include private members
+            Assert.IsNull(actualJson["private_Date"]);
+            Assert.IsNull(actualJson["private_Password"]);
+            Assert.IsNull(actualJson["private_Data"]);
+            Assert.IsNull(actualJson["private_Key"]);
+        }
+
+        [Test]
+        public void TestReprConfig_EverythingMode_ReprTree()
+        {
+            var classified = new ClassifiedData(
+                writer: "Lumi",
+                dataValue: "Now Top Secret Accessing",
+                password: "REDACTED"
+            );
+
+            var config = new ReprConfig(ViewMode: MemberReprMode.Everything);
+            var actualJson = JToken.Parse(classified.ReprTree(config))!;
+
+            // Should include all public members
+            Assert.AreEqual("ClassifiedData", actualJson["type"]?.ToString());
+            Assert.AreEqual("10_i32", actualJson["Age"]?.ToString());
+            Assert.AreEqual("5_i64", actualJson["Id"]?.ToString());
+
+            // Should include private fields
+            var dateNode = (JObject)actualJson["private_Date"]!;
+            Assert.AreEqual("DateTime", dateNode["type"]?.ToString());
+            Assert.AreEqual("1970", dateNode["year"]?.ToString());
+
+            var passwordNode = (JObject)actualJson["private_Password"]!;
+            Assert.AreEqual("string", passwordNode["type"]?.ToString());
+            Assert.AreEqual("REDACTED", passwordNode["value"]?.ToString());
+
+            var dataNode = (JObject)actualJson["private_Data"]!;
+            Assert.AreEqual("string", dataNode["type"]?.ToString());
+            Assert.AreEqual("Now Top Secret Accessing", dataNode["value"]?.ToString());
+
+            var keyNode = (JObject)actualJson["private_Key"]!;
+            Assert.AreEqual("Guid", keyNode["type"]?.ToString());
+            Assert.AreEqual("9a374b45-3771-4e91-b5e9-64bfa545efe9", keyNode["value"]?.ToString());
+
+            // Should include private computed properties
+            Assert.NotNull(actualJson["private_DataChecksum"]);
+            Assert.NotNull(actualJson["private_Hash"]);
+            Assert.NotNull(actualJson["private_keyInt"]);
         }
     }
 }

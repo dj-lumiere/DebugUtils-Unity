@@ -173,9 +173,9 @@ namespace DebugUtils.Unity.Repr.Extensions
                 onSuccess: value => new KeyValuePair<string, JToken?>(key: p.Name,
                     value: value.FormatAsJToken(context: context.WithIncrementedDepth())),
                 onTimeout: () =>
-                    new KeyValuePair<string, JToken?>(key: p.Name, value: "[Timed Out]"),
+                    new KeyValuePair<string, JToken?>(key: p.Name, value: "[Timed Out]".ToJValue()),
                 onError: ex => new KeyValuePair<string, JToken?>(key: p.Name,
-                    value: $"[{ex.GetType().Name}: {ex.Message}]"));
+                    value: $"[{ex.GetType().Name}: {ex.Message}]".ToJValue()));
         }
 
         public static string ToPrivateReprParts(this object obj, FieldInfo f, ReprContext context)
@@ -227,9 +227,9 @@ namespace DebugUtils.Unity.Repr.Extensions
                     value: value.FormatAsJToken(context: context.WithIncrementedDepth())),
                 onTimeout: () =>
                     new KeyValuePair<string, JToken?>(key: $"private_{p.Name}",
-                        value: "[Timed Out]"),
+                        value: "[Timed Out]".ToJValue()),
                 onError: ex => new KeyValuePair<string, JToken?>(key: $"private_{p.Name}",
-                    value: $"[{ex.GetType().Name}: {ex.Message}]"));
+                    value: $"[{ex.GetType().Name}: {ex.Message}]".ToJValue()));
         }
 
         public static ObjectMembers GetObjectMembers(this object obj, ReprContext context)
@@ -348,8 +348,8 @@ namespace DebugUtils.Unity.Repr.Extensions
             if (ShouldIncludePrivateProperties(mode: context.Config.ViewMode))
             {
                 var privateProps = GetPrivateProperties(type: type,
-                    privateAutoProps: publicAutoProps.Select(selector: p => p.prop.Name)
-                                                     .ToHashSet());
+                    privateAutoProps: privateAutoProps.Select(selector: p => p.prop.Name)
+                                                      .ToHashSet());
                 foreach (var pair in privateProps)
                 {
                     if (IsLimitReached(shown: shown, context: context))
