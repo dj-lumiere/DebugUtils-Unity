@@ -1,3 +1,15 @@
+#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
 using System;
 
 namespace DebugUtils.Unity.Repr.Attributes
@@ -23,6 +35,10 @@ namespace DebugUtils.Unity.Repr.Attributes
     /// var obj = new SimpleValue { Content = "test" };
     /// Console.WriteLine(obj.Repr());
     /// // Output: Content: "test"  (no "SimpleValue(...)" wrapper)
+    /// 
+    /// // For numeric types, explicit bit-width suffixes are automatically added:
+    /// Console.WriteLine(42.Repr());     // Output: 42_i32
+    /// Console.WriteLine(3.14f.Repr());  // Output: 3.14_f32
     /// </code>
     /// </example>
     [AttributeUsage(validOn: AttributeTargets.Class | AttributeTargets.Struct |
@@ -30,12 +46,12 @@ namespace DebugUtils.Unity.Repr.Attributes
     public class ReprOptionsAttribute : Attribute
     {
         /// <summary>
-        /// Initializes a new instance of the ReprOptionsAttribute with the specified prefix requirement.
+        /// Initializes a new instance of the ReprOptionsAttribute with the specified type append mode.
         /// </summary>
-        /// <param name="needsPrefix">
-        /// true if the type should always display a type prefix unless explicitly said to hidden
-        /// (e.g., "TypeName(content)");
-        /// false if the type should display content without a type wrapper.
+        /// <param name = "needsPrefix">
+        /// Determines how type information is positioned relative to the content.
+        /// Use false for no type info, true for traditional prefix behavior.
+        /// For more control, use the TypeAppendMode constructor.
         /// </param>
         public ReprOptionsAttribute(bool needsPrefix)
         {
@@ -54,6 +70,8 @@ namespace DebugUtils.Unity.Repr.Attributes
         /// <para>When true: Output format is "TypeName(content)"</para>
         /// <para>When false: Output format is just "content"</para>
         /// <para>This setting interacts with the global TypeReprMode configuration.</para>
+        /// <para>Note: For numeric types with explicit bit-width suffixes (like "42_i32"), 
+        /// this property may be overridden by the formatting engine.</para>
         /// </remarks>
         public bool NeedsPrefix { get; set; }
     }

@@ -1,7 +1,16 @@
-using System;
+#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
+using System.Collections.Generic;
+using System.Collections;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity
 {
@@ -45,8 +54,6 @@ namespace DebugUtils.Unity
                 var stack = new StackTrace(skipFrames: 1, fNeedFileInfo: true);
                 var frame = stack.GetFrame(index: 0);
                 var method = frame?.GetMethod();
-
-
                 if (method == null)
                 {
                     return "[unknown method]";
@@ -88,14 +95,9 @@ namespace DebugUtils.Unity
                 var className = method?.DeclaringType?.Name;
                 var methodName = method?.Name;
                 var column = frame?.GetFileColumnNumber() ?? 0;
-
-                var result = new CallerInfo(
-                    className: className,
-                    methodName: methodName,
-                    fileName: Path.GetFileName(path: filePath),
-                    lineNumber: lineNumber,
+                var result = new CallerInfo(className: className, methodName: methodName,
+                    fileName: Path.GetFileName(path: filePath), lineNumber: lineNumber,
                     columnNumber: column);
-
                 return result;
             }
             catch (Exception ex)

@@ -1,4 +1,16 @@
-﻿using System;
+#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Attributes
 {
@@ -34,7 +46,7 @@ namespace DebugUtils.Unity.Repr.Attributes
         /// <summary>
         /// Initializes a new instance of the ReprFormatterAttribute with the specified target types.
         /// </summary>
-        /// <param name="targetTypes">
+        /// <param name = "targetTypes">
         /// The types that this formatter can handle. The formatter will be registered
         /// for each of these types in the formatter registry.
         /// </param>

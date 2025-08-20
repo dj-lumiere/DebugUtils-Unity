@@ -1,4 +1,16 @@
-﻿using System;
+#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Models
 {
@@ -11,11 +23,11 @@ namespace DebugUtils.Unity.Repr.Models
 
     internal readonly struct FloatInfo
     {
-        public readonly FloatSpec Spec;
-        public readonly long Bits;
-        public readonly int RealExponent;
-        public readonly ulong Significand;
-        public readonly FloatTypeKind TypeName;
+        public FloatSpec Spec { get; }
+        public long Bits { get; }
+        public int RealExponent { get; }
+        public ulong Significand { get; }
+        public FloatTypeKind TypeName { get; }
 
         public FloatInfo(FloatSpec spec, long bits, int realExponent,
             ulong significand, FloatTypeKind typeName)
@@ -26,18 +38,9 @@ namespace DebugUtils.Unity.Repr.Models
             Significand = significand;
             TypeName = typeName;
         }
+
         public bool IsNegative => Bits < 0;
-
         public long Mantissa => Bits & Spec.MantissaMask;
-
-        public string ExpBits => Convert
-                                .ToString(value: Bits >> Spec.MantissaBitSize & Spec.ExpMask,
-                                     toBase: 2)
-                                .PadLeft(totalWidth: Spec.ExpBitSize, paddingChar: '0');
-
-        public string MantissaBits => Convert.ToString(value: Mantissa, toBase: 2)
-                                             .PadLeft(totalWidth: Spec.MantissaBitSize,
-                                                  paddingChar: '0');
 
         public bool IsPositiveInfinity
         {
@@ -80,5 +83,7 @@ namespace DebugUtils.Unity.Repr.Models
                        (Bits & Spec.MantissaMsbMask) == 0;
             }
         }
-    };
+
+        public bool IsSubnormal => (Bits & Spec.ExpMask) == 0;
+    }
 }

@@ -1,6 +1,17 @@
-﻿using System;
+#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Models;
-using Half = Unity.Mathematics.half;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Extensions
 {
@@ -19,82 +30,61 @@ namespace DebugUtils.Unity.Repr.Extensions
     /// </summary>
     internal static class FloatAnalysisExtensions
     {
-        // IEEE 754 binary16 (Half): 1 sign + 5 exponent + 10 mantissa = 16 bits
-        private static readonly FloatSpec halfSpec = new(expBitSize: 5, mantissaBitSize: 10,
-            totalSize: 16, mantissaMask: 0x3FF, mantissaMsbMask: 0x200, expMask: 0x1F,
-            expOffset: 15);
+        // IEEE 754 binary16 (Half): 1 sign bit + 5 exponent bits + 10 mantissa bits = 16 bits
+        private static readonly FloatSpec F16Spec = new(expBitSize: 5, mantissaBitSize: 10,
+            mantissaMask: 0x3FF, mantissaMsbMask: 0x200, expMask: 0x1F, expOffset: 15);
 
-        // IEEE 754 binary32 (Float): 1 sign + 8 exponent + 23 mantissa = 32 bits
-        private static readonly FloatSpec floatSpec = new(expBitSize: 8, mantissaBitSize: 23,
-            totalSize: 32, mantissaMask: 0x7FFFFF, mantissaMsbMask: 0x400000, expMask: 0xFF,
-            expOffset: 127);
+        // IEEE 754 binary32 (Float): 1 sign bit + 8 exponent bits + 23 mantissa bits = 32 bits  
+        private static readonly FloatSpec F32Spec = new(expBitSize: 8, mantissaBitSize: 23,
+            mantissaMask: 0x7FFFFF, mantissaMsbMask: 0x400000, expMask: 0xFF, expOffset: 127);
 
-        // IEEE 754 binary64 (Double): 1 sign + 11 exponent + 52 mantissa = 64 bits 
-        private static readonly FloatSpec doubleSpec =
-            new(expBitSize: 11, mantissaBitSize: 52, totalSize: 64, mantissaMask: 0xFFFFFFFFFFFFFL,
-                mantissaMsbMask: 0x8000000000000L, expMask: 0x7FFL, expOffset: 1023);
-
+        // IEEE 754 binary64 (Double): 1 sign bit + 11 exponent bits + 52 mantissa bits = 64 bits
+        private static readonly FloatSpec F64Spec = new(expBitSize: 11, mantissaBitSize: 52,
+            mantissaMask: 0xFFFFFFFFFFFFFL, mantissaMsbMask: 0x8000000000000L, expMask: 0x7FFL,
+            expOffset: 1023);
         // IEEE 754 REAL EXPONENT CALCULATION:
         // Normal numbers: realExp = rawExp - bias - mantissaBits
         // Subnormal numbers: realExp = 1 - bias - mantissaBits (special case when rawExp = 0)
-        // REASON: Subnormals have implicit leading 0, not 1, and use minimum exponent
-        // IEEE 754 SIGNIFICAND CONSTRUCTION:
-        // Normal: (2^mantissaBits + mantissa) - adds implicit leading 1
-        // Subnormal: mantissa - no implicit leading 1 (rawExponent == 0)
+        // REASON: Subnormal numbers have implicit leading 0, not 1, and use minimum exponent
+        #if NET5_0_OR_GREATER
+    public static FloatInfo AnalyzeHalf(this Half value)
+    {
+        var bits = BitConverter.HalfToInt16Bits(value: value);
+        var rawExponent = (int)(bits >> F16Spec.MantissaBitSize & F16Spec.ExpMask);
+        var mantissa = bits & F16Spec.MantissaMask;
 
-        public static FloatInfo AnalyzeHalf(this Half value)
-        {
-            var bits = value.value;
-            var rawExponent = (int)(bits >> halfSpec.MantissaBitSize & halfSpec.ExpMask);
-            var mantissa = bits & halfSpec.MantissaMask;
-
-            return new FloatInfo(
-                spec: halfSpec,
-                bits: bits,
-                realExponent: rawExponent - halfSpec.ExpOffset + (rawExponent == 0
-                    ? 1
-                    : 0) - halfSpec.MantissaBitSize,
-                significand: (ulong)(rawExponent == 0
-                    ? mantissa
-                    : (1 << halfSpec.MantissaBitSize) + mantissa),
-                typeName: FloatTypeKind.Half
-            );
-        }
+        return new FloatInfo(Spec: F16Spec, Bits: bits, RealExponent: rawExponent -
+            F16Spec.ExpOffset + (rawExponent == 0
+                ? 1
+                : 0) - F16Spec.MantissaBitSize, Significand: (ulong)(rawExponent == 0
+                ? mantissa
+                : (1 << F16Spec.MantissaBitSize) + mantissa), TypeName: FloatTypeKind.Half);
+    }
+        #endif
         public static FloatInfo AnalyzeFloat(this float value)
         {
             var bits = BitConverter.SingleToInt32Bits(value: value);
-            var rawExponent = (int)(bits >> floatSpec.MantissaBitSize & floatSpec.ExpMask);
-            var mantissa = bits & floatSpec.MantissaMask;
-
-            return new FloatInfo(
-                spec: floatSpec,
-                bits: bits,
-                realExponent: rawExponent - floatSpec.ExpOffset + (rawExponent == 0
+            var rawExponent = (int)(bits >> F32Spec.MantissaBitSize & F32Spec.ExpMask);
+            var mantissa = bits & F32Spec.MantissaMask;
+            return new FloatInfo(spec: F32Spec, bits: bits, realExponent: rawExponent -
+                F32Spec.ExpOffset + (rawExponent == 0
                     ? 1
-                    : 0) - floatSpec.MantissaBitSize,
-                significand: (ulong)(rawExponent == 0
+                    : 0) - F32Spec.MantissaBitSize, significand: (ulong)(rawExponent == 0
                     ? mantissa
-                    : (1 << floatSpec.MantissaBitSize) + mantissa),
-                typeName: FloatTypeKind.Float
-            );
+                    : (1 << F32Spec.MantissaBitSize) + mantissa), typeName: FloatTypeKind.Float);
         }
+
         public static FloatInfo AnalyzeDouble(this double value)
         {
             var bits = BitConverter.DoubleToInt64Bits(value: value);
-            var rawExponent = (int)(bits >> doubleSpec.MantissaBitSize & doubleSpec.ExpMask);
-            var mantissa = bits & doubleSpec.MantissaMask;
-
-            return new FloatInfo(
-                spec: doubleSpec,
-                bits: bits,
-                realExponent: rawExponent - doubleSpec.ExpOffset + (rawExponent == 0
+            var rawExponent = (int)(bits >> F64Spec.MantissaBitSize & F64Spec.ExpMask);
+            var mantissa = bits & F64Spec.MantissaMask;
+            return new FloatInfo(spec: F64Spec, bits: bits, realExponent: rawExponent -
+                F64Spec.ExpOffset + (rawExponent == 0
                     ? 1
-                    : 0) - doubleSpec.MantissaBitSize,
-                significand: (ulong)(rawExponent == 0
+                    : 0) - F64Spec.MantissaBitSize, significand: (ulong)(rawExponent == 0
                     ? mantissa
-                    : (1L << doubleSpec.MantissaBitSize) + mantissa),
-                typeName: FloatTypeKind.Double
-            );
+                    : (1L << F64Spec.MantissaBitSize) + mantissa), typeName: FloatTypeKind.Double);
         }
     }
 }

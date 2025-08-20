@@ -1,12 +1,20 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+#nullable enable
 using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Formatters;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr
 {
@@ -15,8 +23,7 @@ namespace DebugUtils.Unity.Repr
         private static readonly Dictionary<Type, IReprFormatter> ReprFormatters = new();
 
         private static readonly List<(Func<Type, bool>, IReprFormatter)>
-            ConditionalReprFormatters =
-                new();
+            ConditionalReprFormatters = new();
 
         private static readonly Dictionary<Type, IReprTreeFormatter> ReprTreeFormatters = new();
 
@@ -38,7 +45,6 @@ namespace DebugUtils.Unity.Repr
                                                                    t.GetCustomAttribute<
                                                                        ReprFormatterAttribute>() !=
                                                                    null);
-
             foreach (var type in formatterTypes)
             {
                 var attr = type.GetCustomAttribute<ReprFormatterAttribute>();
@@ -67,9 +73,9 @@ namespace DebugUtils.Unity.Repr
                         }
                     }
                 }
-
             }
         }
+
         private static void RegisterConditionalFormatters()
         {
             // Only register the interface/base class entries that can't use attributes
@@ -83,16 +89,14 @@ namespace DebugUtils.Unity.Repr
                     (t => t.IsArray, new ArrayFormatter()),
                     (t => t.IsSetType(), new SetFormatter()),
                     #if NET6_0_OR_GREATER
-                    (t => t.IsPriorityQueueType(), new PriorityQueueFormatter()),
+            (t => t.IsPriorityQueueType(), new PriorityQueueFormatter()),
                     #endif
-                    (t => typeof(Delegate).IsAssignableFrom(c: t), new FunctionFormatter()),
-                    (t => typeof(IEnumerable).IsAssignableFrom(c: t),
-                        new EnumerableFormatter()),
+                    (t => t.IsAssignableTo(other: typeof(Delegate)), new FunctionFormatter()),
+                    (t => t.IsAssignableTo(other: typeof(IEnumerable)), new EnumerableFormatter()),
                     (t => t.IsAnonymousType(), new ObjectFormatter()),
                     (t => typeof(Type).IsAssignableFrom(c: t), new TypeFormatter()),
                     (t => t.IsMemoryType(), new MemoryFormatter()),
-                    (t => t.IsReadOnlyMemoryType(), new ReadOnlyMemoryFormatter()),
-                    (t => t.OverridesToStringType(), new ToStringFormatter())
+                    (t => t.IsReadOnlyMemoryType(), new ReadOnlyMemoryFormatter())
                 });
             ConditionalReprTreeFormatters.AddRange(
                 collection: new List<(Func<Type, bool>, IReprTreeFormatter)>
@@ -102,30 +106,25 @@ namespace DebugUtils.Unity.Repr
                     (t => t.IsTupleType(), new TupleFormatter()),
                     (t => t.IsArray, new ArrayFormatter()),
                     #if NET6_0_OR_GREATER
-                    (t => t.IsPriorityQueueType(), new PriorityQueueFormatter()),
+                (t => t.IsPriorityQueueType(), new PriorityQueueFormatter()),
                     #endif
-                    (t => typeof(Delegate).IsAssignableFrom(c: t), new FunctionFormatter()),
-                    (t => typeof(IEnumerable).IsAssignableFrom(c: t),
-                        new EnumerableFormatter()),
+                    (t => t.IsAssignableTo(other: typeof(Delegate)), new FunctionFormatter()),
+                    (t => t.IsAssignableTo(other: typeof(IEnumerable)), new EnumerableFormatter()),
                     (t => typeof(Type).IsAssignableFrom(c: t), new TypeFormatter()),
                     (t => t.IsMemoryType(), new MemoryFormatter()),
                     (t => t.IsReadOnlyMemoryType(), new ReadOnlyMemoryFormatter()),
                     (t => t.IsAnonymousType(), new ObjectFormatter())
                 });
         }
-        public static IReprFormatter GetStandardFormatter(Type type, ReprContext context)
-        {
-            if (context.Config.FormattingMode == FormattingMode.Reflection)
-            {
-                return new ObjectFormatter();
-            }
 
+        public static IReprFormatter GetStandardFormatter(this Type type)
+        {
             if (ReprFormatters.TryGetValue(key: type, value: out var directFormatter))
             {
                 return directFormatter;
             }
 
-            foreach (var (condition, formatter) in ConditionalReprFormatters)
+            foreach (var (condition, formatter)in ConditionalReprFormatters)
             {
                 if (condition(arg: type))
                 {
@@ -135,14 +134,15 @@ namespace DebugUtils.Unity.Repr
 
             return new ObjectFormatter();
         }
-        public static IReprTreeFormatter GetTreeFormatter(Type type, ReprContext context)
+
+        public static IReprTreeFormatter GetTreeFormatter(this Type type)
         {
             if (ReprTreeFormatters.TryGetValue(key: type, value: out var directFormatter))
             {
                 return directFormatter;
             }
 
-            foreach (var (condition, formatter) in ConditionalReprTreeFormatters)
+            foreach (var (condition, formatter)in ConditionalReprTreeFormatters)
             {
                 if (condition(arg: type))
                 {

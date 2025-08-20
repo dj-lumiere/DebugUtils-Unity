@@ -1,158 +1,120 @@
-﻿using System;
-using System.ComponentModel;
+#nullable enable
 using DebugUtils.Unity.Repr.Attributes;
 using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.Models;
 using DebugUtils.Unity.Repr.TypeHelpers;
 using Newtonsoft.Json.Linq;
-using Half = Unity.Mathematics.half;
+using System.Collections.Generic;
+using System.Collections;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
-    [ReprFormatter(typeof(float), typeof(double), typeof(Half))]
-    [ReprOptions(needsPrefix: true)]
+    [ReprFormatter(typeof(float), typeof(double)
+        #if NET5_0_OR_GREATER
+    , typeof(Half)
+        #endif
+    )]
+    [ReprOptions(needsPrefix: false)]
     internal class FloatFormatter : IReprFormatter, IReprTreeFormatter
     {
         public string ToRepr(object obj, ReprContext context)
         {
-            var info = obj switch
+            var info = AnalyzeFloat(obj: obj);
+            return FormatWithCustomString(obj: obj, info: info,
+                formatString: context.Config.FloatFormatString, culture: context.Config.Culture);
+        }
+
+        private static FloatInfo AnalyzeFloat(object obj)
+        {
+            return obj switch
             {
-                Half h => h.AnalyzeHalf(),
+                #if NET5_0_OR_GREATER
+            Half h => h.AnalyzeHalf(),
+                #endif
                 float f => f.AnalyzeFloat(),
                 double d => d.AnalyzeDouble(),
                 _ => throw new ArgumentException(message: "Invalid type")
             };
+        }
 
-            if (!String.IsNullOrEmpty(value: context.Config.FloatFormatString))
+        private static string FormatWithCustomString(object obj, FloatInfo info,
+            string formatString, CultureInfo? culture)
+        {
+            return formatString switch
             {
-                return context.Config.FloatFormatString switch
-                {
-                    "HB" => info.TypeName switch
-                    {
-                        FloatTypeKind.Half or FloatTypeKind.Float or FloatTypeKind.Double =>
-                            $"0x{info.Bits.ToString(format: $"X{info.Spec.TotalSize / 4}")}",
-                        _ => throw new InvalidEnumArgumentException(message: "Invalid FloatTypeKind")
-                    },
-                    "BF" => info.TypeName switch
-                    {
-                        FloatTypeKind.Half or FloatTypeKind.Float or FloatTypeKind.Double =>
-                            $"{(info.IsNegative ? 1 : 0)}|{info.ExpBits}|{info.MantissaBits}",
-                        _ => throw new InvalidEnumArgumentException(message: "Invalid FloatTypeKind")
-                    },
-                    "EX" => obj.FormatAsExact(info: info),
-                    _ when info.IsPositiveInfinity => "Infinity",
-                    _ when info.IsNegativeInfinity => "-Infinity",
-                    _ when info.IsQuietNaN => "Quiet NaN",
-                    _ when info.IsSignalingNaN =>
-                        $"Signaling NaN, Payload: 0x{info.Mantissa.ToString(format: $"X{(info.Spec.MantissaBitSize + 3) / 4}")}",
-                    _ => obj switch
-                    {
-                        Half h => h.ToString(format: context.Config.FloatFormatString),
-                        float f => f.ToString(format: context.Config.FloatFormatString),
-                        double d => d.ToString(format: context.Config.FloatFormatString),
-                        _ => throw new InvalidEnumArgumentException(message: "Invalid FloatTypeKind")
-                    }
-                };
-            }
-            var config = context.Config;
-            // those two repr modes prioritize bit perfect representation, so they are processed first.
-            switch (config.FloatMode)
+                _ when info.IsPositiveInfinity => "Infinity",
+                _ when info.IsNegativeInfinity => "-Infinity",
+                _ when info.IsQuietNaN => FormatQuietNaN(info: info),
+                _ when info.IsSignalingNaN => FormatSignalingNaN(info: info),
+                "EX" => obj.FormatAsExact(info: info),
+                "HP" => obj.FormatAsHexPower(info: info),
+                _ => FormatWithBuiltInToString(obj: obj, formatString: formatString,
+                    culture: culture)
+            };
+        }
+
+        private static string FormatWithBuiltInToString(object obj, string formatString,
+            CultureInfo? culture)
+        {
+            return obj switch
             {
-                case FloatReprMode.HexBytes:
-                    return info.TypeName switch
-                    {
-                        FloatTypeKind.Half or FloatTypeKind.Float or FloatTypeKind.Double =>
-                            $"0x{info.Bits.ToString(format: $"X{(info.Spec.TotalSize + 3) / 4}")}",
-                        _ => throw new InvalidEnumArgumentException(
-                            message: "Invalid FloatTypeKind")
-                    };
-                case FloatReprMode.BitField:
-                    return info.TypeName switch
-                    {
-                        FloatTypeKind.Half or FloatTypeKind.Float or FloatTypeKind.Double =>
-                            $"{(info.IsNegative ? 1 : 0)}|{info.ExpBits}|{info.MantissaBits}",
-                        _ => throw new InvalidEnumArgumentException(
-                            message: "Invalid FloatTypeKind")
-                    };
-            }
+                #if NET5_0_OR_GREATER
+            Half h => h.ToString(format: formatString, provider: culture),
+                #endif
+                float f => f.ToString(format: formatString, provider: culture),
+                double d => d.ToString(format: formatString, provider: culture),
+                _ => throw new InvalidEnumArgumentException(message: "Invalid FloatTypeKind")
+            };
+        }
 
-            if (info.IsPositiveInfinity)
+        private static string FormatQuietNaN(FloatInfo info)
+        {
+            return info.TypeName switch
             {
-                return config.FloatMode switch
-                {
-                    FloatReprMode.Exact or FloatReprMode.Exact_Old or FloatReprMode.Scientific
-                        or FloatReprMode.Round
-                        or FloatReprMode.General =>
-                        "Infinity",
-                    _ => throw new InvalidEnumArgumentException(message: "Invalid FloatReprMode")
-                };
-            }
+                FloatTypeKind.Half => $"QuietNaN(0x{info.Mantissa:X3})",
+                FloatTypeKind.Float => $"QuietNaN(0x{info.Mantissa:X3})",
+                FloatTypeKind.Double => $"QuietNaN(0x{info.Mantissa:X3})",
+                _ => throw new InvalidEnumArgumentException(message: "Invalid FloatTypeKind")
+            };
+        }
 
-            if (info.IsNegativeInfinity)
+        private static string FormatSignalingNaN(FloatInfo info)
+        {
+            return info.TypeName switch
             {
-                return config.FloatMode switch
-                {
-                    FloatReprMode.Exact or FloatReprMode.Exact_Old or FloatReprMode.Scientific
-                        or FloatReprMode.Round
-                        or FloatReprMode.General =>
-                        "-Infinity",
-                    _ => throw new InvalidEnumArgumentException(message: "Invalid FloatReprMode")
-                };
-            }
-
-            if (info.IsQuietNaN)
-            {
-                return config.FloatMode switch
-                {
-                    FloatReprMode.Exact or FloatReprMode.Exact_Old or FloatReprMode.Scientific
-                        or FloatReprMode.Round
-                        or FloatReprMode.General =>
-                        "Quiet NaN",
-                    _ => throw new InvalidEnumArgumentException(message: "Invalid FloatReprMode")
-                };
-            }
-
-            if (info.IsSignalingNaN)
-            {
-                var payloadFormat = info.TypeName switch
-                {
-                    FloatTypeKind.Half or FloatTypeKind.Float or FloatTypeKind.Double =>
-                        $"Signaling NaN, Payload: 0x{info.Mantissa.ToString(format: $"X{(info.Spec.MantissaBitSize + 3) / 4}")}",
-                    _ => throw new InvalidEnumArgumentException(message: "Invalid FloatTypeKind")
-                };
-
-                return config.FloatMode switch
-                {
-                    FloatReprMode.Exact or FloatReprMode.Exact_Old or FloatReprMode.Scientific
-                        or FloatReprMode.Round
-                        or FloatReprMode.General => payloadFormat,
-                    _ => throw new InvalidEnumArgumentException(message: "Invalid FloatReprMode")
-                };
-            }
-
-            return config.FloatMode switch
-            {
-                FloatReprMode.Exact_Old => obj.FormatAsExact_Old(info: info),
-                FloatReprMode.Exact => obj.FormatAsExact(info: info),
-                FloatReprMode.General => obj.FormatAsGeneral(info: info, context: context),
-                _ when config.FloatPrecision is < 0 or >= 100 => obj.FormatAsExact(info: info),
-                FloatReprMode.Round => obj.FormatAsRounding(info: info, context: context),
-                FloatReprMode.Scientific => obj.FormatAsScientific(info: info, context: context),
-
-                _ => throw new InvalidEnumArgumentException(message: "Invalid FloatReprMode")
+                FloatTypeKind.Half => $"SignalingNaN(0x{info.Mantissa:X3})",
+                FloatTypeKind.Float => $"SignalingNaN(0x{info.Mantissa:X3})",
+                FloatTypeKind.Double => $"SignalingNaN(0x{info.Mantissa:X3})",
+                _ => throw new InvalidEnumArgumentException(message: "Invalid FloatTypeKind")
             };
         }
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
-            var result = new JObject();
             var type = obj.GetType();
-            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
-            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
-            result.Add(propertyName: "value",
-                value: new JValue(value: ToRepr(obj: obj, context: context)));
-            return result;
+            if (context.Depth > 0)
+            {
+                return obj.Repr(context: context)!;
+            }
+
+            return new JObject
+            {
+                [propertyName: "type"] = type.GetReprTypeName(),
+                [propertyName: "kind"] = type.GetTypeKind(),
+                [propertyName: "value"] = ToRepr(obj: obj, context: context)
+            };
         }
     }
 }

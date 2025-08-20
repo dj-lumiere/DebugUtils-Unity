@@ -1,8 +1,16 @@
-﻿using System;
+﻿#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
 using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Models
 {
@@ -11,6 +19,7 @@ namespace DebugUtils.Unity.Repr.Models
         public bool IsPublic { get; }
         public bool IsPrivate { get; }
         public bool IsProtected { get; }
+
         public bool IsInternal { get; }
 
         // Other modifiers
@@ -44,8 +53,7 @@ namespace DebugUtils.Unity.Repr.Models
         public override string ToString()
         {
             var modifiers = new List<string>();
-
-            foreach (var (condition, name) in new[]
+            foreach (var (condition, name)in new[]
                      {
                          (IsPublic, "public"),
                          (IsPrivate, "private"),
@@ -83,19 +91,20 @@ namespace DebugUtils.Unity.Repr.Models
         public static bool IsOverrideMethod(this MethodInfo method)
         {
             // A method is override if it's virtual and has a base definition
-            return method.IsVirtual &&
-                   method.GetBaseDefinition() != method;
+            return method.IsVirtual && method.GetBaseDefinition() != method;
         }
+
         public static bool IsAsyncMethod(this MethodInfo method)
         {
-            // Check if method is marked with AsyncStateMachine attribute
-            return method.IsDefined(
-                attributeType: typeof(AsyncStateMachineAttribute));
+            // Check if a method is marked with an AsyncStateMachine attribute
+            return method.IsDefined(attributeType: typeof(AsyncStateMachineAttribute));
         }
+
         public static bool IsExternMethod(this MethodInfo method)
         {
             return method.Attributes.HasFlag(flag: MethodAttributes.PinvokeImpl);
         }
+
         public static bool IsUnsafeMethod(this MethodInfo method)
         {
             // A method is considered unsafe if its return type or any of its parameters are a pointer type.

@@ -1,5 +1,16 @@
-﻿using System;
+﻿#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.TypeHelpers
 {
@@ -52,26 +63,26 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
         /// Gets a human-readable representation name for the specified type.
         /// Converts technical .NET type names into more readable formats suitable for debugging output.
         /// </summary>
-        /// <param name="type">The type to get the representation name for.</param>
+        /// <param name = "type">The type to get the representation name for.</param>
         /// <returns>
         /// A string representing the type in a human-readable format.
         /// </returns>
         /// <remarks>
         /// <para>This method handles several special cases:</para>
         /// <list type="bullet">
-        /// <item><description>Nullable value types are displayed with "?" suffix</description></item>
+        /// <item><description>Nullable value types are displayed with a "?" suffix</description></item>
         /// <item><description>Generic types show clean parameter names</description></item>
         /// <item><description>Arrays show dimensional information</description></item>
         /// <item><description>Task types show their result types</description></item>
         /// <item><description>Anonymous types are labeled as "Anonymous"</description></item>
-        /// <item><description>Reference types (ref parameters) show "ref" prefix</description></item>
+        /// <item><description>Reference types (ref parameters) show a "ref" prefix</description></item>
         /// </list>
         /// </remarks>
         /// <example>
         /// <code>
         /// Console.WriteLine(typeof(int).GetReprTypeName());        // "int"
         /// Console.WriteLine(typeof(List&lt;string&gt;).GetReprTypeName()); // "List"
-        /// Console.WriteLine(typeof(int?).GetReprTypeName());       // "int"
+        /// Console.WriteLine(typeof(int?).GetReprTypeName());       // "int?"
         /// Console.WriteLine(typeof(Task&lt;bool&gt;).GetReprTypeName());   // "Task&lt;bool&gt;"
         /// </code>
         /// </example>
@@ -81,7 +92,6 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
             if (type.IsNullableStructType())
             {
                 var underlyingType = Nullable.GetUnderlyingType(nullableType: type)!;
-
                 if (underlyingType.IsTupleType())
                 {
                     return "Tuple?"; // Simple approach
@@ -107,7 +117,6 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
             }
 
             var isRefType = type.IsByRef;
-
             if (isRefType)
             {
                 return type.GetRefTypeReprName();
@@ -119,7 +128,6 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
             var isValueTask = type == typeof(ValueTask);
             var isGenericValueTask = type.IsGenericType &&
                                      type.GetGenericTypeDefinition() == typeof(ValueTask<>);
-
             if (isTaskType || isGenericTaskType || isValueTask || isGenericValueTask)
             {
                 return type.GetTaskTypeReprName();
@@ -138,12 +146,13 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
 
             return result;
         }
+
         /// <summary>
         /// Gets a human-readable representation name for the type of the specified object.
         /// This is a convenience method that extracts the runtime type from the object.
         /// </summary>
-        /// <typeparam name="T">The compile-time type of the object.</typeparam>
-        /// <param name="obj">The object whose type name should be retrieved. Can be null.</param>
+        /// <typeparam name = "T">The compile-time type of the object.</typeparam>
+        /// <param name = "obj">The object whose type name should be retrieved. Can be null.</param>
         /// <returns>
         /// The human-readable type name. If the object is null, returns the name of the 
         /// compile-time type T.
@@ -171,7 +180,7 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
         /// Gets the kind/category of the specified type (class, struct, record, enum, etc.).
         /// This determines the fundamental nature of the type for debugging purposes.
         /// </summary>
-        /// <param name="type">The type to categorize.</param>
+        /// <param name = "type">The type to categorize.</param>
         /// <returns>
         /// A string describing the type kind: "enum", "interface", "record struct", "struct", 
         /// "record class", "class", or "unknown" for unrecognized types.
@@ -211,11 +220,13 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
 
             return "1DArray";
         }
+
         private static string GetRefTypeReprName(this Type type)
         {
-            var innerType = type?.GetElementType();
+            var innerType = type.GetElementType() ?? null;
             return $"ref {innerType?.GetReprTypeName() ?? "null"}";
         }
+
         private static string GetTaskTypeReprName(this Type type)
         {
             // For Task (non-generic)

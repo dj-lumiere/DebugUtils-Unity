@@ -1,9 +1,20 @@
-using System.Runtime.CompilerServices;
-using System.Text;
+#nullable enable
 using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -21,15 +32,12 @@ namespace DebugUtils.Unity.Repr.Formatters
             }
 
             var tuple = (ITuple)obj;
-            // Apply container defaults if configured
-            context = context.WithContainerConfig();
-
             var sb = new StringBuilder();
             sb.Append(value: '(');
-            for (var i = 0; i < tuple.Length; i++)
+            for (var i = 0; i < tuple.Length; i += 1)
             {
-                if (context.Config.MaxElementsPerCollection >= 0 &&
-                    i >= context.Config.MaxElementsPerCollection)
+                if (context.Config.MaxItemsPerContainer >= 0 &&
+                    i >= context.Config.MaxItemsPerContainer)
                 {
                     break;
                 }
@@ -43,11 +51,10 @@ namespace DebugUtils.Unity.Repr.Formatters
                    .Repr(context: context.WithIncrementedDepth()));
             }
 
-            if (context.Config.MaxElementsPerCollection >= 0 &&
-                tuple.Length > context.Config.MaxElementsPerCollection)
+            if (context.Config.MaxItemsPerContainer >= 0 &&
+                tuple.Length > context.Config.MaxItemsPerContainer)
             {
-                var truncatedItemCount = tuple.Length -
-                                         context.Config.MaxElementsPerCollection;
+                var truncatedItemCount = tuple.Length - context.Config.MaxItemsPerContainer;
                 sb.Append(value: $"... {truncatedItemCount} more items");
             }
 
@@ -63,31 +70,32 @@ namespace DebugUtils.Unity.Repr.Formatters
             var type = tuple.GetType();
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
             {
-                return new JObject
-                {
-                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
-                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
-                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
-                    [propertyName: "depth"] = new JValue(value: context.Depth)
-                };
+                return type.CreateMaxDepthReachedJson(depth: context.Depth);
             }
 
-            var result = new JObject();
-            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
-            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
+            var result = new JObject
+            {
+                {
+                    "type",
+                    type.GetReprTypeName()
+                },
+                {
+                    "kind",
+                    type.GetTypeKind()
+                }
+            };
             if (!type.IsValueType)
             {
                 result.Add(propertyName: "hashCode",
-                    value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}"));
+                    value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
             }
 
-            result.Add(propertyName: "length", value: new JValue(value: tuple.Length));
-
+            result.Add(propertyName: "length", value: tuple.Length);
             var entries = new JArray();
-            for (var i = 0; i < tuple.Length; i++)
+            for (var i = 0; i < tuple.Length; i += 1)
             {
-                if (context.Config.MaxElementsPerCollection >= 0 &&
-                    i >= context.Config.MaxElementsPerCollection)
+                if (context.Config.MaxItemsPerContainer >= 0 &&
+                    i >= context.Config.MaxItemsPerContainer)
                 {
                     break;
                 }
@@ -96,11 +104,10 @@ namespace DebugUtils.Unity.Repr.Formatters
                    .FormatAsJToken(context: context.WithIncrementedDepth()));
             }
 
-            if (context.Config.MaxElementsPerCollection >= 0 &&
-                tuple.Length > context.Config.MaxElementsPerCollection)
+            if (context.Config.MaxItemsPerContainer >= 0 &&
+                tuple.Length > context.Config.MaxItemsPerContainer)
             {
-                var truncatedItemCount = tuple.Length -
-                                         context.Config.MaxElementsPerCollection;
+                var truncatedItemCount = tuple.Length - context.Config.MaxItemsPerContainer;
                 entries.Add(item: $"... ({truncatedItemCount} more items)");
             }
 

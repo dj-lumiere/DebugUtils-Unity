@@ -1,6 +1,10 @@
-﻿using System;
+#nullable enable
+using Component = UnityEngine.Component;
+using Debug = UnityEngine.Debug;
+using GameObject = UnityEngine.GameObject;
 using System.Text;
-using UnityEngine;
+using System;
+using Transform = UnityEngine.Transform;
 using UnityEngine.SceneManagement;
 
 namespace DebugUtils.Unity
@@ -21,8 +25,8 @@ namespace DebugUtils.Unity
     /// <para>- Supports backward indexing with ^N syntax (^1 = last, ^2 = second-to-last)</para>
     /// <para>- Reserved characters: ':', '/', '[', ']' cannot be used in GameObject names</para>
     /// </remarks>
-    /// <seealso cref="UnityEngine.Object.FindFirstObjectByType{T}(FindObjectsInactive)"/>
-    /// <seealso cref="UnityEngine.Object.FindAnyObjectByType{T}(FindObjectsInactive)"/>
+    /// <seealso cref = "UnityEngine.Object.FindFirstObjectByType{T}(UnityEngine.FindObjectsInactive)"/>
+    /// <seealso cref = "UnityEngine.Object.FindAnyObjectByType{T}(UnityEngine.FindObjectsInactive)"/>
     public static class SceneNavigator
     {
         #region Public API
@@ -30,7 +34,7 @@ namespace DebugUtils.Unity
         /// <summary>
         /// Finds a GameObject in the scene hierarchy using a structured path with scene and index information.
         /// </summary>
-        /// <param name="path">
+        /// <param name = "path">
         /// Structured path in the format <c>SceneName:/GameObject[index]/Child[index]</c>.
         /// Scene name is optional (defaults to an active scene if omitted).
         /// Index is optional (defaults to the first match [0] if omitted).
@@ -103,11 +107,11 @@ namespace DebugUtils.Unity
         /// }
         /// </code>
         /// </example>
-        /// <exception cref="System.ArgumentException">
+        /// <exception cref = "System.ArgumentException">
         /// Thrown when path format is invalid (malformed brackets, invalid indices, etc.).
         /// </exception>
-        /// <seealso cref="FindComponentByPath{T}"/>
-        /// <seealso cref="GetScenePath"/>
+        /// <seealso cref = "FindComponentByPath{T}"/>
+        /// <seealso cref = "GetScenePath"/>
         public static GameObject FindGameObjectByPath(string path)
         {
             if (String.IsNullOrEmpty(value: path))
@@ -129,11 +133,9 @@ namespace DebugUtils.Unity
 
             ExtractPathIndicesAndNames(hierarchyPath: hierarchyPath,
                 cleanNames: out var cleanNames, indices: out var indices);
-
             // Select the root object by index
             var rootObject =
                 currentScene.PickRootByNameAndIndex(name: cleanNames[0], index: indices[0]);
-
             if (rootObject == null)
             {
                 return null;
@@ -157,8 +159,8 @@ namespace DebugUtils.Unity
         /// Finds a GameObject using a flexible path format and retrieves a component of the specified type.
         /// Combines object finding and component retrieval in a single operation.
         /// </summary>
-        /// <typeparam name="T">The type of component to retrieve (must inherit from Component).</typeparam>
-        /// <param name="path">
+        /// <typeparam name = "T">The type of component to retrieve (must inherit from Component).</typeparam>
+        /// <param name = "path">
         /// Flexible path in the format "SceneName:/GameObject/Child" or "SceneName:/GameObject[index]/Child[index]".
         /// Scene name is optional (defaults to the active scene if omitted).
         /// Indices are optional (defaults to the first match [0] if omitted).
@@ -233,13 +235,13 @@ namespace DebugUtils.Unity
         /// WeaponController sameWeapon = SceneNavigator.FindComponentByPath&lt;WeaponController&gt;(weaponPath);
         /// </code>
         /// </example>
-        /// <exception cref="System.ArgumentException">
+        /// <exception cref = "System.ArgumentException">
         /// Thrown when path format is invalid (malformed brackets, invalid indices, etc.).
         /// Same validation rules as FindGameObjectByPath.
         /// </exception>
-        /// <seealso cref="FindGameObjectByPath"/>
-        /// <seealso cref="GetScenePath"/>
-        /// <seealso cref="UnityEngine.Component.GetComponent{T}()"/>
+        /// <seealso cref = "FindGameObjectByPath"/>
+        /// <seealso cref = "GetScenePath"/>
+        /// <seealso cref = "UnityEngine.Component.GetComponent{T}()"/>
         public static T FindComponentByPath<T>(string path) where T : Component
         {
             var obj = FindGameObjectByPath(path: path);
@@ -252,7 +254,7 @@ namespace DebugUtils.Unity
         /// Gets the complete explicit path of a GameObject including scene name and exact sibling indices.
         /// Always returns a fully qualified path that can reliably locate the same object instance.
         /// </summary>
-        /// <param name="obj">The GameObject to get the path for (can be null).</param>
+        /// <param name = "obj">The GameObject to get the path for (can be null).</param>
         /// <returns>
         /// An explicit path string in the format <c>SceneName:/Parent[index]/Child[index]/Object[index]</c>.
         /// Always includes scene name and sibling indices for deterministic object identification.
@@ -327,12 +329,12 @@ namespace DebugUtils.Unity
         /// string nullPath = nullObj.GetScenePath(); // Returns "[null gameObject]"
         /// </code>
         /// </example>
-        /// <exception cref="System.ArgumentException">
+        /// <exception cref = "System.ArgumentException">
         /// Thrown when the object name contains reserved letters. SceneNavigator reserves ':', '/', '[', ']'
         /// for internal purposes, so please change them before using SceneNavigator.
         /// </exception>
-        /// <seealso cref="FindGameObjectByPath"/>
-        /// <seealso cref="FindComponentByPath{T}"/>
+        /// <seealso cref = "FindGameObjectByPath"/>
+        /// <seealso cref = "FindComponentByPath{T}"/>
         public static string GetScenePath(this GameObject obj)
         {
             if (obj == null)
@@ -349,13 +351,18 @@ namespace DebugUtils.Unity
 
             var names = new string[depth];
             var indices = new int[depth];
-
             var k = depth - 1;
             // Pass 2: Fill pre-allocated arrays
             for (var t = obj.transform; t != null; t = t.parent, k -= 1)
             {
                 names[k] = t.name;
-                foreach (var reservedChar in new[] { ':', '/', '[', ']' })
+                foreach (var reservedChar in new[]
+                         {
+                             ':',
+                             '/',
+                             '[',
+                             ']'
+                         })
                 {
                     var index = names[k]
                        .IndexOf(value: reservedChar);
@@ -386,7 +393,6 @@ namespace DebugUtils.Unity
             var sb = new StringBuilder(capacity: cap);
             sb.Append(value: sceneName)
               .Append(value: ":/");
-
             for (var i = 0; i < depth; i += 1)
             {
                 if (i != 0)
@@ -421,23 +427,20 @@ namespace DebugUtils.Unity
                     var message = "Path contains multiple scene separators.";
                     var formattedMessage = FormatSyntaxError(fullPath: path, errorPosition: second,
                         count: 2, errorMessage: message);
-                    throw new ArgumentException(
-                        message: formattedMessage,
+                    throw new ArgumentException(message: formattedMessage,
                         paramName: nameof(path));
                 }
 
                 var sceneName = path[..sep];
                 hierarchyPath = path[(sep + 2)..];
                 currentScene = SceneManager.GetSceneByName(name: sceneName);
-
                 if (currentScene.IsValid())
                 {
                     return true;
                 }
 
                 #if UNITY_EDITOR
-                Debug.LogWarning(
-                    message: $"Scene '{sceneName}' not found - returning null");
+                Debug.LogWarning(message: $"Scene '{sceneName}' not found - returning null");
                 #endif
                 return false;
             }
@@ -448,11 +451,9 @@ namespace DebugUtils.Unity
         }
 
         private static void ExtractPathIndicesAndNames(string hierarchyPath,
-            out string[] cleanNames,
-            out int[] indices)
+            out string[] cleanNames, out int[] indices)
         {
             var pathParts = hierarchyPath.Split(separator: '/');
-
             cleanNames = new string[pathParts.Length];
             indices = new int[pathParts.Length];
             for (var i = 0; i < pathParts.Length; i += 1)
@@ -461,11 +462,15 @@ namespace DebugUtils.Unity
                 var itemParts = pathParts[i]
                    .Split(separator: '[');
                 cleanNames[i] = itemParts[0];
-
                 switch (itemParts.Length)
                 {
                     case 1:
-                        foreach (var reservedChar in new[] { ':', '/', ']' })
+                        foreach (var reservedChar in new[]
+                                 {
+                                     ':',
+                                     '/',
+                                     ']'
+                                 })
                         {
                             var charIndex = cleanNames[i]
                                .IndexOf(value: reservedChar);
@@ -478,10 +483,8 @@ namespace DebugUtils.Unity
                                 index: i, offset: charIndex);
                             var message =
                                 $"Reserved character '{reservedChar}' found in object name '{pathParts[i]}'. Please rename before using SceneNavigator features.";
-                            var formattedMessage =
-                                FormatSyntaxError(fullPath: hierarchyPath, errorPosition: position,
-                                    count: 1, errorMessage: message);
-
+                            var formattedMessage = FormatSyntaxError(fullPath: hierarchyPath,
+                                errorPosition: position, count: 1, errorMessage: message);
                             throw new ArgumentException(message: formattedMessage,
                                 paramName: nameof(hierarchyPath));
                         }
@@ -494,15 +497,15 @@ namespace DebugUtils.Unity
                             message: "String.Split should never return empty array");
                         throw new InvalidOperationException(message: "Unreachable code reached.");
                     }
+
                     case > 2:
                     {
                         // object name, opening brace, indexing part with closing bracket
                         var position = FindErrorCharacterPosition(pathParts: pathParts, index: i,
                             offset: itemParts[0].Length + 1 + itemParts[1].Length);
                         var message = "Too many brackets in path.";
-                        var formattedMessage =
-                            FormatSyntaxError(fullPath: hierarchyPath, errorPosition: position,
-                                count: 1, errorMessage: message);
+                        var formattedMessage = FormatSyntaxError(fullPath: hierarchyPath,
+                            errorPosition: position, count: 1, errorMessage: message);
                         throw new ArgumentException(message: formattedMessage,
                             paramName: nameof(hierarchyPath));
                     }
@@ -510,8 +513,8 @@ namespace DebugUtils.Unity
 
                 if (itemParts[0].Length == 0)
                 {
-                    var position = FindErrorCharacterPosition(pathParts: pathParts, index: i,
-                        offset: 0);
+                    var position =
+                        FindErrorCharacterPosition(pathParts: pathParts, index: i, offset: 0);
                     var message = "Empty object name before '['.";
                     var formattedMessage = FormatSyntaxError(fullPath: hierarchyPath,
                         errorPosition: position, count: 1, errorMessage: message);
@@ -547,8 +550,7 @@ namespace DebugUtils.Unity
                     var message =
                         "Invalid index. Expected non-negative integer or ^N for backwards indexing.";
                     var formattedMessage = FormatSyntaxError(fullPath: hierarchyPath,
-                        errorPosition: position,
-                        count: indexString.Length, errorMessage: message);
+                        errorPosition: position, count: indexString.Length, errorMessage: message);
                     throw new ArgumentException(message: formattedMessage,
                         paramName: nameof(hierarchyPath));
                 }
@@ -559,26 +561,26 @@ namespace DebugUtils.Unity
                     {
                         var position = FindErrorCharacterPosition(pathParts: pathParts, index: i,
                             offset: itemParts[0].Length + 1);
-                        var message =
-                            "Invalid index. Expected non-negative integer for indexing.";
+                        var message = "Invalid index. Expected non-negative integer for indexing.";
                         var formattedMessage = FormatSyntaxError(fullPath: hierarchyPath,
-                            errorPosition: position,
-                            count: indexString.Length, errorMessage: message);
+                            errorPosition: position, count: indexString.Length,
+                            errorMessage: message);
                         throw new ArgumentException(message: formattedMessage,
                             paramName: nameof(hierarchyPath));
                     }
+
                     case true when index <= 0:
                     {
                         var position = FindErrorCharacterPosition(pathParts: pathParts, index: i,
                             offset: itemParts[0].Length + 1);
-                        var message =
-                            "Invalid index. Expected ^N (N > 0) for backwards indexing.";
+                        var message = "Invalid index. Expected ^N (N > 0) for backwards indexing.";
                         var formattedMessage = FormatSyntaxError(fullPath: hierarchyPath,
-                            errorPosition: position,
-                            count: indexString.Length + 1, errorMessage: message);
+                            errorPosition: position, count: indexString.Length + 1,
+                            errorMessage: message);
                         throw new ArgumentException(message: formattedMessage,
                             paramName: nameof(hierarchyPath));
                     }
+
                     default:
                         indices[i] = useBackwardsIndexing
                             ? -index
@@ -605,13 +607,11 @@ namespace DebugUtils.Unity
         {
             var sb = new StringBuilder();
             sb.AppendLine(value: $"path: \"{fullPath}\"");
-
             // Add spacing to align the caret
             sb.Append(value: "      "); // "path: " is 6 characters
             sb.Append(value: ' ', repeatCount: errorPosition + 1); // +1 for opening quote
             sb.Append(value: '^', repeatCount: count);
             sb.AppendLine();
-
             sb.Append(value: $"Syntax Error at character {errorPosition}: {errorMessage}");
             return sb.ToString();
         }

@@ -1,8 +1,17 @@
-﻿using System;
+﻿#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
+using DebugUtils.Unity.Repr.TypeHelpers;
 using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using DebugUtils.Unity.Repr.TypeHelpers;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Models
 {
@@ -58,7 +67,6 @@ namespace DebugUtils.Unity.Repr.Models
         public static string GetSanitizedName(this MethodInfo methodInfo)
         {
             var unsanitizedName = methodInfo.Name;
-            var sanitizedName = "";
             if (unsanitizedName.Contains(value: "g__"))
             {
                 // Since we are finding "g__" and "|", which consist of ascii character,
@@ -73,15 +81,13 @@ namespace DebugUtils.Unity.Repr.Models
             // lambda functions always contain "b__".
             if (unsanitizedName.Contains(value: "b__"))
             {
-                sanitizedName = "Lambda";
-                return sanitizedName;
+                return "Lambda";
             }
 
             return unsanitizedName;
         }
 
-        public static ParameterDetails[] GetParameterDetails(
-            this MethodInfo methodInfo)
+        public static ParameterDetails[] GetParameterDetails(this MethodInfo methodInfo)
         {
             return methodInfo.GetParameters()
                              .Select(selector: p => p.ToParameterDetails())

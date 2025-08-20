@@ -1,10 +1,20 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿#nullable enable
 using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.Models;
-using DebugUtils.Unity.Repr.TypeHelpers;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -28,25 +38,27 @@ namespace DebugUtils.Unity.Repr.Formatters
         {
             var del = (Delegate)obj;
             var type = del.GetType();
-
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
             {
-                return new JObject
-                {
-                    [propertyName: "type"] = new JValue(value: "Function"),
-                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
-                    [propertyName: "depth"] = new JValue(value: context.Depth)
-                };
+                return type.CreateMaxDepthReachedJson(depth: context.Depth);
             }
 
             var functionDetails = del.Method.ToFunctionDetails();
-            var result = new JObject();
-            result.Add(propertyName: "type", value: new JValue(value: "Function"));
-            result.Add(propertyName: "hashCode",
-                value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}"));
-            result.Add(propertyName: "properties",
-                value: functionDetails.FormatAsJToken(context: context));
-            return result;
+            return new JObject
+            {
+                {
+                    "type",
+                    "Function"
+                },
+                {
+                    "hashCode",
+                    $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}"
+                },
+                {
+                    "properties",
+                    functionDetails.FormatAsJToken(context: context)
+                }
+            };
         }
     }
 
@@ -67,27 +79,13 @@ namespace DebugUtils.Unity.Repr.Formatters
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
-            // Apply container defaults if configured
-            context = context.WithContainerConfig();
             var details = (FunctionDetails)obj;
             var type = details.GetType();
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
             {
-                return new JObject
-                {
-                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
-                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
-                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
-                    [propertyName: "depth"] = new JValue(value: context.Depth)
-                };
+                return type.CreateMaxDepthReachedJson(depth: context.Depth);
             }
 
-            var result = new JObject();
-            result.Add(propertyName: "name", value: new JValue(value: details.Name));
-            result.Add(propertyName: "returnType",
-                value: new JValue(value: details.ReturnTypeReprName));
-            result.Add(propertyName: "modifiers",
-                value: details.Modifiers.FormatAsJToken(context: context.WithIncrementedDepth()));
             var parameters = new JArray();
             foreach (var parameter in details.Parameters)
             {
@@ -95,8 +93,25 @@ namespace DebugUtils.Unity.Repr.Formatters
                     item: parameter.FormatAsJToken(context: context.WithIncrementedDepth()));
             }
 
-            result.Add(propertyName: "parameters", value: parameters);
-            return result;
+            return new JObject
+            {
+                {
+                    "name",
+                    details.Name
+                },
+                {
+                    "returnType",
+                    details.ReturnTypeReprName
+                },
+                {
+                    "modifiers",
+                    details.Modifiers.FormatAsJToken(context: context.WithIncrementedDepth())
+                },
+                {
+                    "parameters",
+                    parameters
+                }
+            };
         }
     }
 
@@ -121,18 +136,11 @@ namespace DebugUtils.Unity.Repr.Formatters
             var type = methodModifiers.GetType();
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
             {
-                return new JObject
-                {
-                    [propertyName: "type"] = type.GetReprTypeName(),
-                    [propertyName: "kind"] = type.GetTypeKind(),
-                    [propertyName: "maxDepthReached"] = "true",
-                    [propertyName: "depth"] = context.Depth
-                };
+                return type.CreateMaxDepthReachedJson(depth: context.Depth);
             }
 
             var modifiers = new JArray();
-
-            foreach (var (condition, name) in new[]
+            foreach (var (condition, name)in new[]
                      {
                          (methodModifiers.IsPublic, "public"),
                          (methodModifiers.IsPrivate, "private"),
@@ -180,26 +188,28 @@ namespace DebugUtils.Unity.Repr.Formatters
             var type = details.GetType();
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
             {
-                return new JObject
-                {
-                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
-                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
-                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
-                    [propertyName: "depth"] = new JValue(value: context.Depth)
-                };
+                return type.CreateMaxDepthReachedJson(depth: context.Depth);
             }
 
-            var result = new JObject();
-            result.Add(propertyName: "name",
-                value: details.Name);
-            result.Add(propertyName: "type",
-                value: details.TypeReprName);
-            result.Add(propertyName: "modifier",
-                value: details.Modifier);
-            result.Add(propertyName: "defaultValue",
-                value: details.DefaultValue.FormatAsJToken(
-                    context: context.WithIncrementedDepth()));
-            return result;
+            return new JObject
+            {
+                {
+                    "name",
+                    details.Name
+                },
+                {
+                    "type",
+                    details.TypeReprName
+                },
+                {
+                    "modifier",
+                    details.Modifier
+                },
+                {
+                    "defaultValue",
+                    details.DefaultValue.FormatAsJToken(context: context.WithIncrementedDepth())
+                }
+            };
         }
     }
 }

@@ -1,5 +1,17 @@
-﻿using System;
+#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
 using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Numerics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.TypeHelpers
 {
@@ -32,6 +44,52 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
             [key: typeof(double)] = "double",
             [key: typeof(decimal)] = "decimal",
             [key: typeof(object)] = "object"
+        };
+
+        public static readonly Dictionary<Type, string> TypeSuffixNames = new()
+        {
+            [key: typeof(sbyte)] = "i8",
+            [key: typeof(byte)] = "u8",
+            [key: typeof(short)] = "i16",
+            [key: typeof(ushort)] = "u16",
+            [key: typeof(int)] = "i32",
+            [key: typeof(uint)] = "u32",
+            [key: typeof(long)] = "i64",
+            [key: typeof(ulong)] = "u64",
+            #if NET5_0_OR_GREATER
+        [key: typeof(Half)] = "f16",
+            #endif
+            [key: typeof(float)] = "f32",
+            [key: typeof(double)] = "f64",
+            [key: typeof(decimal)] = "m",
+            #if NET7_0_OR_GREATER
+        [key: typeof(Int128)] = "i128",
+        [key: typeof(UInt128)] = "u128",
+            #endif
+            [key: typeof(IntPtr)] = "iptr",
+            [key: typeof(UIntPtr)] = "uptr",
+            [key: typeof(BigInteger)] = "n",
+            [key: typeof(sbyte?)] = "i8?",
+            [key: typeof(byte?)] = "u8?",
+            [key: typeof(short?)] = "i16?",
+            [key: typeof(ushort?)] = "u16?",
+            [key: typeof(int?)] = "i32?",
+            [key: typeof(uint?)] = "u32?",
+            [key: typeof(long?)] = "i64?",
+            [key: typeof(ulong?)] = "u64?",
+            #if NET5_0_OR_GREATER
+        [key: typeof(Half?)] = "f16?",
+            #endif
+            [key: typeof(float?)] = "f32?",
+            [key: typeof(double?)] = "f64?",
+            [key: typeof(decimal?)] = "m?",
+            #if NET7_0_OR_GREATER
+        [key: typeof(Int128?)] = "i128?",
+        [key: typeof(UInt128?)] = "u128?",
+            #endif
+            [key: typeof(IntPtr?)] = "iptr?",
+            [key: typeof(UIntPtr?)] = "uptr?",
+            [key: typeof(BigInteger?)] = "n?"
         };
 
         /// <summary>

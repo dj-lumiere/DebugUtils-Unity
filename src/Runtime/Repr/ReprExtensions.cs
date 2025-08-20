@@ -1,10 +1,22 @@
 #nullable enable
-using System;
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Formatters;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr
 {
@@ -48,24 +60,24 @@ namespace DebugUtils.Unity.Repr
     /// <item><description>Support for custom type name mappings</description></item>
     /// </list>
     /// </remarks>
-    /// <seealso cref="Repr{T}(T, ReprConfig?)"/>
-    /// <seealso cref="ReprTree{T}(T, ReprConfig?)"/>
-    /// <seealso cref="Repr{T}(Span{T}, ReprConfig?)"/>
-    /// <seealso cref="ReprTree{T}(Span{T}, ReprConfig?)"/>
-    /// <seealso cref="Repr{T}(ReadOnlySpan{T}, ReprConfig?)"/>
-    /// <seealso cref="ReprTree{T}(ReadOnlySpan{T}, ReprConfig?)"/>
-    /// <seealso cref="Repr{T}(T, ReprContext)"/>
-    /// <seealso cref="FormatAsJToken{T}(T, ReprContext)"/>
-    /// <seealso cref="Repr{T}(Span{T}, ReprContext)"/>
-    /// <seealso cref="FormatAsJToken{T}(Span{T}, ReprContext)"/>
-    /// <seealso cref="Repr{T}(ReadOnlySpan{T}, ReprContext)"/>
-    /// <seealso cref="FormatAsJToken{T}(ReadOnlySpan{T}, ReprContext)"/>
-    /// <seealso cref="TypeNaming.GetReprTypeName(Type)"/> 
-    /// <seealso cref="TypeNaming.GetReprTypeName{T}(T)"/>
-    /// <seealso cref="ReprConfig"/>
-    /// <seealso cref="ReprContext"/> 
-    /// <seealso cref="IReprFormatter"/>
-    /// <seealso cref="IReprTreeFormatter"/> 
+    /// <seealso cref = "Repr{T}(T, ReprConfig? )"/>
+    /// <seealso cref = "ReprTree{T}(T, ReprConfig? )"/>
+    /// <seealso cref = "Repr{T}(Span{T}, ReprConfig? )"/>
+    /// <seealso cref = "ReprTree{T}(Span{T}, ReprConfig? )"/>
+    /// <seealso cref = "Repr{T}(ReadOnlySpan{T}, ReprConfig? )"/>
+    /// <seealso cref = "ReprTree{T}(ReadOnlySpan{T}, ReprConfig? )"/>
+    /// <seealso cref = "Repr{T}(T, ReprContext)"/>
+    /// <seealso cref = "FormatAsJsonNode{T}(T, ReprContext)"/>
+    /// <seealso cref = "Repr{T}(Span{T}, ReprContext)"/>
+    /// <seealso cref = "FormatAsJsonNode{T}(Span{T}, ReprContext)"/>
+    /// <seealso cref = "Repr{T}(ReadOnlySpan{T}, ReprContext)"/>
+    /// <seealso cref = "FormatAsJsonNode{T}(ReadOnlySpan{T}, ReprContext)"/>
+    /// <seealso cref = "TypeNaming.GetReprTypeName(Type)"/> 
+    /// <seealso cref = "TypeNaming.GetReprTypeName{T}(T)"/>
+    /// <seealso cref = "ReprConfig"/>
+    /// <seealso cref = "ReprContext"/> 
+    /// <seealso cref = "IReprFormatter"/>
+    /// <seealso cref = "IReprTreeFormatter"/> 
     public static class ReprExtensions
     {
         #region End User API - Simple Configuration
@@ -75,9 +87,9 @@ namespace DebugUtils.Unity.Repr
         /// This is the primary method for end users who want to customize formatting behavior
         /// without dealing with internal state management.
         /// </summary>
-        /// <typeparam name="T">The type of object to represent.</typeparam>
-        /// <param name="obj">The object to represent. Can be null.</param>
-        /// <param name="config">
+        /// <typeparam name = "T">The type of object to represent.</typeparam>
+        /// <param name = "obj">The object to represent. Can be null.</param>
+        /// <param name = "config">
         /// Optional configuration controlling formatting behavior. If null, uses default configuration.
         /// Contains settings for numeric formatting, type display, limits, and other formatting options.
         /// </param>
@@ -107,13 +119,13 @@ namespace DebugUtils.Unity.Repr
         /// // Basic usage
         /// var list = new List&lt;int&gt; { 1, 2, 3 };
         /// Console.WriteLine(list.Repr()); 
-        /// // Output: [int(1), int(2), int(3)]
+        /// // Output: [1_i32, 2_i32, 3_i32]
         ///
         /// 
         /// // With custom configuration
         /// var config = new ReprConfig(FloatFormatString: "EX");
         /// Console.WriteLine(3.14f.Repr(config)); 
-        /// // Output: float(3.1400001049041748046875E0)
+        /// // Output: 3.1400001049041748046875E+000_f32
         ///
         /// 
         /// // Nullable types
@@ -130,7 +142,7 @@ namespace DebugUtils.Unity.Repr
         /// // Output: Name: "Parent", Child: Name: "Child", Parent: &lt;Circular Reference to Node @0xA1B2C3D4&gt;
         /// </code>
         /// </example>
-        /// <exception cref="StackOverflowException">
+        /// <exception cref = "StackOverflowException">
         /// Should not occur due to circular reference detection, but could theoretically happen
         /// with extremely deep object hierarchies exceeding system stack limits.
         /// </exception>
@@ -139,6 +151,14 @@ namespace DebugUtils.Unity.Repr
             var context = config == null
                 ? new ReprContext()
                 : new ReprContext(config: config);
+            if (context.Config.Culture is null)
+            {
+                context.Config = context.Config with
+                {
+                    Culture = CultureInfo.CurrentCulture
+                };
+            }
+
             return obj.ToRepr(context: context);
         }
 
@@ -147,14 +167,14 @@ namespace DebugUtils.Unity.Repr
         /// This method produces detailed JSON output with complete type information, object relationships,
         /// and metadata suitable for debugging tools, IDEs, and automated analysis systems.
         /// </summary>
-        /// <typeparam name="T">The type of object to represent.</typeparam>
-        /// <param name="obj">The object to represent. Can be null.</param>
-        /// <param name="config">
+        /// <typeparam name = "T">The type of object to represent.</typeparam>
+        /// <param name = "obj">The object to represent. Can be null.</param>
+        /// <param name = "config">
         /// Optional configuration controlling formatting behavior. If null, uses default configuration.
         /// Should be configured for hierarchical mode for optimal results.
         /// </param>
         /// <returns>
-        /// A formatted JSON string representing the complete structure of the object including
+        /// A formatted JSON string representing the complete structure of the object, including:
         /// - Type information for all values
         /// - Object relationships and hierarchies  
         /// - Circular reference markers where detected
@@ -198,30 +218,30 @@ namespace DebugUtils.Unity.Repr
             var context = config == null
                 ? new ReprContext()
                 : new ReprContext(config: config);
-            var jToken = obj.ToReprTree(context: context);
-            return config?.EnablePrettyPrintForReprTree ?? false
-                ? jToken.ToString(formatting: Formatting.Indented)
-                : jToken.ToString(formatting: Formatting.None);
+            return obj.ToReprTree(context: context)
+                      .ToString(formatting: config?.EnablePrettyPrintForReprTree == true
+                           ? Formatting.Indented
+                           : Formatting.None);
         }
+
         /// <summary>
         /// Generates a detailed string representation of a Span&lt;T&gt;.
         /// </summary>
-        /// <typeparam name="T">The element type of the span.</typeparam>
-        /// <param name="span">The span to represent.</param>
-        /// <param name="config">Optional configuration. See <see cref="Repr{T}(T, ReprConfig?)"/> for details.</param>
+        /// <typeparam name = "T">The element type of the span.</typeparam>
+        /// <param name = "obj">The span to represent.</param>
+        /// <param name = "config">Optional configuration. See <see cref = "Repr{T}(T, ReprConfig? )"/> for details.</param>
         /// <returns>A string representation in the format "Span([element1, element2, ...])"</returns>
         /// <remarks>
         /// This method provides Span-specific formatting while maintaining consistency with the main Repr system.
-        /// For detailed behavior and configuration options, see <see cref="ReprExtensions.Repr{T}(T, ReprConfig?)"/>.
+        /// For detailed behavior and configuration options, see <see cref = "ReprExtensions.Repr{T}(T, ReprConfig? )"/>.
         /// </remarks>
-        /// <seealso cref="ReprExtensions.Repr{T}(T, ReprConfig?)"/>
-        public static string Repr<T>(this Span<T> span, ReprConfig? config = null)
+        /// <seealso cref = "ReprExtensions.Repr{T}(T, ReprConfig? )"/>
+        public static string Repr<T>(this Span<T> obj, ReprConfig? config = null)
         {
             var context = config == null
                 ? new ReprContext()
                 : new ReprContext(config: config);
-            var result = SpanFormatter.ToRepr(obj: span, context: context);
-
+            var result = SpanFormatter.ToRepr(obj: obj, context: context);
             // Apply type prefix
             return context.Config.TypeMode switch
             {
@@ -229,25 +249,25 @@ namespace DebugUtils.Unity.Repr
                 _ => $"Span({result})"
             };
         }
+
         /// <summary>
         /// Generates a detailed string representation of a ReadOnlySpan&lt;T&gt;.
         /// </summary>
-        /// <typeparam name="T">The element type of the span.</typeparam>
-        /// <param name="span">The span to represent.</param>
-        /// <param name="config">Optional configuration. See <see cref="Repr{T}(T, ReprConfig?)"/> for details.</param>
+        /// <typeparam name = "T">The element type of the span.</typeparam>
+        /// <param name = "obj">The span to represent.</param>
+        /// <param name = "config">Optional configuration. See <see cref = "Repr{T}(T, ReprConfig? )"/> for details.</param>
         /// <returns>A string representation in the format "ReadOnlySpan([element1, element2, ...])"</returns>
         /// <remarks>
         /// This method provides Span-specific formatting while maintaining consistency with the main Repr system.
-        /// For detailed behavior and configuration options, see <see cref="ReprExtensions.Repr{T}(T, ReprConfig?)"/>.
+        /// For detailed behavior and configuration options, see <see cref = "ReprExtensions.Repr{T}(T, ReprConfig? )"/>.
         /// </remarks>
-        /// <seealso cref="ReprExtensions.Repr{T}(T, ReprConfig?)"/>
-        public static string Repr<T>(this ReadOnlySpan<T> span, ReprConfig? config = null)
+        /// <seealso cref = "ReprExtensions.Repr{T}(T, ReprConfig? )"/>
+        public static string Repr<T>(this ReadOnlySpan<T> obj, ReprConfig? config = null)
         {
             var context = config == null
                 ? new ReprContext()
                 : new ReprContext(config: config);
-            var result = ReadOnlySpanFormatter.ToRepr(obj: span, context: context);
-
+            var result = ReadOnlySpanFormatter.ToRepr(obj: obj, context: context);
             // Apply type prefix
             return context.Config.TypeMode switch
             {
@@ -255,47 +275,51 @@ namespace DebugUtils.Unity.Repr
                 _ => $"ReadOnlySpan({result})"
             };
         }
+
         /// <summary>
         /// Generates a hierarchical JSON representation of a Span&lt;T&gt;
         /// </summary>
-        /// <typeparam name="T">The element type of the span.</typeparam>
-        /// <param name="span">The span to represent.</param>
-        /// <param name="config">Optional configuration. See <see cref="ReprTree{T}(T, ReprConfig?)"/> for details.</param>
+        /// <typeparam name = "T">The element type of the span.</typeparam>
+        /// <param name = "obj">The span to represent.</param>
+        /// <param name = "config">Optional configuration. See <see cref = "ReprTree{T}(T, ReprConfig? )"/> for details.</param>
         /// <returns>A JSON string with complete Span structure and metadata.</returns>
         /// <remarks>
-        /// For JSON structure details and configuration options, see <see cref="ReprExtensions.ReprTree{T}(T, ReprConfig?)"/>.
+        /// For JSON structure details and configuration options, see <see cref = "ReprExtensions.ReprTree{T}(T, ReprConfig? )"/>.
         /// </remarks>
-        /// <seealso cref="ReprExtensions.ReprTree{T}(T, ReprConfig?)"/>
-        public static string ReprTree<T>(this Span<T> span, ReprConfig? config = null)
+        /// <seealso cref = "ReprExtensions.ReprTree{T}(T, ReprConfig? )"/>
+        public static string ReprTree<T>(this Span<T> obj, ReprConfig? config = null)
         {
             var context = config == null
                 ? new ReprContext()
                 : new ReprContext(config: config);
-            var jToken = SpanFormatter.ToReprTree(obj: span, context: context);
-            return config?.EnablePrettyPrintForReprTree ?? false
-                ? jToken.ToString(formatting: Formatting.Indented)
-                : jToken.ToString(formatting: Formatting.None);
+            return SpanFormatter.ToReprTree(obj: obj, context: context)
+                                .ToString(formatting: config?.EnablePrettyPrintForReprTree == true
+                                     ? Formatting.Indented
+                                     : Formatting.None);
         }
+
         /// <summary>
         /// Generates a hierarchical JSON representation of a ReadOnlySpan&lt;T&gt;
         /// </summary>
-        /// <typeparam name="T">The element type of the span.</typeparam>
-        /// <param name="span">The span to represent.</param>
-        /// <param name="config">Optional configuration. See <see cref="ReprTree{T}(T, ReprConfig?)"/> for details.</param>
+        /// <typeparam name = "T">The element type of the span.</typeparam>
+        /// <param name = "obj">The span to represent.</param>
+        /// <param name = "config">Optional configuration. See <see cref = "ReprTree{T}(T, ReprConfig? )"/> for details.</param>
         /// <returns>A JSON string with complete Span structure and metadata.</returns>
         /// <remarks>
-        /// For JSON structure details and configuration options, see <see cref="ReprExtensions.ReprTree{T}(T, ReprConfig?)"/>.
+        /// For JSON structure details and configuration options, see <see cref = "ReprExtensions.ReprTree{T}(T, ReprConfig? )"/>.
         /// </remarks>
-        /// <seealso cref="ReprExtensions.ReprTree{T}(T, ReprConfig?)"/>
-        public static string ReprTree<T>(this ReadOnlySpan<T> span, ReprConfig? config = null)
+        /// <seealso cref = "ReprExtensions.ReprTree{T}(T, ReprConfig? )"/>
+        public static string ReprTree<T>(this ReadOnlySpan<T> obj, ReprConfig? config = null)
         {
             var context = config == null
                 ? new ReprContext()
                 : new ReprContext(config: config);
-            var jToken = ReadOnlySpanFormatter.ToReprTree(obj: span, context: context);
-            return config?.EnablePrettyPrintForReprTree ?? false
-                ? jToken.ToString(formatting: Formatting.Indented)
-                : jToken.ToString(formatting: Formatting.None);
+            return ReadOnlySpanFormatter.ToReprTree(obj: obj, context: context)
+                                        .ToString(
+                                             formatting: config?.EnablePrettyPrintForReprTree ==
+                                                         true
+                                                 ? Formatting.Indented
+                                                 : Formatting.None);
         }
 
         #endregion
@@ -307,9 +331,9 @@ namespace DebugUtils.Unity.Repr
         /// This method is primarily intended for plugin developers and custom formatters
         /// who need precise control over state management and circular reference tracking.
         /// </summary>
-        /// <typeparam name="T">The type of object to represent.</typeparam>
-        /// <param name="obj">The object to represent. Can be null.</param>
-        /// <param name="context">
+        /// <typeparam name = "T">The type of object to represent.</typeparam>
+        /// <param name = "obj">The object to represent. Can be null.</param>
+        /// <param name = "context">
         /// The context controlling formatting behavior and tracking state. Must not be null.
         /// Contains configuration settings, circular reference tracking, and depth management.
         /// </param>
@@ -344,7 +368,6 @@ namespace DebugUtils.Unity.Repr
         ///     
         ///     return string.Join(", ", parts);
         /// }
-        ///
         /// 
         /// // Plugin usage:
         /// var sharedContext = new ReprContext(myConfig);
@@ -352,8 +375,8 @@ namespace DebugUtils.Unity.Repr
         /// var result2 = obj2.Repr(sharedContext); // Shares circular reference tracking
         /// </code>
         /// </example>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
-        /// <seealso cref="Repr{T}(T, ReprConfig?)"/>
+        /// <exception cref = "ArgumentNullException">Thrown when <paramref name = "context"/> is null.</exception>
+        /// <seealso cref = "Repr{T}(T, ReprConfig? )"/>
         public static string Repr<T>(this T obj, ReprContext context)
         {
             if (context == null)
@@ -365,70 +388,69 @@ namespace DebugUtils.Unity.Repr
         }
 
         /// <summary>
-        /// Gets the JToken representation of an object for use in custom tree formatters.
+        /// Gets the JsonNode representation of an object for use in custom tree formatters.
         /// This method is primarily intended for developers implementing IReprTreeFormatter
         /// who need to build complex hierarchical structures with precise state control.
         /// </summary>
-        /// <typeparam name="T">The type of object to represent.</typeparam>
-        /// <param name="obj">The object to represent. Can be null - null objects are handled gracefully.</param>
-        /// <param name="context">
+        /// <typeparam name = "T">The type of object to represent.</typeparam>
+        /// <param name = "obj">The object to represent. Can be null - null objects are handled gracefully.</param>
+        /// <param name = "context">
         /// The context controlling formatting behavior and tracking state. Must not be null.
         /// Contains configuration settings, circular reference tracking, and depth management.
         /// </param>
         /// <returns>
-        /// A JToken representation of the object with complete type information, structure,
-        /// and metadata. This JToken can be incorporated into larger tree structures or
+        /// A JsonNode representation of the object with complete type information, structure,
+        /// and metadata. This JsonNode can be incorporated into larger tree structures or
         /// converted to a JSON string as needed.
         /// </returns>
         /// <remarks>
-        /// <para><strong>⚠️ Important:</strong> The resulting JToken is NOT intended for data serialization.
+        /// <para><strong>⚠️ Important:</strong> The resulting JsonNode is NOT intended for data serialization.
         /// It reveals the underlying object structure with debugging metadata and type information.</para>
         /// 
         /// <para><strong>Target Audience:</strong> This method is designed for advanced formatter developers who need to:</para>
         /// <list type="bullet">
         /// <item><description>Build custom tree formatters that include child objects</description></item>
-        /// <item><description>Create complex nested JToken structures</description></item>
-        /// <item><description>Access the raw JToken before string conversion</description></item>
+        /// <item><description>Create complex nested JsonNode structures</description></item>
+        /// <item><description>Access the raw JsonNode before string conversion</description></item>
         /// <item><description>Combine multiple objects into custom JSON representations</description></item>
         /// </list>
         /// <para><strong>State Management:</strong> The context parameter ensures proper circular reference
         /// detection and depth tracking when building nested structures. Always use 
         /// context.WithIncrementedDepth() when processing child objects.</para>
-        /// <para><strong>For End Users:</strong> For simple JToken access, consider using the convenience
+        /// <para><strong>For End Users:</strong> For simple JsonNode access, consider using the convenience
         /// overload that accepts ReprConfig? instead of requiring context management.</para>
         /// </remarks>
         /// <example>
         /// <code>
         /// // In a custom tree formatter:
-        /// public JToken ToReprTree(object obj, ReprContext context)
+        /// public JsonNode ToReprTree(object obj, ReprContext context)
         /// {
         ///     var container = (MyContainer)obj;
-        ///     return new JObject
+        ///     return new JsonObject
         ///     {
         ///         ["type"] = "MyContainer",
         ///         ["kind"] = "class",
-        ///         ["Items"] = new JArray(
+        ///         ["Items"] = new JsonArray(
         ///             container.Items.Select(item => 
-        ///                 item.FormatAsJToken(context.WithIncrementedDepth())
+        ///                 item.FormatAsJsonNode(context.WithIncrementedDepth())
         ///             ).ToArray()
         ///         ),
-        ///         ["Metadata"] = container.Meta.FormatAsJToken(context.WithIncrementedDepth())
+        ///         ["Metadata"] = container.Meta.FormatAsJsonNode(context.WithIncrementedDepth())
         ///     };
         /// }
-        ///
         /// 
         /// // Plugin building custom structure:
         /// var context = new ReprContext(config);
-        /// var customStructure = new JObject
+        /// var customStructure = new JsonObject
         /// {
         ///     ["timestamp"] = DateTime.Now.ToString(),
-        ///     ["data"] = myObject.FormatAsJToken(context),
-        ///     ["debug"] = debugInfo.FormatAsJToken(context)
+        ///     ["data"] = myObject.FormatAsJsonNode(context),
+        ///     ["debug"] = debugInfo.FormatAsJsonNode(context)
         /// };
         /// </code>
         /// </example>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
-        /// <seealso cref="ReprTree{T}(T, ReprConfig?)"/>
+        /// <exception cref = "ArgumentNullException">Thrown when <paramref name = "context"/> is null.</exception>
+        /// <seealso cref = "ReprTree{T}(T, ReprConfig? )"/>
         public static JToken FormatAsJToken<T>(this T obj, ReprContext context)
         {
             if (context == null)
@@ -444,9 +466,9 @@ namespace DebugUtils.Unity.Repr
         /// This method is intended for plugin developers and custom formatters who need precise control 
         /// over state management and circular reference tracking.
         /// </summary>
-        /// <typeparam name="T">The element type of the span.</typeparam>
-        /// <param name="span">The span to represent.</param>
-        /// <param name="context">
+        /// <typeparam name = "T">The element type of the span.</typeparam>
+        /// <param name = "span">The span to represent.</param>
+        /// <param name = "context">
         /// The context controlling formatting behavior and tracking state. Must not be null.
         /// Contains configuration settings, circular reference tracking, and depth management.
         /// </param>
@@ -458,11 +480,11 @@ namespace DebugUtils.Unity.Repr
         /// <item><description>Plugin developers building on top of the Repr system</description></item>
         /// <item><description>Library authors who need precise state control</description></item>
         /// </list>
-        /// <para>For end users, consider using <see cref="Repr{T}(Span{T}, ReprConfig?)"/> instead.</para>
+        /// <para>For end users, consider using <see cref = "Repr{T}(Span{T}, ReprConfig? )"/> instead.</para>
         /// </remarks>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
-        /// <seealso cref="Repr{T}(Span{T}, ReprConfig?)"/>
-        /// <seealso cref="Repr{T}(T, ReprContext)"/>
+        /// <exception cref = "ArgumentNullException">Thrown when <paramref name = "context"/> is null.</exception>
+        /// <seealso cref = "Repr{T}(Span{T}, ReprConfig? )"/>
+        /// <seealso cref = "Repr{T}(T, ReprContext)"/>
         public static string Repr<T>(this Span<T> span, ReprContext context)
         {
             if (context == null)
@@ -471,12 +493,11 @@ namespace DebugUtils.Unity.Repr
             }
 
             var result = SpanFormatter.ToRepr(obj: span, context: context);
-
             // Apply type prefix
             return context.Config.TypeMode switch
             {
                 TypeReprMode.AlwaysHide => result,
-                _ => $"ReadOnlySpan({result})"
+                _ => $"Span({result})"
             };
         }
 
@@ -485,9 +506,9 @@ namespace DebugUtils.Unity.Repr
         /// This method is intended for plugin developers and custom formatters who need precise control 
         /// over state management and circular reference tracking.
         /// </summary>
-        /// <typeparam name="T">The element type of the span.</typeparam>
-        /// <param name="span">The span to represent.</param>
-        /// <param name="context">
+        /// <typeparam name = "T">The element type of the span.</typeparam>
+        /// <param name = "obj">The span to represent.</param>
+        /// <param name = "context">
         /// The context controlling formatting behavior and tracking state. Must not be null.
         /// Contains configuration settings, circular reference tracking, and depth management.
         /// </param>
@@ -499,20 +520,19 @@ namespace DebugUtils.Unity.Repr
         /// <item><description>Plugin developers building on top of the Repr system</description></item>
         /// <item><description>Library authors who need precise state control</description></item>
         /// </list>
-        /// <para>For end users, consider using <see cref="Repr{T}(ReadOnlySpan{T}, ReprConfig?)"/> instead.</para>
+        /// <para>For end users, consider using <see cref = "Repr{T}(ReadOnlySpan{T}, ReprConfig? )"/> instead.</para>
         /// </remarks>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
-        /// <seealso cref="Repr{T}(ReadOnlySpan{T}, ReprConfig?)"/>
-        /// <seealso cref="Repr{T}(T, ReprContext)"/>
-        public static string Repr<T>(this ReadOnlySpan<T> span, ReprContext context)
+        /// <exception cref = "ArgumentNullException">Thrown when <paramref name = "context"/> is null.</exception>
+        /// <seealso cref = "Repr{T}(ReadOnlySpan{T}, ReprConfig? )"/>
+        /// <seealso cref = "Repr{T}(T, ReprContext)"/>
+        public static string Repr<T>(this ReadOnlySpan<T> obj, ReprContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(paramName: nameof(context));
             }
 
-            var result = ReadOnlySpanFormatter.ToRepr(obj: span, context: context);
-
+            var result = ReadOnlySpanFormatter.ToRepr(obj: obj, context: context);
             // Apply type prefix
             return context.Config.TypeMode switch
             {
@@ -522,77 +542,77 @@ namespace DebugUtils.Unity.Repr
         }
 
         /// <summary>
-        /// Gets the JToken representation of a Span&lt;T&gt; for use in custom tree formatters.
+        /// Gets the JsonNode representation of a Span&lt;T&gt; for use in custom tree formatters.
         /// This method is intended for developers implementing custom formatters who need to 
         /// build complex hierarchical structures with precise state control.
         /// </summary>
-        /// <typeparam name="T">The element type of the span.</typeparam>
-        /// <param name="span">The span to represent.</param>
-        /// <param name="context">
+        /// <typeparam name = "T">The element type of the span.</typeparam>
+        /// <param name = "obj">The span to represent.</param>
+        /// <param name = "context">
         /// The context controlling formatting behavior and tracking state. Must not be null.
         /// Contains configuration settings, circular reference tracking, and depth management.
         /// </param>
         /// <returns>
-        /// A JToken representation with complete type information and structure.
+        /// A JsonNode representation with complete type information and structure.
         /// This can be incorporated into larger tree structures or converted to JSON as needed.
         /// </returns>
         /// <remarks>
         /// <para><strong>Target Audience:</strong> This method is designed for advanced formatter developers who need to:</para>
         /// <list type="bullet">
         /// <item><description>Build custom tree formatters that include child objects</description></item>
-        /// <item><description>Create complex nested JToken structures</description></item>
-        /// <item><description>Access the raw JToken before string conversion</description></item>
+        /// <item><description>Create complex nested JsonNode structures</description></item>
+        /// <item><description>Access the raw JsonNode before string conversion</description></item>
         /// </list>
-        /// <para>For end users, consider using <see cref="ReprTree{T}(Span{T}, ReprConfig?)"/> instead.</para>
+        /// <para>For end users, consider using <see cref = "ReprTree{T}(Span{T}, ReprConfig? )"/> instead.</para>
         /// </remarks>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
-        /// <seealso cref="ReprTree{T}(Span{T}, ReprConfig?)"/>
-        /// <seealso cref="FormatAsJToken{T}(T, ReprContext)"/>
-        public static JToken FormatAsJToken<T>(this Span<T> span, ReprContext context)
+        /// <exception cref = "ArgumentNullException">Thrown when <paramref name = "context"/> is null.</exception>
+        /// <seealso cref = "ReprTree{T}(Span{T}, ReprConfig? )"/>
+        /// <seealso cref = "FormatAsJsonNode{T}(T, ReprContext)"/>
+        public static JToken FormatAsJToken<T>(this Span<T> obj, ReprContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(paramName: nameof(context));
             }
 
-            return SpanFormatter.ToReprTree(obj: span, context: context);
+            return SpanFormatter.ToReprTree(obj: obj, context: context);
         }
 
         /// <summary>
-        /// Gets the JToken representation of a ReadOnlySpan&lt;T&gt; for use in custom tree formatters.
+        /// Gets the JsonNode representation of a ReadOnlySpan&lt;T&gt; for use in custom tree formatters.
         /// This method is intended for developers implementing custom formatters who need to 
         /// build complex hierarchical structures with precise state control.
         /// </summary>
-        /// <typeparam name="T">The element type of the span.</typeparam>
-        /// <param name="span">The span to represent.</param>
-        /// <param name="context">
+        /// <typeparam name = "T">The element type of the span.</typeparam>
+        /// <param name = "obj">The span to represent.</param>
+        /// <param name = "context">
         /// The context controlling formatting behavior and tracking state. Must not be null.
         /// Contains configuration settings, circular reference tracking, and depth management.
         /// </param>
         /// <returns>
-        /// A JToken representation with complete type information and structure.
+        /// A JsonNode representation with complete type information and structure.
         /// This can be incorporated into larger tree structures or converted to JSON as needed.
         /// </returns>
         /// <remarks>
         /// <para><strong>Target Audience:</strong> This method is designed for advanced formatter developers who need to:</para>
         /// <list type="bullet">
         /// <item><description>Build custom tree formatters that include child objects</description></item>
-        /// <item><description>Create complex nested JToken structures</description></item>
-        /// <item><description>Access the raw JToken before string conversion</description></item>
+        /// <item><description>Create complex nested JsonNode structures</description></item>
+        /// <item><description>Access the raw JsonNode before string conversion</description></item>
         /// </list>
-        /// <para>For end users, consider using <see cref="ReprTree{T}(ReadOnlySpan{T}, ReprConfig?)"/> instead.</para>
+        /// <para>For end users, consider using <see cref = "ReprTree{T}(ReadOnlySpan{T}, ReprConfig? )"/> instead.</para>
         /// </remarks>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
-        /// <seealso cref="ReprTree{T}(ReadOnlySpan{T}, ReprConfig?)"/>
-        /// <seealso cref="FormatAsJToken{T}(T, ReprContext)"/>
-        public static JToken FormatAsJToken<T>(this ReadOnlySpan<T> span, ReprContext context)
+        /// <exception cref = "ArgumentNullException">Thrown when <paramref name = "context"/> is null.</exception>
+        /// <seealso cref = "ReprTree{T}(ReadOnlySpan{T}, ReprConfig? )"/>
+        /// <seealso cref = "FormatAsJsonNode{T}(T, ReprContext)"/>
+        public static JToken FormatAsJToken<T>(this ReadOnlySpan<T> obj, ReprContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(paramName: nameof(context));
             }
 
-            return ReadOnlySpanFormatter.ToReprTree(obj: span, context: context);
+            return ReadOnlySpanFormatter.ToReprTree(obj: obj, context: context);
         }
 
         #endregion

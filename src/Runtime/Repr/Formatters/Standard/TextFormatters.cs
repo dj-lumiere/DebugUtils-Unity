@@ -1,10 +1,20 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿#nullable enable
 using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -36,14 +46,14 @@ namespace DebugUtils.Unity.Repr.Formatters
                     $"... ({truncatedLetterCount} more letters)";
             }
 
-            var result = new JObject();
-            result.Add(propertyName: "type", value: new JValue(value: "string"));
-            result.Add(propertyName: "kind", value: new JValue(value: "class"));
-            result.Add(propertyName: "hashCode",
-                value: new JValue(value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}"));
-            result.Add(propertyName: "length", value: new JValue(value: sLength));
-            result.Add(propertyName: "value", value: new JValue(value: s));
-            return result;
+            return new JObject
+            {
+                [propertyName: "type"] = "string",
+                [propertyName: "kind"] = "class",
+                [propertyName: "hashCode"] = $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}",
+                [propertyName: "length"] = sLength,
+                [propertyName: "value"] = s
+            };
         }
     }
 
@@ -67,7 +77,6 @@ namespace DebugUtils.Unity.Repr.Formatters
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
-            var result = new JObject();
             var type = obj.GetType();
             var sb = (StringBuilder)obj;
             var s = sb.ToString();
@@ -79,13 +88,14 @@ namespace DebugUtils.Unity.Repr.Formatters
                     $"... ({truncatedLetterCount} more letters)";
             }
 
-            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
-            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
-            result.Add(propertyName: "hashCode",
-                value: new JValue(value: RuntimeHelpers.GetHashCode(o: obj)));
-            result.Add(propertyName: "length", value: new JValue(value: sLength));
-            result.Add(propertyName: "value", value: new JValue(value: s));
-            return result;
+            return new JObject
+            {
+                [propertyName: "type"] = type.GetReprTypeName(),
+                [propertyName: "kind"] = type.GetTypeKind(),
+                [propertyName: "hashCode"] = RuntimeHelpers.GetHashCode(o: obj),
+                [propertyName: "length"] = sLength,
+                [propertyName: "value"] = s
+            };
         }
     }
 
@@ -119,14 +129,37 @@ namespace DebugUtils.Unity.Repr.Formatters
         public JToken ToReprTree(object obj, ReprContext context)
         {
             var c = (char)obj;
-            var result = new JObject();
-            result.Add(propertyName: "type", value: new JValue(value: "char"));
-            result.Add(propertyName: "kind", value: new JValue(value: "struct"));
-            // should truncate ' prefix and suffix
-            result.Add(propertyName: "value",
-                value: new JValue(value: ToRepr(obj: c, context: context)[1..^1]));
-            result.Add(propertyName: "unicodeValue", value: new JValue(value: $"0x{(int)c:X4}"));
-            return result;
+            return new JObject
+            {
+                [propertyName: "type"] = "char",
+                [propertyName: "kind"] = "struct",
+                [propertyName: "value"] =
+                    ToRepr(obj: c, context: context)[1..^1], // truncate ' prefix and suffix
+                [propertyName: "unicodeValue"] = $"0x{(int)c:X4}"
+            };
         }
     }
 }
+#if NET5_0_OR_GREATER
+[ReprFormatter(typeof(Rune))]
+[ReprOptions(needsPrefix: true)]
+internal class RuneFormatter : IReprFormatter, IReprTreeFormatter
+{
+    public string ToRepr(object obj, ReprContext context)
+    {
+        return $"{(Rune)obj} @ \\U{((Rune)obj).Value:X8}";
+    }
+
+    public JsonNode ToReprTree(object obj, ReprContext context)
+    {
+        var rune = (Rune)obj;
+        return new JsonObject
+        {
+            [propertyName: "type"] = "Rune",
+            [propertyName: "kind"] = "struct",
+            [propertyName: "value"] = rune.ToString(),
+            [propertyName: "unicodeValue"] = $"0x{rune.Value:X8}"
+        };
+    }
+}
+#endif

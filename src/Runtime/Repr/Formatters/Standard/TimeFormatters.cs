@@ -1,7 +1,19 @@
-﻿using System;
+﻿#nullable enable
 using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Interfaces;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -24,23 +36,64 @@ namespace DebugUtils.Unity.Repr.Formatters
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
-            var datetime = (DateTime)obj;
-            var result = new JObject
+            var dt = (DateTime)obj;
+            var kindSuffix = dt.Kind switch
             {
-                { "type", new JValue(value: "DateTime") },
-                { "kind", new JValue(value: "struct") },
-                { "year", new JValue(value: datetime.Year.ToString()) },
-                { "month", new JValue(value: datetime.Month.ToString()) },
-                { "day", new JValue(value: datetime.Day.ToString()) },
-                { "hour", new JValue(value: datetime.Hour.ToString()) },
-                { "minute", new JValue(value: datetime.Minute.ToString()) },
-                { "second", new JValue(value: datetime.Second.ToString()) },
-                { "millisecond", new JValue(value: datetime.Millisecond.ToString()) },
-                { "subTicks", new JValue(value: (datetime.Ticks % 10000).ToString()) },
-                { "totalTicks", new JValue(value: datetime.Ticks.ToString()) },
-                { "timezone", new JValue(value: datetime.Kind.ToString()) }
+                DateTimeKind.Utc => "UTC",
+                DateTimeKind.Local => "Local",
+                _ => "Unspecified"
             };
-            return result;
+            return new JObject
+            {
+                {
+                    "type",
+                    "DateTime"
+                },
+                {
+                    "kind",
+                    "struct"
+                },
+                {
+                    "year",
+                    dt.Year.ToString()
+                },
+                {
+                    "month",
+                    dt.Month.ToString()
+                },
+                {
+                    "day",
+                    dt.Day.ToString()
+                },
+                {
+                    "hour",
+                    dt.Hour.ToString()
+                },
+                {
+                    "minute",
+                    dt.Minute.ToString()
+                },
+                {
+                    "second",
+                    dt.Second.ToString()
+                },
+                {
+                    "millisecond",
+                    dt.Millisecond.ToString()
+                },
+                {
+                    "subTicks",
+                    (dt.Ticks % 10000).ToString()
+                },
+                {
+                    "totalTicks",
+                    dt.Ticks.ToString()
+                },
+                {
+                    "timezone",
+                    kindSuffix
+                }
+            };
         }
     }
 
@@ -58,31 +111,79 @@ namespace DebugUtils.Unity.Repr.Formatters
                 return dtoTime + "Z";
             }
 
-            var offset = dto.Offset;
-            return
-                $"{dtoTime}{offset.ToRepr(context: context)}";
-        }
+            var ts = dto.Offset;
+            var isNegative = ts.Ticks < 0;
+            if (isNegative)
+            {
+                ts = ts.Negate();
+            }
 
+            var subDayPart =
+                $"{ts.Hours:D2}:{ts.Minutes:D2}:{ts.Seconds:D2}.{ts.Milliseconds:D3}{ts.Ticks % 10000:D4}";
+            var tsString = (isNegative, ts.Days) switch
+            {
+                (true, 0) => $"-{subDayPart}",
+                (true, _) => $"-{ts.Days}D-{subDayPart}",
+                (false, 0) => $"+{subDayPart}",
+                (false, _) => $"+{ts.Days}D+{subDayPart}"
+            };
+            return $"{dtoTime}{tsString}";
+        }
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
             var dto = (DateTimeOffset)obj;
-            var result = new JObject
+            return new JObject
             {
-                { "type", new JValue(value: "DateTimeOffset") },
-                { "kind", new JValue(value: "struct") },
-                { "year", new JValue(value: dto.Year.ToString()) },
-                { "month", new JValue(value: dto.Month.ToString()) },
-                { "day", new JValue(value: dto.Day.ToString()) },
-                { "hour", new JValue(value: dto.Hour.ToString()) },
-                { "minute", new JValue(value: dto.Minute.ToString()) },
-                { "second", new JValue(value: dto.Second.ToString()) },
-                { "millisecond", new JValue(value: dto.Millisecond.ToString()) },
-                { "subTicks", new JValue(value: (dto.Ticks % 10000).ToString()) },
-                { "totalTicks", new JValue(value: dto.Ticks.ToString()) },
-                { "offset", dto.Offset.FormatAsJToken(context: context.WithIncrementedDepth()) }
+                {
+                    "type",
+                    "DateTimeOffset"
+                },
+                {
+                    "kind",
+                    "struct"
+                },
+                {
+                    "year",
+                    dto.Year.ToString()
+                },
+                {
+                    "month",
+                    dto.Month.ToString()
+                },
+                {
+                    "day",
+                    dto.Day.ToString()
+                },
+                {
+                    "hour",
+                    dto.Hour.ToString()
+                },
+                {
+                    "minute",
+                    dto.Minute.ToString()
+                },
+                {
+                    "second",
+                    dto.Second.ToString()
+                },
+                {
+                    "millisecond",
+                    dto.Millisecond.ToString()
+                },
+                {
+                    "subTicks",
+                    (dto.Ticks % 10000).ToString()
+                },
+                {
+                    "totalTicks",
+                    dto.Ticks.ToString()
+                },
+                {
+                    "offset",
+                    dto.Offset.FormatAsJToken(context: context.WithIncrementedDepth())
+                }
             };
-            return result;
         }
     }
 
@@ -119,21 +220,104 @@ namespace DebugUtils.Unity.Repr.Formatters
                 ts = ts.Negate();
             }
 
-            var result = new JObject();
-            result.Add(propertyName: "type", value: new JValue(value: "TimeSpan"));
-            result.Add(propertyName: "kind", value: new JValue(value: "struct"));
-            result.Add(propertyName: "day", value: new JValue(value: ts.Days.ToString()));
-            result.Add(propertyName: "hour", value: new JValue(value: ts.Hours.ToString()));
-            result.Add(propertyName: "minute", value: new JValue(value: ts.Minutes.ToString()));
-            result.Add(propertyName: "second", value: new JValue(value: ts.Seconds.ToString()));
-            result.Add(propertyName: "millisecond",
-                value: new JValue(value: ts.Milliseconds.ToString()));
-            result.Add(propertyName: "subTicks",
-                value: new JValue(value: (ts.Ticks % 10000).ToString()));
-            result.Add(propertyName: "totalTicks", value: new JValue(value: ts.Ticks.ToString()));
-            result.Add(propertyName: "isNegative", value: new JValue(value: isNegative.ToString()
-               .ToLowerInvariant()));
-            return result;
+            return new JObject
+            {
+                {
+                    "type",
+                    "TimeSpan"
+                },
+                {
+                    "kind",
+                    "struct"
+                },
+                {
+                    "day",
+                    ts.Days.ToString()
+                },
+                {
+                    "hour",
+                    ts.Hours.ToString()
+                },
+                {
+                    "minute",
+                    ts.Minutes.ToString()
+                },
+                {
+                    "second",
+                    ts.Seconds.ToString()
+                },
+                {
+                    "millisecond",
+                    ts.Milliseconds.ToString()
+                },
+                {
+                    "subTicks",
+                    (ts.Ticks % 10000).ToString()
+                },
+                {
+                    "totalTicks",
+                    ts.Ticks.ToString()
+                },
+                {
+                    "isNegative",
+                    isNegative.ToString()
+                              .ToLowerInvariant()
+                }
+            };
         }
     }
 }
+#if NET6_0_OR_GREATER
+[ReprFormatter(typeof(DateOnly))]
+[ReprOptions(needsPrefix: true)]
+internal class DateOnlyFormatter : IReprFormatter, IReprTreeFormatter
+{
+    public string ToRepr(object obj, ReprContext context)
+    {
+        var dateOnly = (DateOnly)obj;
+        return $"{dateOnly.Year:D4}.{dateOnly.Month:D2}.{dateOnly.Day:D2}";
+    }
+
+    public JsonNode ToReprTree(object obj, ReprContext context)
+    {
+        var dateOnly = (DateOnly)obj;
+        return new JsonObject
+        {
+            { "type", "DateOnly" },
+            { "kind", "struct" },
+            { "year", dateOnly.Year.ToString() },
+            { "month", dateOnly.Month.ToString() },
+            { "day", dateOnly.Day.ToString() }
+        };
+    }
+}
+
+[ReprFormatter(typeof(TimeOnly))]
+[ReprOptions(needsPrefix: true)]
+internal class TimeOnlyFormatter : IReprFormatter, IReprTreeFormatter
+{
+    public string ToRepr(object obj, ReprContext context)
+    {
+        var to = (TimeOnly)obj;
+        return
+            $"{to.Hour:D2}:{to.Minute:D2}:{to.Second:D2}.{to.Millisecond:D3}{to.Ticks % 10000:D4}";
+    }
+
+    public JsonNode ToReprTree(object obj, ReprContext context)
+    {
+        var to = (TimeOnly)obj;
+        return new JsonObject
+        {
+            { "type", "TimeOnly" },
+            { "kind", "struct" },
+            { "hour", to.Hour.ToString() },
+            { "minute", to.Minute.ToString() },
+            { "second", to.Second.ToString() },
+            { "millisecond", to.Millisecond.ToString() },
+            { "subTicks", (to.Ticks % 10000).ToString() },
+            { "totalTicks", to.Ticks.ToString() }
+        };
+    }
+}
+
+#endif

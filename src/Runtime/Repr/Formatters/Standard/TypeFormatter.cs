@@ -1,12 +1,20 @@
 ﻿#nullable enable
-using System;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -21,70 +29,59 @@ namespace DebugUtils.Unity.Repr.Formatters
             }
 
             var typeObject = (Type)obj;
-
-            if (typeObject.IsGenericTypeDefinition)
+            return typeObject switch
             {
-                return $"Type<{typeObject.FullName}> (generic definition)";
-            }
-
-            if (typeObject.IsConstructedGenericType)
-            {
-                return $"Type<{typeObject.GetReprTypeName()}> (constructed)";
-            }
-
-            return $"Type<{typeObject.FullName}>";
+                _ when typeObject.IsGenericTypeDefinition =>
+                    $"Type<{typeObject.FullName}> (generic definition)",
+                _ when typeObject.IsConstructedGenericType =>
+                    $"Type<{typeObject.GetReprTypeName()}> (constructed)",
+                _ => $"Type<{typeObject.FullName}>"
+            };
         }
+
         public JToken ToReprTree(object obj, ReprContext context)
         {
             var typeObject = (Type)obj;
             var type = typeObject.GetType();
-
+            // Apply container defaults if configured
+            context = context.WithContainerConfig();
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
             {
-                return new JObject
-                {
-                    [propertyName: "type"] = new JValue(value: type.GetReprTypeName()),
-                    [propertyName: "kind"] = new JValue(value: type.GetTypeKind()),
-                    [propertyName: "maxDepthReached"] = new JValue(value: "true"),
-                    [propertyName: "depth"] = new JValue(value: context.Depth)
-                };
+                return type.CreateMaxDepthReachedJson(depth: context.Depth);
             }
 
-            var result = new JObject();
-            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
-            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
-            result.Add(propertyName: "hashCode",
-                value: $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}");
-            result.Add(propertyName: "namespace", value: new JValue(value: typeObject.Namespace));
-            result.Add(propertyName: "name", value: new JValue(value: typeObject.Name));
-            result.Add(propertyName: "fullName", value: new JValue(value: typeObject.FullName));
-            var assemblyInfo = new JObject();
-            assemblyInfo.Add(propertyName: "name",
-                value: new JValue(value: typeObject.Assembly.GetName()));
-            assemblyInfo.Add(propertyName: "version", value: new JValue(value: typeObject.Assembly
-               .GetName()
-               .Version
-              ?.ToString()));
-            assemblyInfo.Add(propertyName: "publicKeyToken", value: new JValue(value: typeObject
-               .Assembly
-               .GetName()
-               .GetPublicKeyToken()
-              ?.ToHexString() ?? "null"));
-            assemblyInfo.Add(propertyName: "culture", value: new JValue(value: typeObject.Assembly
-               .GetName()
-               .CultureName ?? "neutral"));
-            result.Add(propertyName: "assembly", value: new JValue(value: assemblyInfo));
-            result.Add(propertyName: "guid", value: new JValue(value: typeObject.GUID.ToString()));
-            result.Add(propertyName: "typeHandle",
-                value: new JValue(value: typeObject.TypeHandle.Value.ToRepr(context: context)));
-            result.Add(propertyName: "baseType",
-                value: new JValue(value: typeObject.BaseType?.GetReprTypeName()));
+            var assemblyInfo = new JObject
+            {
+                {
+                    "name",
+                    typeObject.Assembly.GetName()
+                              .Name
+                },
+                {
+                    "version",
+                    typeObject.Assembly
+                              .GetName()
+                              .Version
+                             ?.ToString()
+                },
+                {
+                    "publicKeyToken",
+                    typeObject.Assembly
+                              .GetName()
+                              .GetPublicKeyToken()
+                             ?.ToHexString() ?? "null"
+                },
+                {
+                    "culture",
+                    typeObject.Assembly.GetName()
+                              .CultureName ?? "neutral"
+                }
+            };
             var propertiesStartsWithIs = type
                                         .GetProperties(bindingAttr: BindingFlags.Public |
                                              BindingFlags.Instance)
                                         .Where(predicate: p =>
-                                             p.CanRead &&
-                                             p.PropertyType == typeof(bool) &&
+                                             p.CanRead && p.PropertyType == typeof(bool) &&
                                              !p.Name.IsCompilerGeneratedName() &&
                                              p.Name.StartsWith(value: "Is"))
                                         .OrderByDescending(keySelector: p =>
@@ -95,8 +92,8 @@ namespace DebugUtils.Unity.Repr.Formatters
             var propertyCount = 0;
             foreach (var property in propertiesStartsWithIs)
             {
-                if (context.Config.MaxPropertiesPerObject >= 0 &&
-                    propertyCount >= context.Config.MaxPropertiesPerObject)
+                if (context.Config.MaxItemsPerContainer >= 0 &&
+                    propertyCount >= context.Config.MaxItemsPerContainer)
                 {
                     if (availableProperties.Count != 0)
                     {
@@ -120,15 +117,60 @@ namespace DebugUtils.Unity.Repr.Formatters
 
                 availableProperties.Add(item: property.Name[2..]
                                                       .ToLowerInvariant());
-
                 propertyCount += 1;
             }
 
-            result.Add(propertyName: "properties", value: new JValue(value: properties));
-            result.Add(propertyName: "availableProperties",
-                value: new JValue(value: availableProperties));
-
-            return result;
+            return new JObject
+            {
+                {
+                    "type",
+                    type.GetReprTypeName()
+                },
+                {
+                    "kind",
+                    type.GetTypeKind()
+                },
+                {
+                    "hashCode",
+                    $"0x{RuntimeHelpers.GetHashCode(o: obj):X8}"
+                },
+                {
+                    "namespace",
+                    typeObject.Namespace
+                },
+                {
+                    "name",
+                    typeObject.Name
+                },
+                {
+                    "fullName",
+                    typeObject.FullName
+                },
+                {
+                    "assembly",
+                    assemblyInfo
+                },
+                {
+                    "guid",
+                    typeObject.GUID.ToString()
+                },
+                {
+                    "typeHandle",
+                    typeObject.TypeHandle.Value.ToRepr(context: context)
+                },
+                {
+                    "baseType",
+                    typeObject.BaseType?.GetReprTypeName()
+                },
+                {
+                    "properties",
+                    properties
+                },
+                {
+                    "availableProperties",
+                    availableProperties
+                }
+            };
         }
     }
 

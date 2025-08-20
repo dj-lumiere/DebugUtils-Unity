@@ -1,5 +1,6 @@
-using System;
+#nullable enable
 using NUnit.Framework;
+using System;
 
 namespace DebugUtils.Unity.Tests
 {
@@ -9,8 +10,7 @@ namespace DebugUtils.Unity.Tests
         public void TestGetCallerName_Basic()
         {
             var callerName = CallStack.GetCallerName();
-            Assert.AreEqual(expected: "CallStackTest.TestGetCallerName_Basic",
-                actual: callerName);
+            Assert.AreEqual(expected: "CallStackTest.TestGetCallerName_Basic", actual: callerName);
         }
 
         private class NestedClass
@@ -26,8 +26,7 @@ namespace DebugUtils.Unity.Tests
         {
             var nested = new NestedClass();
             var callerName = nested.GetCallerNameFromNested();
-            Assert.AreEqual(expected: "NestedClass.GetCallerNameFromNested",
-                actual: callerName);
+            Assert.AreEqual(expected: "NestedClass.GetCallerNameFromNested", actual: callerName);
         }
 
         [Test]
@@ -45,7 +44,7 @@ namespace DebugUtils.Unity.Tests
         {
             var callerInfo = CallStack.GetCallerInfo();
             Assert.AreEqual(
-                expected: "CallStackTest.TestGetCallerInfo_Basic@CallStackTest.cs:46:13",
+                expected: "CallStackTest.TestGetCallerInfo_Basic@CallStackTest.cs:45:13",
                 actual: callerInfo.ToString());
         }
     }

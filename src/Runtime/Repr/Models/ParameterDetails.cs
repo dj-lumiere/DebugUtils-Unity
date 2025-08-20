@@ -1,8 +1,17 @@
 ﻿#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Reflection;
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.TypeHelpers;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Models
 {
@@ -70,7 +79,7 @@ namespace DebugUtils.Unity.Repr.Models
                 return "ref"; // Default for ByRef that's not in/out
             }
 
-            // Check for params array
+            // Check for a params array
             if (param.IsDefined(attributeType: typeof(ParamArrayAttribute)))
             {
                 return "params";

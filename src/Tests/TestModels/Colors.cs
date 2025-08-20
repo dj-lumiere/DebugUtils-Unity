@@ -1,6 +1,5 @@
 #nullable enable
-
-namespace DebugUtils.Unity.Tests
+namespace DebugUtils.Unity.Tests.TestModels
 {
     public enum Colors
     {

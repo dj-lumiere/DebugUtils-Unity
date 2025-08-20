@@ -1,8 +1,18 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿#nullable enable
 using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Interfaces;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -20,10 +30,8 @@ namespace DebugUtils.Unity.Repr.Formatters
 
             var list = (IEnumerable)obj;
             var type = list.GetType();
-
             var items = new List<string>();
             int? itemCount = null;
-
             if (type.GetProperty(name: "Count")
                    ?.GetValue(obj: obj) is { } value)
             {
@@ -34,8 +42,8 @@ namespace DebugUtils.Unity.Repr.Formatters
             var hitLimit = false;
             foreach (var item in list)
             {
-                if (context.Config.MaxElementsPerCollection >= 0 &&
-                    i >= context.Config.MaxElementsPerCollection)
+                if (context.Config.MaxItemsPerContainer >= 0 &&
+                    i >= context.Config.MaxItemsPerContainer)
                 {
                     hitLimit = true;
                     break;
@@ -49,7 +57,7 @@ namespace DebugUtils.Unity.Repr.Formatters
             {
                 if (itemCount is not null)
                 {
-                    var remainingCount = itemCount - context.Config.MaxElementsPerCollection;
+                    var remainingCount = itemCount - context.Config.MaxItemsPerContainer;
                     if (remainingCount > 0)
                     {
                         items.Add(item: $"... ({remainingCount} more items)");

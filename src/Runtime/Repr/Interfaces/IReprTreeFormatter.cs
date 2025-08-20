@@ -1,4 +1,17 @@
-﻿using Newtonsoft.Json.Linq;
+#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Interfaces
 {
@@ -17,14 +30,14 @@ namespace DebugUtils.Unity.Repr.Interfaces
     /// [ReprFormatter(typeof(MyCustomType))]
     /// public class MyCustomTreeFormatter : IReprTreeFormatter
     /// {
-    ///     public JToken ToReprTree(object obj, ReprContext context)
+    ///     public JsonNode ToReprTree(object obj, ReprContext context)
     ///     {
     ///         var custom = (MyCustomType)obj;
-    ///         return new JObject 
+    ///         return new JsonObject 
     ///         {
     ///             ["type"] = "MyCustomType",
     ///             ["kind"] = "class",
-    ///             ["ImportantProperty"] = custom.ImportantProperty?.FormatAsJToken(context.WithIncrementedDepth())
+    ///             ["ImportantProperty"] = custom.ImportantProperty?.FormatAsJsonNode(context.WithIncrementedDepth())
     ///         };
     ///     }
     /// }
@@ -32,22 +45,6 @@ namespace DebugUtils.Unity.Repr.Interfaces
     /// </example>
     public interface IReprTreeFormatter
     {
-        /// <summary>
-        /// Constructs a tree-like representation of the specified object, including type information,
-        /// kind, and its simple representation.
-        /// </summary>
-        /// <param name="obj">
-        /// The object to format in a tree-like structure. This is guaranteed to be non-null.
-        /// </param>
-        /// <param name="context">
-        /// The context in which the tree-like representation is created. This may contain configuration
-        /// settings or additional parameters influencing the output.
-        /// </param>
-        /// <returns>
-        /// A <see cref="JToken"/> object containing the tree-like representation
-        /// of the specified object. The result includes the object's type, type kind, and its formatted value,
-        /// structured as a JSON object.
-        /// </returns>
         JToken ToReprTree(object obj, ReprContext context);
     }
 }

@@ -1,9 +1,17 @@
-﻿using System;
+#nullable enable
+using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Extensions;
 using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using DebugUtils.Unity.Repr.Attributes;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.TypeHelpers
 {
@@ -11,52 +19,50 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
     {
         public static bool IsSignedPrimitiveType(this Type type)
         {
-
-            return type == typeof(sbyte)
-                   || type == typeof(short)
-                   || type == typeof(int)
-                   || type == typeof(long)
+            return type == typeof(sbyte) || type == typeof(short) || type == typeof(int) ||
+                   type == typeof(long)
                 #if NET7_0_OR_GREATER
                || type == typeof(Int128)
                 #endif
                 ;
         }
+
         public static bool IsIntegerPrimitiveType(this Type type)
         {
-            return type.IsSignedPrimitiveType()
-                   || type == typeof(byte)
-                   || type == typeof(ushort)
-                   || type == typeof(uint)
-                   || type == typeof(ulong)
+            return type.IsSignedPrimitiveType() || type == typeof(byte) ||
+                   type == typeof(ushort) || type == typeof(uint) || type == typeof(ulong)
                 #if NET7_0_OR_GREATER
-               || type == typeof(Int128)
+               || type == typeof(UInt128)
                 #endif
                 ;
         }
+
         public static bool IsFloatType(this Type type)
         {
-            return type == typeof(float)
-                   || type == typeof(double)
+            return type == typeof(float) || type == typeof(double)
                 #if NET5_0_OR_GREATER
-               || type == typeof(Half)
+                                     || type == typeof(Half)
                 #endif
                 ;
         }
+
         public static bool IsDictionaryType(this Type type)
         {
-            return type.IsGenericType &&
-                   type.GetInterfaces()
-                       .Any(predicate: i => i.IsGenericType &&
-                                            i.GetGenericTypeDefinition() ==
-                                            typeof(IDictionary<,>));
+            return type.IsGenericType && type.GetInterfaces()
+                                             .Any(predicate: i =>
+                                                  i.IsGenericType &&
+                                                  i.GetGenericTypeDefinition() ==
+                                                  typeof(IDictionary<,>));
         }
+
         public static bool IsSetType(this Type type)
         {
-            return type.IsGenericType &&
-                   type.GetInterfaces()
-                       .Any(predicate: i => i.IsGenericType &&
-                                            i.GetGenericTypeDefinition() == typeof(ISet<>));
+            return type.IsGenericType && type.GetInterfaces()
+                                             .Any(predicate: i =>
+                                                  i.IsGenericType &&
+                                                  i.GetGenericTypeDefinition() == typeof(ISet<>));
         }
+
         public static bool IsRecordType(this Type type)
         {
             // Check for EqualityContract property (records have this)
@@ -64,6 +70,7 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
                 bindingAttr: BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
             return equalityContract != null;
         }
+
         public static bool IsTupleType(this Type type)
         {
             if (!type.IsGenericType)
@@ -72,89 +79,68 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
             }
 
             var genericDef = type.GetGenericTypeDefinition();
-
             // ValueTuple types (modern tuples)
-            return genericDef == typeof(ValueTuple<>) ||
-                   genericDef == typeof(ValueTuple<,>) ||
-                   genericDef == typeof(ValueTuple<,,>) ||
-                   genericDef == typeof(ValueTuple<,,,>) ||
+            return genericDef == typeof(ValueTuple<>) || genericDef == typeof(ValueTuple<,>) ||
+                   genericDef == typeof(ValueTuple<,,>) || genericDef == typeof(ValueTuple<,,,>) ||
                    genericDef == typeof(ValueTuple<,,,,>) ||
                    genericDef == typeof(ValueTuple<,,,,,>) ||
                    genericDef == typeof(ValueTuple<,,,,,,>) ||
-                   genericDef == typeof(ValueTuple<,,,,,,,>) ||
-                   // Legacy Tuple types
-                   genericDef == typeof(Tuple<>) ||
-                   genericDef == typeof(Tuple<,>) ||
-                   genericDef == typeof(Tuple<,,>) ||
-                   genericDef == typeof(Tuple<,,,>) ||
-                   genericDef == typeof(Tuple<,,,,>) ||
-                   genericDef == typeof(Tuple<,,,,,>) ||
-                   genericDef == typeof(Tuple<,,,,,,>) ||
-                   genericDef == typeof(Tuple<,,,,,,,>);
+                   genericDef == typeof(ValueTuple<,,,,,,,>) || // Legacy Tuple types
+                   genericDef == typeof(Tuple<>) || genericDef == typeof(Tuple<,>) ||
+                   genericDef == typeof(Tuple<,,>) || genericDef == typeof(Tuple<,,,>) ||
+                   genericDef == typeof(Tuple<,,,,>) || genericDef == typeof(Tuple<,,,,,>) ||
+                   genericDef == typeof(Tuple<,,,,,,>) || genericDef == typeof(Tuple<,,,,,,,>);
         }
+
         #if NET6_0_OR_GREATER
-        public static bool IsPriorityQueueType(this Type type)
-        {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(PriorityQueue<,>);
-        }
+    public static bool IsPriorityQueueType(this Type type)
+    {
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(PriorityQueue<,>);
+    }
         #endif
         public static bool IsEnumType(this Type type)
         {
             return type.IsEnum;
         }
+
         public static bool IsNullableStructType(this Type type)
         {
-            return type.IsGenericType &&
-                   type.GetGenericTypeDefinition() == typeof(Nullable<>);
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
+
         public static bool IsMemoryType(this Type type)
         {
-            return type.IsGenericType &&
-                   type.GetGenericTypeDefinition() == typeof(Memory<>);
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Memory<>);
         }
+
         public static bool IsReadOnlyMemoryType(this Type type)
         {
             return type.IsGenericType &&
                    type.GetGenericTypeDefinition() == typeof(ReadOnlyMemory<>);
         }
-        public static bool OverridesToStringType(this Type type)
-        {
-            // Check for explicit ToString() override
-            var toStringMethod = type.GetMethod(name: "ToString", types: Type.EmptyTypes);
-            return toStringMethod?.DeclaringType == type;
-        }
+
         public static bool NeedsTypePrefixType(this Type type)
         {
             // Types that never need a prefix
-            if (type.IsNullableStructType()
-                || typeof(Delegate).IsAssignableFrom(c: type)
-                || type.IsGenericTypeOf(genericTypeDefinition: typeof(List<>))
-                || type.IsGenericTypeOf(genericTypeDefinition: typeof(Dictionary<,>))
-                || type.IsGenericTypeOf(genericTypeDefinition: typeof(HashSet<>))
-                || typeof(ITuple).IsAssignableFrom(c: type)
-                || type.IsEnum
-               )
+            if (type.IsNullableStructType() || type.IsAssignableTo(other: typeof(Delegate)) ||
+                type.IsGenericTypeOf(genericTypeDefinition: typeof(List<>)) ||
+                type.IsGenericTypeOf(genericTypeDefinition: typeof(Dictionary<,>)) ||
+                type.IsGenericTypeOf(genericTypeDefinition: typeof(HashSet<>)) ||
+                type.IsAssignableTo(other: typeof(ITuple)) || type.IsEnum)
             {
                 return false;
             }
 
             // Check if the formatter for this type has a ReprOptions attribute
-            var formatter =
-                ReprFormatterRegistry.GetStandardFormatter(type: type, context: new ReprContext());
+            var formatter = type.GetStandardFormatter();
             var formatterAttr = formatter.GetType()
                                          .GetCustomAttribute<ReprOptionsAttribute>();
-            if (formatterAttr != null)
-            {
-                return formatterAttr.NeedsPrefix;
-            }
-
-            // Record types and types that doesn't override ToString need type prefix.
-            return type.IsRecordType() && !type.OverridesToStringType();
+            return formatterAttr?.NeedsPrefix ?? type.IsRecordType();
         }
+
         public static bool IsGenericTypeOf(this Type type, Type genericTypeDefinition)
         {
-            return type.IsGenericType &&
-                   type.GetGenericTypeDefinition() == genericTypeDefinition;
+            return type.IsGenericType && type.GetGenericTypeDefinition() == genericTypeDefinition;
         }
 
         public static bool IsAnonymousType(this Type type)
@@ -163,10 +149,10 @@ namespace DebugUtils.Unity.Repr.TypeHelpers
             // Also, its type name starts with "<>" or "VB$", and contains AnonymousType.
             // C# compiler marks anonymous types with the System.Runtime.CompilerServices.CompilerGeneratedAttribute
             return Attribute.IsDefined(element: type,
-                       attributeType: typeof(CompilerGeneratedAttribute))
-                   && type.IsGenericType
-                   && type.Name.Contains(value: "AnonymousType")
-                   && (type.Name.StartsWith(value: "<>") || type.Name.StartsWith(value: "VB$"));
+                       attributeType: typeof(CompilerGeneratedAttribute)) && type.IsGenericType &&
+                   type.Name.Contains(value: "AnonymousType") &&
+                   (type.Name.StartsWith(value: "<>") ||
+                    type.Name.StartsWith(value: "VB$"));
         }
     }
 }

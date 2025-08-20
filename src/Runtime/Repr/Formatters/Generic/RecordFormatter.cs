@@ -1,9 +1,18 @@
-using System;
+#nullable enable
+using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Extensions;
+using DebugUtils.Unity.Repr.Interfaces;
 using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using DebugUtils.Unity.Repr.Attributes;
-using DebugUtils.Unity.Repr.Interfaces;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -16,81 +25,35 @@ namespace DebugUtils.Unity.Repr.Formatters
     {
         public string ToRepr(object obj, ReprContext context)
         {
+            context = context.WithContainerConfig();
             if (context.Config.MaxDepth >= 0 && context.Depth >= context.Config.MaxDepth)
             {
                 return "<Max Depth Reached>";
             }
 
-            var type = obj.GetType();
+            var members = obj.GetObjectMembers(context: context);
             var parts = new List<string>();
-            context = context.WithContainerConfig();
-
-            // Get public properties with getters
-            var properties = type
-                            .GetProperties(
-                                 bindingAttr: BindingFlags.Public | BindingFlags.Instance)
-                            .Where(predicate: p => p.CanRead && p.GetMethod.IsPublic &&
-                                                   !p.Name.IsCompilerGeneratedName());
-            var propertyCount = 0;
-            var isTruncated = false;
-
-            foreach (var prop in properties)
+            foreach (var member in members.PublicFields)
             {
-                if (context.Config.MaxPropertiesPerObject >= 0 &&
-                    propertyCount >= context.Config.MaxPropertiesPerObject)
-                {
-                    isTruncated = true;
-                    break;
-                }
-
-                try
-                {
-                    var value = prop.GetValue(obj: obj);
-                    // Recursively call the main Repr method for the value!
-                    parts.Add(
-                        item:
-                        $"{prop.Name}: {value.Repr(context: context.WithIncrementedDepth())}");
-                }
-                catch (Exception ex)
-                {
-                    parts.Add(item: $"{prop.Name}: <Error: {ex.Message}>");
-                }
-
-                propertyCount += 1;
+                parts.Add(item: obj.ToReprParts(f: member, context: context));
             }
 
-            if (!context.Config.ShowNonPublicProperties)
+            foreach (var member in members.PublicAutoProps)
             {
-                if (isTruncated)
-                {
-                    parts.Add(item: "...");
-                }
-
-                return $"{{ {String.Join(separator: ", ", values: parts)} }}";
+                parts.Add(item: obj.ToReprParts(pair: member, context: context));
             }
 
-            // Get private fields
-            var nonPublicFields =
-                type.GetFields(bindingAttr: BindingFlags.NonPublic | BindingFlags.Instance |
-                                            BindingFlags.Static)
-                    .Where(predicate: p => !p.Name.IsCompilerGeneratedName());
-            foreach (var field in nonPublicFields)
+            foreach (var member in members.PrivateFields)
             {
-                if (context.Config.MaxPropertiesPerObject >= 0 &&
-                    propertyCount >= context.Config.MaxPropertiesPerObject)
-                {
-                    isTruncated = true;
-                    break;
-                }
-
-                var fieldName = field.Name;
-                var value = field.GetValue(obj: obj);
-                var addingValue = value.Repr(context: context.WithIncrementedDepth());
-                parts.Add(item: $"private_{fieldName}: {addingValue}");
-                propertyCount += 1;
+                parts.Add(item: obj.ToPrivateReprParts(f: member, context: context));
             }
 
-            if (isTruncated)
+            foreach (var member in members.PrivateAutoProps)
+            {
+                parts.Add(item: obj.ToPrivateReprParts(pair: member, context: context));
+            }
+
+            if (members.Truncated)
             {
                 parts.Add(item: "...");
             }

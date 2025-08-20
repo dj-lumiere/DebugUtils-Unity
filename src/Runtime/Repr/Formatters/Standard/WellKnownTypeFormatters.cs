@@ -1,8 +1,20 @@
-﻿using System;
+﻿#nullable enable
 using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -17,13 +29,13 @@ namespace DebugUtils.Unity.Repr.Formatters
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
-            var result = new JObject();
             var type = obj.GetType();
-            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
-            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
-            result.Add(propertyName: "value",
-                value: new JValue(value: ToRepr(obj: obj, context: context)));
-            return result;
+            return new JObject
+            {
+                [propertyName: "type"] = type.GetReprTypeName(),
+                [propertyName: "kind"] = type.GetTypeKind(),
+                [propertyName: "value"] = ToRepr(obj: obj, context: context)
+            };
         }
     }
 
@@ -38,13 +50,13 @@ namespace DebugUtils.Unity.Repr.Formatters
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
-            var result = new JObject();
             var type = obj.GetType();
-            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
-            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
-            result.Add(propertyName: "value",
-                value: new JValue(value: ToRepr(obj: obj, context: context)));
-            return result;
+            return new JObject
+            {
+                [propertyName: "type"] = type.GetReprTypeName(),
+                [propertyName: "kind"] = type.GetTypeKind(),
+                [propertyName: "value"] = ToRepr(obj: obj, context: context)
+            };
         }
     }
 
@@ -60,14 +72,15 @@ namespace DebugUtils.Unity.Repr.Formatters
         public JToken ToReprTree(object obj, ReprContext context)
         {
             var v = (Version)obj;
-            var result = new JObject();
-            result.Add(propertyName: "type", value: new JValue(value: "Version"));
-            result.Add(propertyName: "kind", value: new JValue(value: "class"));
-            result.Add(propertyName: "major", value: new JValue(value: v.Major));
-            result.Add(propertyName: "minor", value: new JValue(value: v.Minor));
-            result.Add(propertyName: "build", value: new JValue(value: v.Build));
-            result.Add(propertyName: "revision", value: new JValue(value: v.Revision));
-            return result;
+            return new JObject
+            {
+                [propertyName: "type"] = "Version",
+                [propertyName: "kind"] = "class",
+                [propertyName: "major"] = v.Major,
+                [propertyName: "minor"] = v.Minor,
+                [propertyName: "build"] = v.Build,
+                [propertyName: "revision"] = v.Revision
+            };
         }
     }
 }

@@ -1,15 +1,15 @@
-# DebugUtils.Repr for Unity
+# DebugUtils.Repr for C#
 
-A comprehensive object representation library for Unity developers. **Stop wasting time with useless `ToString()` output
+A comprehensive object representation library for C# developers. **Stop wasting time with useless `ToString()` output
 and get meaningful debugging information instantly.**
 
 ## Core Features
 
 🔍 **`.Repr()`** - See actual content instead of type names  
 🌳 **`.ReprTree()`** - Structured JSON-like output for complex analysis  
-🔧 **`.FormatAsJsonNode()`** - Build custom tree formatters using Newtonsoft.Json  
-⚡ **Performance-focused** - Built for Unity debugging and production logging    
-🎮 **Unity-optimized** - Works seamlessly with Unity objects and components  
+🔧 **`.FormatAsJsonNode()`** - Build custom tree formatters  
+⚡ **Performance-focused** - Built for competitive programming and production debugging    
+🎯 **Zero dependencies** - Just add to your project and go  
 🔌 **Extensible** - Create custom formatters for your types
 
 ## The Problems We Solve
@@ -18,14 +18,10 @@ and get meaningful debugging information instantly.**
 
 ```csharp
 var arr = new int[] {1, 2, 3, 4};
-Debug.Log(arr.ToString());  // 😞 "System.Int32[]"
+Console.WriteLine(arr.ToString());  // 😞 "System.Int32[]"
 
 var dict = new Dictionary<string, int> {{"a", 1}, {"b", 2}};
-Debug.Log(dict.ToString()); // 😞 "System.Collections.Generic.Dictionary`2[System.String,System.Int32]"
-
-// Unity GameObjects are especially bad
-GameObject player = GameObject.Find("Player");
-Debug.Log(player.ToString()); // 😞 "Player (UnityEngine.GameObject)"
+Console.WriteLine(dict.ToString()); // 😞 "System.Collections.Generic.Dictionary`2[System.String,System.Int32]"
 ```
 
 ## The Solutions
@@ -36,233 +32,160 @@ Debug.Log(player.ToString()); // 😞 "Player (UnityEngine.GameObject)"
 using DebugUtils.Repr;
 
 var arr = new int[] {1, 2, 3, 4};
-Debug.Log(arr.Repr());  // 😍 "[int(1), int(2), int(3), int(4)]"
+Console.WriteLine(arr.Repr());  // 😍 "1DArray([1_i32, 2_i32, 3_i32, 4_i32])"
 
 var dict = new Dictionary<string, int> {{"a", 1}, {"b", 2}};
-Debug.Log(dict.Repr()); // 😍 "{"a": int(1), "b": int(2)}"
-
-// Unity GameObjects with meaningful info
-GameObject player = GameObject.Find("Player");
-Debug.Log(player.Repr()); // 😍 "GameObject(Player, active: true, layer: 0, tag: Player)"
+Console.WriteLine(dict.Repr()); // 😍 "{\"a\": 1_i32, \"b\": 2_i32}"
 ```
 
 ## Features
 
 ### 🔍 Object Representation (`.Repr()`)
 
-Works with any type - see actual data instead of useless type names.
+Works with any type—see actual data instead of useless type names.
 
 ### Collections
 
 ```csharp
 // Arrays (1D, 2D, jagged)
-new[] {1, 2, 3}.Repr()                    // 1DArray([int(1), int(2), int(3)])
-new[,] {{1, 2}, {3, 4}}.Repr()              // 2DArray([[int(1), int(2)], [int(3), int(4)]])
-new[][] {{1, 2}, {3, 4, 5}}.Repr()           // JaggedArray([[int(1), int(2)], [int(3), int(4), int(5)]])
+new[] {1, 2, 3}.Repr()                    // 1DArray([1_i32, 2_i32, 3_i32])
+new[,] {{1, 2}, {3, 4}}.Repr()              // 2DArray([[1_i32, 2_i32], [3_i32, 4_i32]])
+new[][] {{1, 2}, {3, 4, 5}}.Repr()           // JaggedArray([[1_i32, 2_i32], [3_i32, 4_i32, 5_i32]])
 
 // Lists, Sets, Dictionaries
-new List<int> {1, 2, 3}.Repr()           // [int(1), int(2), int(3)]
+new List<int> {1, 2, 3}.Repr()           // [1_i32, 2_i32, 3_i32]
 new HashSet<string> {"a", "b"}.Repr()    // {"a", "b"}
-new Dictionary<string, int> {{"x", 1}}.Repr() // {"x": int(1)}
-```
-
-### Unity-Specific Types
-
-```csharp
-// Vector types
-Vector3 pos = new Vector3(1.5f, 2.0f, 3.7f);
-pos.Repr()                              // Vector3(1.5, 2, 3.7)
-
-// GameObjects and Components
-GameObject player = GameObject.Find("Player");
-player.Repr()                           // GameObject(Player, active: true, layer: 0, tag: Player)
-
-Transform transform = player.transform;
-transform.Repr()                        // Transform(position: Vector3(0, 1, 0), rotation: Quaternion(0, 0, 0, 1))
-
-// Component arrays
-Component[] components = player.GetComponents<Component>();
-components.Repr()                       // [Transform(...), Rigidbody(...), PlayerController(...)]
+new Dictionary<string, int> {{"x", 1}}.Repr() // {"x": 1_i32}
 ```
 
 ### Numeric Types
 
 ```csharp
 // Integers with different representations
-42.Repr()                                              // int(42)
-42.Repr(new ReprConfig(IntFormatString: "X"))          // int(0x2A)
-42.Repr(new ReprConfig(IntFormatString: "B"))          // int(0b101010)
-42.Repr(new ReprConfig(IntFormatString: "HB"))         // int(0x0000002A) - hex bytes
--42.Repr(new ReprConfig(IntFormatString: "HB"))         // int(0xFFFFFFD6) - raw hex bytes
+42.Repr()                                              // 42_i32
+42.Repr(new ReprConfig(IntFormatString: "X"))          // 0x2A_i32
+42.Repr(new ReprConfig(IntFormatString: "B"))          // 0b101010_i32
 
 // Floating point with exact representation
-// Perfect for debugging Unity's floating point precision issues!
-(0.1f + 0.2f).Repr()                            
-// float(3.00000011920928955078125E-001)
+// You can now recognize the real floating point value
+// and find what went wrong when doing arithmetics!
+(0.1f + 0.2f).Repr()                       
+// 3.00000011920928955078125E-001_f32
 0.3f.Repr()                                    
-// float(2.99999988079071044921875E-001)
-
-(0.1f + 0.2f).Repr(new ReprConfig(FloatFormatString: "G"))
-// float(0.30000001)
+// 2.99999988079071044921875E-001_f32
 ```
 
 ### 🌳 Tree Representation (`.ReprTree()`)
 
-Get structured, JSON-like output perfect for understanding complex object hierarchies using **Newtonsoft.Json**:
+Get structured, JSON-like output perfect for understanding complex object hierarchies:
 
 ```csharp
-public class PlayerData : MonoBehaviour
+public class Student
 {
-    public string PlayerName { get; set; }
-    public int Level { get; set; }
-    public List<string> Inventory { get; set; }
-    public Transform SpawnPoint { get; set; }
+    public string Name { get; set; }
+    public int Age { get; set; }
+    public List<string> Hobbies { get; set; }
 }
 
-var playerData = GetComponent<PlayerData>();
-playerData.PlayerName = "Alice";
-playerData.Level = 15;
-playerData.Inventory = new List<string> {"sword", "potion"};
-playerData.SpawnPoint = GameObject.Find("SpawnPoint").transform;
+var student = new Student { 
+    Name = "Alice", 
+    Age = 30, 
+    Hobbies = new List<string> {"reading", "coding"} 
+};
 
-Debug.Log(playerData.ReprTree());
-// Uses Newtonsoft.Json.Linq.JObject for structured output
+Console.WriteLine(student.ReprTree());
 // hashCode can vary depending on when it got executed.
 // Output: {
-//   "type": "PlayerData",
+//   "type": "Student",
 //   "kind": "class",
-//   "hashCode": "0xABCDABCD"
-//   "PlayerName": { "type": "string", "kind": "class", "length": 5, "hashCode": "0xAAAAAAAA", "value": "Alice" },
-//   "Level": { "type": "int", "kind": "struct", "value": "15" },
-//   "Inventory": {
+//   "hashCode": "0xABCDABCD",
+//   "Age": "30_i32",
+//   "Hobbies": {
 //     "type": "List",
 //     "kind": "class",
 //     "count": 2,
 //     "value": [
-//       { "type": "string", "kind": "class", "length": 5, "hashCode": "0xBBBBBBBB", "value": "sword" },
-//       { "type": "string", "kind": "class", "length": 6, "hashCode": "0xCCCCCCCC", "value": "potion" }
+//       { "type": "string", "kind": "class", "length": 7, "hashCode" = "0xBBBBBBBB", "value": "reading" },
+//       { "type": "string", "kind": "class", "length": 6, "hashCode" = "0xCCCCCCCC", "value": "coding" }
 //     ]
 //   },
-//   "SpawnPoint": {
-//     "type": "Transform",
-//     "kind": "class",
-//     "hashCode": "0xDDDDDDDD",
-//     "position": { "type": "Vector3", "kind": "struct", "value": "(0, 0, 0)" },
-//     "rotation": { "type": "Quaternion", "kind": "struct", "value": "(0, 0, 0, 1)" }
-//   }
+//   "Name": { "type": "string", "kind": "class", "length": 5, "hashCode" = "0xAAAAAAAA", "value": "Alice" },
 // }
 ```
 
 ### 🔧 Custom Formatters (`.FormatAsJsonNode()`)
 
-Create your own formatters for specialized types using **Newtonsoft.Json**:
+Create your own formatters for specialized types:
 
 ```csharp
-using Newtonsoft.Json.Linq;
-
 [ReprFormatter(typeof(Vector3))]
 public class Vector3Formatter : IReprFormatter, IReprTreeFormatter
 {
     public string ToRepr(object obj, ReprContext context)
     {
         var v = (Vector3)obj;
-        return $"Vector3({v.x}, {v.y}, {v.z})";
+        return $"({v.X}, {v.Y}, {v.Z})";
     }
 
-    public JToken ToReprTree(object obj, ReprContext context)
+    public JsonNode ToReprTree(object obj, ReprContext context)
     {
         var v = (Vector3)obj;
-        return new JObject
+        return new JsonObject
         {
             ["type"] = "Vector3",
             ["kind"] = "struct",
-            ["x"] = v.x.FormatAsJsonNode(context.WithIncrementedDepth()),
-            ["y"] = v.y.FormatAsJsonNode(context.WithIncrementedDepth()),
-            ["z"] = v.z.FormatAsJsonNode(context.WithIncrementedDepth())
-        };
-    }
-}
-
-// Custom GameObject formatter
-[ReprFormatter(typeof(GameObject))]
-public class GameObjectFormatter : IReprFormatter, IReprTreeFormatter
-{
-    public string ToRepr(object obj, ReprContext context)
-    {
-        var go = (GameObject)obj;
-        if (go == null) return "null";
-        
-        return $"GameObject({go.name}, active: {go.activeSelf}, layer: {go.layer}, tag: {go.tag})";
-    }
-
-    public JToken ToReprTree(object obj, ReprContext context)
-    {
-        var go = (GameObject)obj;
-        if (go == null) return JValue.CreateNull();
-        
-        return new JObject
-        {
-            ["type"] = "GameObject",
-            ["kind"] = "class",
-            ["hashCode"] = $"0x{go.GetHashCode():X8}",
-            ["name"] = go.name,
-            ["activeSelf"] = go.activeSelf,
-            ["layer"] = go.layer,
-            ["tag"] = go.tag,
-            ["transform"] = go.transform.FormatAsJsonNode(context.WithIncrementedDepth())
+            ["X"] = v.X.FormatAsJsonNode(context.WithIncrementedDepth()),
+            ["Y"] = v.Y.FormatAsJsonNode(context.WithIncrementedDepth()),
+            ["Z"] = v.Z.FormatAsJsonNode(context.WithIncrementedDepth())
         };
     }
 }
 ```
+
+**Use cases:**
+
+- **Error tracking** - Know exactly which method failed
+- **Performance logging** - Track execution flow
+- **Debugging algorithms** - See the call chain in complex recursion
+- **Unit testing** - Better test failure messages
 
 ## Configuration Options
 
 ### Float Formatting (NEW: Format Strings)
 
 ```csharp
-// NEW APPROACH: Format strings (recommended)
-var exact = new ReprConfig(FloatFormatString: "EX");
-3.14159f.Repr(exact);     // Exact decimal representation (custom arithmetic engine)
 
 var scientific = new ReprConfig(FloatFormatString: "E5");
-3.14159.Repr(scientific); // Scientific notation with 5 decimal places
+3.14159.Repr(scientific); // Scientific notation with 5 decimal places + _f64 suffix
 
 var rounded = new ReprConfig(FloatFormatString: "F2");
-3.14159.Repr(rounded);    // Fixed point with 2 decimal places
+3.14159.Repr(rounded);    // Fixed point with 2 decimal places + _f64 suffix
 
 // Special debugging modes
-var bitField = new ReprConfig(FloatFormatString: "BF");
-3.14f.Repr(bitField);     // IEEE 754 bit field: 0|10000000|10010001111010111000011
+var hexPower = new ReprConfig(FloatFormatString: "HP");
+3.14f.Repr(hexPower);     // IEEE 754 hex power: 0x1.91EB86p+001_f32 (fast bit conversion)
 
-var hexBytes = new ReprConfig(FloatFormatString: "HB");
-3.14f.Repr(hexBytes);     // Raw hex bytes: 0x4048F5C3
-
-// OLD APPROACH: Enum modes (deprecated but still supported)
-var oldExact = new ReprConfig(FloatMode: FloatReprMode.Exact);
-var oldLegacy = new ReprConfig(FloatMode: FloatReprMode.Exact_Old);  // BigInteger-based
-var oldRounded = new ReprConfig(FloatMode: FloatReprMode.Round, FloatPrecision: 2);
+var exact = new ReprConfig(FloatFormatString: "EX");
+3.14159f.Repr(exact);     // Exact decimal representation down to very last digit + _f32 suffix
 ```
 
 ### Integer Formatting (NEW: Format Strings)
 
 ```csharp
-// NEW APPROACH: Format strings (recommended)
 var hex = new ReprConfig(IntFormatString: "X");
-255.Repr(hex);            // Hexadecimal: int(0xFF)
+255.Repr(hex);            // Hexadecimal: 0xFF_i32
+
+var octal = new ReprConfig(IntFormatString: "O");
+255.Repr(octal);          // Octal: 0o377_i32
+
+var quaternary = new ReprConfig(IntFormatString: "Q");
+255.Repr(quaternary);     // Quaternary: 0q3333_i32
 
 var binary = new ReprConfig(IntFormatString: "B");
-255.Repr(binary);         // Binary: int(0b11111111)
-
-var hexBytes = new ReprConfig(IntFormatString: "HB");
-255.Repr(hexBytes);       // Hex bytes: int(0x000000FF)
+255.Repr(binary);         // Binary: 0b11111111_i32
 
 var decimal = new ReprConfig(IntFormatString: "D");
-255.Repr(decimal);        // Standard decimal: int(255)
-
-// OLD APPROACH: Enum modes (deprecated but still supported)
-var oldHex = new ReprConfig(IntMode: IntReprMode.Hex);
-var oldBinary = new ReprConfig(IntMode: IntReprMode.Binary);
-var oldBytes = new ReprConfig(IntMode: IntReprMode.HexBytes);
+255.Repr(decimal);        // Standard decimal: 255_i32
 ```
 
 ### Type Display
@@ -272,100 +195,78 @@ var hideTypes = new ReprConfig(
     TypeMode: TypeReprMode.AlwaysHide,
     ContainerReprMode: ContainerReprMode.UseParentConfig
     );
-new[] {1, 2, 3}.Repr(hideTypes);  // [1, 2, 3] (no type prefix to child element.)
+new[] {1, 2, 3}.Repr(hideTypes);  // [1_i32, 2_i32, 3_i32] (no type prefix to child element.)
 
 var showTypes = new ReprConfig(TypeMode: TypeReprMode.AlwaysShow);
-new[] {1, 2, 3}.Repr(showTypes);  // 1DArray([int(1), int(2), int(3)])
+new[] {1, 2, 3}.Repr(showTypes);  // 1DArray([1_i32, 2_i32, 3_i32])
+
+// IMPORTANT: Numeric types always show explicit bit-width suffixes (_i32, _f32, _u8, etc.)
+// regardless of TypeMode setting. The suffix provides precision/bit-width information
+// rather than just type decoration, making it always valuable for debugging.
+var numbers = new ReprConfig(TypeMode: TypeReprMode.AlwaysHide);
+42.Repr(numbers);     // 42_i32 (suffix always shown)
+3.14f.Repr(numbers);  // 3.14_f32 (suffix always shown)
+((byte)255).Repr(numbers);  // 255_u8 (suffix always shown)
 ```
 
-## Real-World Unity Use Cases
+## Real-World Use Cases
 
-### Game Development Debugging
+### Competitive Programming
 
-Debug game state and algorithms instantly:
+Debug algorithms instantly without writing custom debug code:
 
 ```csharp
-public class GameManager : MonoBehaviour
+// Debug your DP table
+int[,] dp = new int[n, m];
+// ... fill DP table ...
+Console.WriteLine($"DP table: {dp.Repr()}");
+
+// Track algorithm execution
+public int Solve(int[] arr)
 {
-    public List<Player> players;
-    public Dictionary<string, int> scores;
+    Console.WriteLine($"Input: {arr.Repr()}");
     
-    private void Update()
+    var result = ProcessArray(arr);
+    Console.WriteLine($"Result: {result.Repr()}");
+    return result;
+}
+```
+
+### Production Debugging
+
+```csharp
+public async Task<ApiResponse> ProcessRequest(RequestData request)
+{
+    logger.Info($"Request: {request.Repr()}");
+    
+    try 
     {
-        if (Input.GetKeyDown(KeyCode.F1))
-        {
-            Debug.Log($"Players: {players.Repr()}");
-            Debug.Log($"Scores: {scores.Repr()}");
-        }
+        var response = await ProcessData(request.Data);
+        logger.Info($"Success: {response.Repr()}");
+        return response;
     }
-    
-    public void ProcessTurn(Player player)
+    catch (Exception ex)
     {
-        Debug.Log($"Processing turn for: {player.Repr()}");
-        
-        var gameState = GetCurrentGameState();
-        Debug.Log($"Game State: {gameState.ReprTree()}");  // Full structure for debugging
+        logger.Error($"Failed processing: {ex.Message}");
+        logger.Error($"Request data: {request.ReprTree()}");  // Full structure for debugging
+        throw;
     }
 }
 ```
 
-### Component Interaction Debugging
+### Unit Testing
 
 ```csharp
-public class PlayerController : MonoBehaviour
+[Fact]
+public void TestComplexAlgorithm()
 {
-    private void OnCollisionEnter(Collision collision)
-    {
-        Debug.Log($"Collision with: {collision.gameObject.Repr()}");
-        Debug.Log($"Contact points: {collision.contacts.Repr()}");
-        Debug.Log($"Collision details: {collision.ReprTree()}");
-    }
-    
-    private void OnTriggerEnter(Collider other)
-    {
-        var components = other.GetComponents<Component>();
-        Debug.Log($"Triggered by object with components: {components.Repr()}");
-    }
-}
-```
-
-### AI and Pathfinding Debug
-
-```csharp
-public class AIController : MonoBehaviour
-{
-    public void FindPath(Vector3 start, Vector3 end)
-    {
-        Debug.Log($"Pathfinding from {start.Repr()} to {end.Repr()}");
-        
-        var path = CalculatePath(start, end);
-        Debug.Log($"Calculated path: {path.Repr()}");
-        
-        if (path.Length == 0)
-        {
-            var obstacles = DetectObstacles(start, end);
-            Debug.Log($"Obstacles detected: {obstacles.ReprTree()}");
-        }
-    }
-}
-```
-
-### Unit Testing in Unity
-
-```csharp
-[Test]
-public void TestPlayerMovement()
-{
-    var player = CreateTestPlayer();
-    var initialPosition = player.transform.position;
-    var inputVector = new Vector3(1, 0, 0);
-    
-    player.Move(inputVector);
-    var finalPosition = player.transform.position;
+    var input = GenerateTestData();
+    var expected = CalculateExpected(input);
+    var actual = MyAlgorithm(input);
     
     // Amazing error messages when tests fail
-    Assert.AreNotEqual(initialPosition, finalPosition, 
-        $"Initial: {initialPosition.Repr()}\nInput: {inputVector.Repr()}\nFinal: {finalPosition.Repr()}");
+    Assert.Equal(expected, actual, 
+        $"Input: {input.Repr()}\nExpected: {expected.Repr()}\nActual: {actual.Repr()}");
 }
 ```
 
@@ -378,34 +279,23 @@ public void TestPlayerMovement()
 obj.Repr()                           // Uses default config
 obj.Repr(config)                     // Uses custom config
 
-// Tree representation (structured JSON-like using Newtonsoft.Json)
+// Tree representation (structured JSON-like)
 obj.ReprTree()                       // Uses default config  
 obj.ReprTree(config)                 // Uses custom config
 
-// JToken for custom formatters (requires Newtonsoft.Json)
+// JsonNode for custom formatters
 obj.FormatAsJsonNode(context)        // For building custom tree structures, should pass context.
 ```
 
 ### Configuration
 
 ```csharp
-// NEW APPROACH: Format strings (recommended)
 var config = new ReprConfig(
     FloatFormatString: "EX",           // Exact floating-point representation
     IntFormatString: "D",              // Decimal integers
     TypeMode: TypeReprMode.HideObvious,
     MaxDepth: 5,
-    MaxElementsPerCollection: 50,
-    EnablePrettyPrintForReprTree: true
-);
-
-// OLD APPROACH: Enum modes (deprecated but still supported)
-var oldConfig = new ReprConfig(
-    FloatMode: FloatReprMode.Exact,
-    IntMode: IntReprMode.Decimal,
-    TypeMode: TypeReprMode.HideObvious,
-    MaxDepth: 5,
-    MaxElementsPerCollection: 50,
+    MaxItemsPerContainer: 50,
     EnablePrettyPrintForReprTree: true
 );
 
@@ -416,40 +306,31 @@ obj.ReprTree(config);
 
 ## Circular Reference Handling
 
-Automatically detects and handles circular references safely (important for Unity's component references):
+Automatically detects and handles circular references safely:
 
 ```csharp
-public class PlayerController : MonoBehaviour
+public class Node
 {
-    public Transform target;
-    public PlayerController buddy;
+    public string Name { get; set; }
+    public Node Child { get; set; }
+    public Node Parent { get; set; }
 }
 
-var player1 = playerObject1.GetComponent<PlayerController>();
-var player2 = playerObject2.GetComponent<PlayerController>();
-player1.buddy = player2;
-player2.buddy = player1;  // Circular reference
+var parent = new Node { Name = "Parent" };
+var child = new Node { Name = "Child", Parent = parent };
+parent.Child = child;
 
-Debug.Log(player1.Repr());
-// Output: PlayerController(target: Transform(...), buddy: PlayerController(target: Transform(...), buddy: <Circular Reference to PlayerController @0x12345678>))
+Console.WriteLine(parent.Repr());
+// Output: Node(Child: Node(Child: null, Name: "Child", Parent: <Circular Reference to Node @0x01F550A4>), Name: "Parent", Parent: null)
+// (hashCode may vary)
 ```
 
-## Dependencies
+## Target Frameworks
 
-- **Unity 2021.3 LTS** or higher
-- **Newtonsoft.Json for Unity** (available through Package Manager)
-- Compatible with all Unity render pipelines (Built-in, URP, HDRP)
-- Works in both Editor and Runtime
-
-## Installation
-
-1. Install **Newtonsoft.Json** package via Unity Package Manager:
-    - Open Package Manager (Window → Package Manager)
-    - Select "Unity Registry"
-    - Search for "com.unity.nuget.newtonsoft-json"
-    - Click Install
-
-2. Add the DebugUtils.Repr scripts to your Unity project's Scripts folder
+- .NET 6.0 (compatible with BOJ and older systems)
+- .NET 7.0 (includes Int128 support, compatible with AtCoder)
+- .NET 8.0
+- .NET 9.0 (compatible with Codeforces)
 
 ## Performance
 
@@ -457,36 +338,18 @@ Debug.Log(player1.Repr());
 - **Minimal allocations** for simple representations
 - **Automatic cleanup** prevents memory leaks
 - **Depth limiting** prevents stack overflow on deep hierarchies
-- **Unity-optimized** - Works well in both Editor and Runtime
-
-## Unity Editor Integration
-
-Works seamlessly in Unity's development workflow:
-
-```csharp
-public class DebugInspector : MonoBehaviour
-{
-    [ContextMenu("Debug This Object")]
-    private void DebugThisObject()
-    {
-        Debug.Log($"GameObject: {this.gameObject.Repr()}");
-        Debug.Log($"All Components: {GetComponents<Component>().Repr()}");
-        Debug.Log($"Full Object Tree: {this.ReprTree()}");
-    }
-}
-```
 
 ## Contributing
 
-Built to solve real debugging pain points in Unity development. If you have ideas for additional features or find bugs,
+Built to solve real debugging pain points in C# development. If you have ideas for additional features or find bugs,
 contributions are welcome!
 
 **Ideas for new features:**
 
-- Unity-specific component formatters
-- Scene hierarchy visualization
+- Additional numeric formatting modes
+- Custom attribute-based configuration
 - Performance profiling integration
-- Custom inspector integration
+- IDE debugging visualizers
 
 ## License
 
@@ -494,4 +357,4 @@ This project follows MIT license.
 
 ---
 
-**Stop debugging blind in Unity. See your actual data with crystal clarity. 🎯**
+**Stop debugging blind. See your actual data with crystal clarity. 🎯**

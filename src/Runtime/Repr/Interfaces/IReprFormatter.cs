@@ -1,3 +1,17 @@
+#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
+
 namespace DebugUtils.Unity.Repr.Interfaces
 {
     /// <summary>
@@ -31,11 +45,11 @@ namespace DebugUtils.Unity.Repr.Interfaces
         /// <summary>
         /// Converts the specified object to its string representation according to the given configuration.
         /// </summary>
-        /// <param name="obj">
+        /// <param name = "obj">
         /// The object to format. Guaranteed to be non-null and of a type this formatter handles.
         /// The formatter should cast this to the expected type.
         /// </param>
-        /// <param name="context">
+        /// <param name = "context">
         /// Optional context controlling formatting behavior and tracking state. If null, uses default configuration.
         /// Contains configuration settings, circular reference tracking, and depth management.
         /// </param>

@@ -1,8 +1,20 @@
-﻿using System;
+﻿#nullable enable
 using DebugUtils.Unity.Repr.Attributes;
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.Interfaces;
 using DebugUtils.Unity.Repr.TypeHelpers;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Formatters
 {
@@ -19,13 +31,18 @@ namespace DebugUtils.Unity.Repr.Formatters
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
-            var result = new JObject();
             var type = obj.GetType();
-            result.Add(propertyName: "type", value: new JValue(value: type.GetReprTypeName()));
-            result.Add(propertyName: "kind", value: new JValue(value: type.GetTypeKind()));
-            result.Add(propertyName: "value",
-                value: new JValue(value: ToRepr(obj: obj, context: context)));
-            return result;
+            if (context.Depth > 0)
+            {
+                return ToRepr(obj: obj, context: context)!;
+            }
+
+            return new JObject
+            {
+                [propertyName: "type"] = type.GetReprTypeName(),
+                [propertyName: "kind"] = type.GetTypeKind(),
+                [propertyName: "value"] = ToRepr(obj: obj, context: context)
+            };
         }
     }
 
@@ -38,23 +55,22 @@ namespace DebugUtils.Unity.Repr.Formatters
             var e = (Enum)obj;
             var underlyingType = Enum.GetUnderlyingType(enumType: e.GetType());
             var numericValue = Convert.ChangeType(value: e, conversionType: underlyingType);
-            return
-                $"{e.GetReprTypeName()}.{e} ({numericValue.Repr(context: context)})";
+            return $"{e.GetReprTypeName()}.{e} ({numericValue.Repr(context: context)})";
         }
 
         public JToken ToReprTree(object obj, ReprContext context)
         {
             var e = (Enum)obj;
-            var result = new JObject();
             var underlyingType = Enum.GetUnderlyingType(enumType: e.GetType());
             var numericValue = Convert.ChangeType(value: e, conversionType: underlyingType);
-
-            result.Add(propertyName: "type", value: new JValue(value: e.GetReprTypeName()));
-            result.Add(propertyName: "kind", value: new JValue(value: "enum"));
-            result.Add(propertyName: "name", value: new JValue(value: e.ToString()));
-            result.Add(propertyName: "value",
-                value: numericValue.FormatAsJToken(context: context));
-            return result;
+            return new JObject
+            {
+                [propertyName: "type"] = e.GetReprTypeName(),
+                [propertyName: "kind"] = "enum",
+                [propertyName: "name"] = e.ToString(),
+                [propertyName: "value"] =
+                    numericValue.FormatAsJToken(context: context.WithIncrementedDepth())
+            };
         }
     }
 }

@@ -1,6 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr.Extensions
 {
@@ -16,11 +27,11 @@ namespace DebugUtils.Unity.Repr.Extensions
                 for (var i = 0; i < array.GetLength(dimension: dimension); i += 1)
                 {
                     indices[dimension] = i;
-                    if (context.Config.MaxElementsPerCollection >= 0 &&
-                        i >= context.Config.MaxElementsPerCollection)
+                    if (context.Config.MaxItemsPerContainer >= 0 &&
+                        i >= context.Config.MaxItemsPerContainer)
                     {
                         var truncatedItemCount = array.GetLength(dimension: dimension) -
-                                                 context.Config.MaxElementsPerCollection;
+                                                 context.Config.MaxItemsPerContainer;
                         items.Add(item: $"... {truncatedItemCount} more items");
                         break;
                     }
@@ -37,8 +48,8 @@ namespace DebugUtils.Unity.Repr.Extensions
                     else
                     {
                         // Otherwise, format the element normally.
-                        items.Add(
-                            item: value?.Repr(context: context.WithIncrementedDepth()) ?? "null");
+                        items.Add(item: value?.Repr(context: context.WithIncrementedDepth()) ??
+                                        "null");
                     }
                 }
 
@@ -48,11 +59,11 @@ namespace DebugUtils.Unity.Repr.Extensions
             var subArrays = new List<string>();
             for (var i = 0; i < array.GetLength(dimension: dimension); i += 1)
             {
-                if (context.Config.MaxElementsPerCollection >= 0 &&
-                    i >= context.Config.MaxElementsPerCollection)
+                if (context.Config.MaxItemsPerContainer >= 0 &&
+                    i >= context.Config.MaxItemsPerContainer)
                 {
                     var truncatedItemCount = array.GetLength(dimension: dimension) -
-                                             context.Config.MaxElementsPerCollection;
+                                             context.Config.MaxItemsPerContainer;
                     subArrays.Add(item: $"... {truncatedItemCount} more items");
                     break;
                 }
@@ -66,8 +77,7 @@ namespace DebugUtils.Unity.Repr.Extensions
         }
 
         public static JToken ArrayToHierarchicalReprRecursive(this Array array, int[] indices,
-            int dimension,
-            ReprContext context)
+            int dimension, ReprContext context)
         {
             if (dimension == array.Rank - 1)
             {
@@ -76,11 +86,11 @@ namespace DebugUtils.Unity.Repr.Extensions
                 for (var i = 0; i < array.GetLength(dimension: dimension); i += 1)
                 {
                     indices[dimension] = i;
-                    if (context.Config.MaxElementsPerCollection >= 0 &&
-                        i >= context.Config.MaxElementsPerCollection)
+                    if (context.Config.MaxItemsPerContainer >= 0 &&
+                        i >= context.Config.MaxItemsPerContainer)
                     {
                         var truncatedItemCount = array.GetLength(dimension: dimension) -
-                                                 context.Config.MaxElementsPerCollection;
+                                                 context.Config.MaxItemsPerContainer;
                         items.Add(item: $"... ({truncatedItemCount} more items)");
                         break;
                     }
@@ -110,11 +120,11 @@ namespace DebugUtils.Unity.Repr.Extensions
             var subArrays = new JArray();
             for (var i = 0; i < array.GetLength(dimension: dimension); i += 1)
             {
-                if (context.Config.MaxElementsPerCollection >= 0 &&
-                    i >= context.Config.MaxElementsPerCollection)
+                if (context.Config.MaxItemsPerContainer >= 0 &&
+                    i >= context.Config.MaxItemsPerContainer)
                 {
                     var truncatedItemCount = array.GetLength(dimension: dimension) -
-                                             context.Config.MaxElementsPerCollection;
+                                             context.Config.MaxItemsPerContainer;
                     subArrays.Add(item: $"... ({truncatedItemCount} more items)");
                     break;
                 }

@@ -1,7 +1,18 @@
-﻿#nullable enable
-using System.Runtime.CompilerServices;
+#nullable enable
+using DebugUtils.Unity.Repr.Extensions;
 using DebugUtils.Unity.Repr.TypeHelpers;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace DebugUtils.Unity.Repr
 {
@@ -10,11 +21,10 @@ namespace DebugUtils.Unity.Repr
         public static string ToRepr<T>(this T obj, ReprContext? context = null)
         {
             context ??= new ReprContext();
-
             // Handle ALL edge cases in the main entry point
             if (obj.IsNullableStruct())
             {
-                return obj.FormatNullableValueType(context: context.WithNullableMode());
+                return obj.FormatNullableValueType(context: context);
             }
 
             if (obj is null)
@@ -22,7 +32,7 @@ namespace DebugUtils.Unity.Repr
                 return "null";
             }
 
-            // Handle circular references HERE - single place
+            // Handle circular references HERE
             var id = RuntimeHelpers.GetHashCode(o: obj);
             if (!obj.GetType()
                     .IsValueType)
@@ -36,19 +46,22 @@ namespace DebugUtils.Unity.Repr
             try
             {
                 // Get formatter and format - no safety concerns needed in formatters!
-                var formatter =
-                    ReprFormatterRegistry.GetStandardFormatter(type: obj.GetType(),
-                        context: context);
-
+                var type = obj.GetType();
+                var formatter = type.GetStandardFormatter();
                 var result = formatter.ToRepr(obj: obj, context: context);
-
+                var haveTypeSuffix =
+                    TypeNameMappings.TypeSuffixNames.TryGetValue(key: type, value: out var suffix);
+                var needsTypePrefix = obj.NeedsTypePrefix();
                 // Apply type prefix
-                return context.Config.TypeMode switch
+                return (context.Config.TypeMode, haveTypeSuffix, needsTypePrefix) switch
                 {
-                    TypeReprMode.AlwaysHide => result,
-                    TypeReprMode.HideObvious => obj.NeedsTypePrefix()
-                        ? $"{obj.GetReprTypeName()}({result})"
-                        : result,
+                    (_, true, true) => throw new InvalidOperationException(
+                        message: "Should not be possible"),
+                    (_, true, false) => $"{result}_{suffix}",
+                    (TypeReprMode.AlwaysHide, _, _) => result,
+                    (TypeReprMode.HideObvious, false, true) =>
+                        $"{obj.GetReprTypeName()}({result})",
+                    (TypeReprMode.HideObvious, false, false) => $"{result}",
                     _ => $"{obj.GetReprTypeName()}({result})"
                 };
             }
@@ -67,29 +80,50 @@ namespace DebugUtils.Unity.Repr
         {
             var type = typeof(T);
             var reprName = type.GetReprTypeName();
-
+            var haveTypeSuffix =
+                TypeNameMappings.TypeSuffixNames.TryGetValue(key: type, value: out var suffix);
+            string result;
             if (nullable == null)
             {
-                return $"{reprName}(null)";
+                if (haveTypeSuffix)
+                {
+                    result = "null_" + suffix;
+                }
+                else
+                {
+                    result = "null";
+                }
+            }
+            else
+            {
+                var value = type.GetProperty(name: "Value")!.GetValue(obj: nullable)!;
+                result = value.Repr(context: context.WithTypeHide()) + "?";
             }
 
-            var value = type.GetProperty(name: "Value")!.GetValue(obj: nullable)!;
-            return
-                $"{reprName}({value.Repr(context: context.WithNullableMode())})";
+            return (context.Config.TypeMode, haveTypeSuffix) switch
+            {
+                (_, true) => $"{result}",
+                (TypeReprMode.AlwaysHide, _) => result,
+                _ => $"{reprName}({result})"
+            };
         }
 
         public static JToken ToReprTree<T>(this T obj, ReprContext? context = null)
         {
             context ??= new ReprContext();
-
             if (obj.IsNullableStruct())
             {
                 return obj.FormatNullableAsHierarchical(context: context);
             }
 
-            if (obj is null)
+            if (obj is null && context.Depth == 0)
             {
                 return CreateNullObjectJson<T>();
+            }
+
+            if (obj is null)
+            {
+                return null !;
             }
 
             // ✅ Add circular reference detection!
@@ -105,8 +139,8 @@ namespace DebugUtils.Unity.Repr
 
             try
             {
-                var formatter =
-                    ReprFormatterRegistry.GetTreeFormatter(type: obj.GetType(), context: context);
+                var type = obj.GetType();
+                var formatter = type.GetTreeFormatter();
                 return formatter.ToReprTree(obj: obj, context: context);
             }
             finally
@@ -124,11 +158,11 @@ namespace DebugUtils.Unity.Repr
         {
             return new JObject
             {
-                [propertyName: "type"] = new JValue(value: "CircularReference"),
+                [propertyName: "type"] = "CircularReference",
                 [propertyName: "target"] = new JObject
                 {
-                    [propertyName: "type"] = new JValue(value: obj.GetReprTypeName()),
-                    [propertyName: "hashCode"] = new JValue(value: $"0x{id:X8}")
+                    [propertyName: "type"] = obj.GetReprTypeName(),
+                    [propertyName: "hashCode"] = $"0x{id:X8}"
                 }
             };
         }
@@ -137,9 +171,20 @@ namespace DebugUtils.Unity.Repr
         {
             return new JObject
             {
-                [propertyName: "type"] = new JValue(value: typeof(T).GetReprTypeName()),
-                [propertyName: "kind"] = new JValue(value: typeof(T).GetTypeKind()),
+                [propertyName: "type"] = typeof(T).GetReprTypeName(),
+                [propertyName: "kind"] = typeof(T).GetTypeKind(),
                 [propertyName: "value"] = null
+            };
+        }
+
+        public static JObject CreateMaxDepthReachedJson(this Type type, int depth)
+        {
+            return new JObject
+            {
+                [propertyName: "type"] = type.GetReprTypeName(),
+                [propertyName: "kind"] = type.GetTypeKind(),
+                [propertyName: "maxDepthReached"] = "true",
+                [propertyName: "depth"] = depth
             };
         }
 
@@ -147,24 +192,38 @@ namespace DebugUtils.Unity.Repr
         {
             var type = typeof(T);
             var reprName = type.GetReprTypeName();
-
-            if (nullable == null)
+            var typeKind = type.UnderlyingSystemType.GetTypeKind();
+            var haveTypeSuffix =
+                TypeNameMappings.TypeSuffixNames.TryGetValue(key: type, value: out var suffix);
+            // Handle depth > 0 case like other formatters - show with suffix for numeric types
+            if (context.Depth > 0 && haveTypeSuffix)
             {
+                var stringRepr = nullable.FormatNullableValueType(context: context);
+                return stringRepr!;
+            }
+
+            if (nullable is null)
+            {
+                // Handle depth > 0 case for null values with suffix
+                if (context.Depth > 0 && haveTypeSuffix)
+                {
+                    return nullable.FormatNullableValueType(context: context)!;
+                }
+
                 var nullJson = new JObject
                 {
                     [propertyName: "type"] = reprName,
-                    [propertyName: "kind"] = type.UnderlyingSystemType.GetTypeKind(),
+                    [propertyName: "kind"] = typeKind,
                     [propertyName: "value"] = null
                 };
                 return nullJson;
             }
 
             var value = type.GetProperty(name: "Value")!.GetValue(obj: nullable)!;
-            var formatter =
-                ReprFormatterRegistry.GetTreeFormatter(type: value.GetType(), context: context);
+            var formatter = value.GetType()
+                                 .GetTreeFormatter();
             var valueRepr = formatter.ToReprTree(obj: value, context: context);
             valueRepr[key: "type"] = reprName;
-
             return valueRepr;
         }
     }
