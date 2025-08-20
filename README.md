@@ -2,7 +2,7 @@
 
 [![Unity 2021.3+](https://img.shields.io/badge/Unity-2021.3%2B-blue.svg)](https://unity3d.com/get-unity/download)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.0.0-orange.svg)](package.json)
+[![Version](https://img.shields.io/badge/Version-1.0.2-orange.svg)](package.json)
 
 A comprehensive collection of debugging utilities for Unity developers that provides Python-like repr() functionality, advanced object representation, scene navigation, and call stack analysis tools.
 
