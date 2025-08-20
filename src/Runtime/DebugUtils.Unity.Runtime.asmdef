@@ -2,7 +2,8 @@
   "name": "DebugUtils.Unity.Runtime",
   "rootNamespace": "DebugUtils.Unity",
   "references": [
-    "Unity.Mathematics"
+    "Unity.Mathematics",
+    "Unity.Nuget.Newtonsoft-Json"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
